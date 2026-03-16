@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tuto — inerWeb Élève</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bleu:#1b3a63;--violet:#8e44ad;--orange:#ff6b35;--vert:#27ae60;--teal:#16a085;--gris:#f0f2f5;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Nunito',sans-serif;background:var(--gris);color:#1a2332;padding:1rem;max-width:480px;margin:0 auto;}
+h1{text-align:center;font-size:1.4rem;color:var(--bleu);margin-bottom:.25rem;}
+.sub{text-align:center;font-size:.85rem;color:#666;margin-bottom:1.5rem;}
+.step{background:#fff;border-radius:16px;padding:1.25rem;margin-bottom:1rem;box-shadow:0 2px 12px rgba(0,0,0,.08);position:relative;overflow:hidden;}
+.step-num{position:absolute;top:0;left:0;background:var(--violet);color:#fff;font-weight:900;font-size:1rem;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:0 0 12px 0;}
+.step-title{font-weight:900;font-size:1.05rem;margin-bottom:.5rem;padding-left:2.5rem;color:var(--bleu);}
+.step-visual{text-align:center;margin:.75rem 0;}
+.step-visual .emoji{font-size:3.5rem;}
+.phone{background:#1a2332;border-radius:20px;padding:.75rem;width:200px;margin:0 auto;box-shadow:0 4px 20px rgba(0,0,0,.2);}
+.phone-screen{background:#fff;border-radius:12px;padding:.75rem;min-height:120px;}
+.phone-notch{width:60px;height:6px;background:#333;border-radius:3px;margin:0 auto .5rem;}
+.mock-input{border:2px solid #dee2e6;border-radius:8px;padding:.5rem;font-size:.75rem;color:#999;text-align:center;letter-spacing:2px;margin-bottom:.5rem;}
+.mock-btn{background:linear-gradient(135deg,var(--violet),var(--bleu));color:#fff;border:none;border-radius:8px;padding:.5rem;font-size:.7rem;font-weight:800;width:100%;text-align:center;}
+.mock-nav{display:flex;justify-content:space-around;padding:.5rem 0 .25rem;border-top:1px solid #eee;margin-top:.5rem;}
+.mock-nav-item{text-align:center;font-size:.5rem;color:#999;}
+.mock-nav-item .ni{font-size:1rem;display:block;}
+.mock-nav-item.active{color:var(--violet);font-weight:800;}
+.arrow{font-size:2rem;text-align:center;color:var(--orange);font-weight:900;margin:.25rem 0;animation:bounce 1s infinite;}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.tip{background:#f3e5f5;border-radius:10px;padding:.75rem;font-size:.8rem;color:var(--violet);font-weight:700;display:flex;align-items:center;gap:.5rem;}
+.tip .tip-ico{font-size:1.5rem;flex-shrink:0;}
+.do-list{list-style:none;padding:0;}
+.do-list li{padding:.4rem 0;font-size:.85rem;display:flex;align-items:center;gap:.5rem;}
+.do-list .ico{font-size:1.3rem;flex-shrink:0;}
+.mock-photo-btns{display:flex;gap:.3rem;margin:.4rem 0;}
+.mock-photo-btn{flex:1;background:#f3e5f5;border-radius:6px;padding:.35rem;text-align:center;font-size:.6rem;font-weight:700;color:var(--violet);}
+.mock-photo-btn .pi{font-size:1.1rem;display:block;}
+.mock-badge{background:var(--bleu);color:#fff;border-radius:8px;padding:.5rem .75rem;display:flex;align-items:center;gap:.5rem;width:fit-content;margin:0 auto;font-weight:800;font-size:.85rem;letter-spacing:2px;}
+.mock-badge .badge-ico{font-size:1.2rem;}
+.highlight{background:var(--orange);color:#fff;padding:.1rem .4rem;border-radius:4px;font-weight:900;font-size:.85rem;}
+.step.green{border-left:4px solid var(--vert);}
+.step.orange{border-left:4px solid var(--orange);}
+.step.violet{border-left:4px solid var(--violet);}
+.step.teal{border-left:4px solid var(--teal);}
+.footer{text-align:center;font-size:.7rem;color:#999;margin-top:1rem;padding-bottom:2rem;}
+</style>
+</head>
+<body>
+
+<h1>❄️ inerWeb — Mode d'emploi</h1>
+<div class="sub">En 4 étapes, c'est parti !</div>
+
+<!-- ÉTAPE 1 : CONNEXION -->
+<div class="step violet">
+  <div class="step-num">1</div>
+  <div class="step-title">Se connecter</div>
+  <div class="step-visual">
+    <div class="mock-badge"><span class="badge-ico">🎫</span> GAVF-4XCT-4KEQ</div>
+  </div>
+  <div class="arrow">👇</div>
+  <div class="step-visual">
+    <div class="phone">
+      <div class="phone-notch"></div>
+      <div class="phone-screen">
+        <div style="text-align:center;font-weight:900;color:var(--bleu);font-size:.8rem;margin-bottom:.5rem">Espace Élève</div>
+        <div class="mock-input">GAVF-4XCT-4KEQ</div>
+        <div class="mock-btn">🚀 Accéder à mon espace</div>
+      </div>
+    </div>
+  </div>
+  <ul class="do-list">
+    <li><span class="ico">🎫</span> Regarde ton <strong>badge</strong> (le code dessus)</li>
+    <li><span class="ico">⌨️</span> Tape le code dans la case</li>
+    <li><span class="ico">👆</span> Appuie sur le bouton <span class="highlight">🚀</span></li>
+  </ul>
+</div>
+
+<!-- ÉTAPE 2 : JOURNAL -->
+<div class="step orange">
+  <div class="step-num">2</div>
+  <div class="step-title">Ouvrir le journal</div>
+  <div class="step-visual">
+    <div class="phone">
+      <div class="phone-notch"></div>
+      <div class="phone-screen">
+        <div style="background:linear-gradient(135deg,#8e44ad,#2d5a8c);border-radius:8px;padding:.5rem;color:#fff;display:flex;align-items:center;gap:.5rem;cursor:pointer">
+          <span style="font-size:1.5rem">📸</span>
+          <div>
+            <div style="font-size:.7rem;font-weight:900">Mon journal de stage</div>
+            <div style="font-size:.55rem;opacity:.8">Ajoute des photos</div>
+          </div>
+          <span style="margin-left:auto;font-size:.9rem">▶</span>
+        </div>
+        <div class="mock-nav">
+          <div class="mock-nav-item active"><span class="ni">🏠</span>Accueil</div>
+          <div class="mock-nav-item"><span class="ni">📊</span>Compét.</div>
+          <div class="mock-nav-item"><span class="ni">📅</span>Calendr.</div>
+          <div class="mock-nav-item"><span class="ni">📁</span>Docs</div>
+          <div class="mock-nav-item" style="color:var(--violet);font-weight:800"><span class="ni">📓</span>Journal</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <ul class="do-list">
+    <li><span class="ico">👆</span> Clique sur le <strong>gros bandeau violet</strong></li>
+    <li><span class="ico">📓</span> Ou appuie sur <strong>Journal</strong> en bas</li>
+  </ul>
+</div>
+
+<!-- ÉTAPE 3 : PHOTO -->
+<div class="step green">
+  <div class="step-num">3</div>
+  <div class="step-title">Prendre une photo</div>
+  <div class="step-visual">
+    <div class="phone">
+      <div class="phone-notch"></div>
+      <div class="phone-screen">
+        <div style="font-size:.6rem;font-weight:800;color:var(--bleu);margin-bottom:.3rem">📸 Ajouter au journal</div>
+        <div class="mock-photo-btns">
+          <div class="mock-photo-btn" style="background:#d4f4e2;color:var(--vert);border:2px solid var(--vert)"><span class="pi">📸</span>Prendre<br>une photo</div>
+          <div class="mock-photo-btn"><span class="pi">🖼️</span>Choisir<br>galerie</div>
+        </div>
+        <div style="font-size:.5rem;color:#999;text-align:center">iPhone : autorise l'accès caméra !</div>
+      </div>
+    </div>
+  </div>
+  <ul class="do-list">
+    <li><span class="ico">📸</span> <strong>Prendre une photo</strong> → ouvre la caméra</li>
+    <li><span class="ico">🖼️</span> <strong>Galerie</strong> → choisir une photo existante</li>
+  </ul>
+  <div class="tip" style="margin-top:.75rem">
+    <span class="tip-ico">🍎</span>
+    <span><strong>iPhone :</strong> si ça demande "autoriser l'accès" → dire <strong>OUI</strong></span>
+  </div>
+</div>
+
+<!-- ÉTAPE 4 : ÉCRIRE + ENREGISTRER -->
+<div class="step teal">
+  <div class="step-num">4</div>
+  <div class="step-title">Décrire + enregistrer</div>
+  <div class="step-visual">
+    <div class="phone">
+      <div class="phone-notch"></div>
+      <div class="phone-screen">
+        <div style="font-size:.55rem;font-weight:700;margin-bottom:.2rem">Type d'entrée</div>
+        <div style="border:1px solid #dee2e6;border-radius:4px;padding:.25rem;font-size:.55rem;margin-bottom:.3rem">🔧 Activité réalisée ▾</div>
+        <div style="font-size:.55rem;font-weight:700;margin-bottom:.2rem">Description</div>
+        <div style="border:1px solid #dee2e6;border-radius:4px;padding:.35rem;font-size:.5rem;color:#999;margin-bottom:.4rem;min-height:28px">J'ai fait la mise en service d'un split...</div>
+        <div style="background:var(--violet);color:#fff;border-radius:6px;padding:.35rem;text-align:center;font-size:.6rem;font-weight:800">📝 Enregistrer</div>
+      </div>
+    </div>
+  </div>
+  <ul class="do-list">
+    <li><span class="ico">📝</span> Choisis <strong>Activité</strong>, Observation, Question...</li>
+    <li><span class="ico">✍️</span> Écris <strong>2-3 phrases</strong> sur ta journée</li>
+    <li><span class="ico">✅</span> Appuie sur <span class="highlight">📝 Enregistrer</span></li>
+  </ul>
+</div>
+
+<!-- RAPPELS -->
+<div class="step" style="background:linear-gradient(135deg,#f3e5f5,#e8f0f8);border:none;">
+  <div class="step-title" style="padding-left:0;text-align:center;font-size:1.1rem;">💡 À retenir</div>
+  <ul class="do-list" style="margin-top:.5rem">
+    <li><span class="ico">📸</span> <strong>1 photo minimum</strong> par jour de stage</li>
+    <li><span class="ico">✍️</span> <strong>Décris</strong> ce que tu as fait (même 1 phrase)</li>
+    <li><span class="ico">🔄</span> Appuie sur <strong>🔄</strong> en haut pour synchroniser</li>
+    <li><span class="ico">🚫</span> <strong>Pas de photos</strong> de clients ou infos perso</li>
+    <li><span class="ico">🆘</span> Problème ? <strong>Montre ce tuto à ton tuteur</strong></li>
+  </ul>
+</div>
+
+<div class="footer">inerWeb TT — LPP Jacques Raynaud — 2025-2026</div>
+
+</body>
+</html>
