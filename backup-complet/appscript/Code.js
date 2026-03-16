@@ -1,0 +1,1040 @@
+/**
+ * inerWeb TT 4.8 — Code.gs
+ * API Google Apps Script — Backend unifié CCF + Stage + Élève
+ * © 2024-2026 Franck & Nino Henninot — Tous droits réservés
+ *
+ * ═══ CHANGELOG v4.8 ═══
+ * [TUTEUR-1] verifyTuteurToken() — Connexion tuteur sécurisée
+ * [ADMIN-1]  Module admin complet (USERS, ADMIN_LOG)
+ * [ADMIN-2]  getUsers/addUser/updateUser/deleteUser
+ * [ADMIN-3]  rotateKey() — Rotation clés sécurité
+ * [ADMIN-4]  generateTokens() — Régénération tokens
+ *
+ * ═══ CHANGELOG v4.7 ═══
+ * [ELEVE-1] verifyEleveToken() — Connexion élève avec token
+ * [ELEVE-2] getEleveData() — Récupère progression + infos stage
+ * [ELEVE-3] addJournalEntry() amélioré — Support photos base64
+ * [ELEVE-4] getJournalForEleve() — Journal filtré pour élève
+ * [CRIT-1]  Nouvel onglet CUSTOM_CRITERIA — Critères perso par élève
+ * [CRIT-2]  getCustomCriteria() / saveCustomCriteria()
+ * [ALERT-1] getAlertes() — Élèves sans activité journal
+ *
+ * RADIOGUIDAGE :
+ * [A] Config & constantes
+ * [B] Point d'entrée HTTP (doGet)
+ * [C] Auth
+ * [D] Élèves (CRUD)
+ * [E] Validations EP2/EP3
+ * [F] Notes
+ * [G] Journal PFMP (avec photos)
+ * [H] Évaluation tuteur
+ * [I] Critères personnalisés
+ * [J] Alertes
+ * [K] Utilitaires Sheet
+ * [L] Utilitaires généraux
+ */
+
+// ═══ [A] CONFIG ═══
+const SHEET_ID = '1bmrZJKSg3eeo-tBhenK5KtErRFt1g8p-Uf_JVklpLfU';
+
+const MASTER_KEY_LEGACY = 'IFCA-2026-PROF-FH13013';
+
+// ═══ GOOGLE DRIVE — Stockage photos ═══
+const DRIVE_ROOT_FOLDER_NAME = 'inerWeb-TT-Photos';
+let _driveFolderCache = null;
+
+/** Récupère ou crée le dossier racine photos dans Drive */
+function getDriveRootFolder() {
+  if (_driveFolderCache) return _driveFolderCache;
+  const folders = DriveApp.getFoldersByName(DRIVE_ROOT_FOLDER_NAME);
+  if (folders.hasNext()) {
+    _driveFolderCache = folders.next();
+  } else {
+    _driveFolderCache = DriveApp.createFolder(DRIVE_ROOT_FOLDER_NAME);
+    _driveFolderCache.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  }
+  return _driveFolderCache;
+}
+
+/** Récupère ou crée le sous-dossier d'un élève */
+function getStudentFolder(code) {
+  const root = getDriveRootFolder();
+  const sub = root.getFoldersByName(code);
+  if (sub.hasNext()) return sub.next();
+  return root.createFolder(code);
+}
+
+/** Sauvegarde une image base64 dans Drive, retourne l'URL publique */
+function savePhotoToDrive(code, base64Data, index) {
+  try {
+    const folder = getStudentFolder(code);
+    // Extraire le contenu base64 (retirer le header data:image/...)
+    const parts = base64Data.split(',');
+    const mime = parts[0].match(/:(.*?);/)?.[1] || 'image/jpeg';
+    const bytes = Utilities.base64Decode(parts[1] || parts[0]);
+    const blob = Utilities.newBlob(bytes, mime, code + '_' + Date.now() + '_' + index + '.jpg');
+    const file = folder.createFile(blob);
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    // URL directe pour affichage
+    return 'https://drive.google.com/uc?export=view&id=' + file.getId();
+  } catch (e) {
+    Logger.log('Erreur sauvegarde photo Drive: ' + e.message);
+    return null;
+  }
+}
+
+const SH = {
+  ELEVES:          'ELEVES',
+  VALIDATIONS:     'VALIDATIONS',
+  NOTES:           'NOTES',
+  JOURNAL:         'PFMP_JOURNAL',
+  EVAL_TUTEUR:     'PFMP_EVAL',
+  CUSTOM_CRITERIA: 'CUSTOM_CRITERIA',
+  USERS:           'USERS',
+  ADMIN_LOG:       'ADMIN_LOG',
+  CONFIG:          'CONFIG',
+  LOG:             'LOG',
+};
+
+let _masterKeyCache = null;
+let _adminKeyCache = null;
+
+function getMasterKey() {
+  if (_masterKeyCache) return _masterKeyCache;
+  try {
+    const ss    = SpreadsheetApp.openById(SHEET_ID);
+    const sheet = ss.getSheetByName(SH.CONFIG);
+    if (sheet) {
+      const rows = sheet.getDataRange().getValues();
+      for (let i = 1; i < rows.length; i++) {
+        if (rows[i][0] === 'master_key' && rows[i][1]) {
+          _masterKeyCache = String(rows[i][1]).trim();
+          return _masterKeyCache;
+        }
+      }
+    }
+  } catch (e) {
+    Logger.log('[getMasterKey] Fallback legacy : ' + e.message);
+  }
+  _masterKeyCache = MASTER_KEY_LEGACY;
+  return _masterKeyCache;
+}
+
+function getAdminKey() {
+  if (_adminKeyCache) return _adminKeyCache;
+  try {
+    const ss    = SpreadsheetApp.openById(SHEET_ID);
+    const sheet = ss.getSheetByName(SH.CONFIG);
+    if (sheet) {
+      const rows = sheet.getDataRange().getValues();
+      for (let i = 1; i < rows.length; i++) {
+        if (rows[i][0] === 'admin_key' && rows[i][1]) {
+          _adminKeyCache = String(rows[i][1]).trim();
+          return _adminKeyCache;
+        }
+      }
+    }
+  } catch (e) {
+    Logger.log('[getAdminKey] Erreur : ' + e.message);
+  }
+  // Par défaut, la clé admin = clé master (rétrocompatible)
+  _adminKeyCache = getMasterKey();
+  return _adminKeyCache;
+}
+
+// ═══ [B] POINT D'ENTRÉE HTTP ═══
+function doGet(e) {
+  _masterKeyCache = null;
+
+  const p   = e.parameter || {};
+  const out = (data) => ContentService
+    .createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
+
+  try {
+    const action = p.action || '';
+    
+    // Actions publiques (sans auth complète)
+    if (action === 'verifyEleveToken') {
+      return out(verifyEleveToken(p.token));
+    }
+    if (action === 'verifyTuteurToken') {
+      return out(verifyTuteurToken(p.eleve, p.tuteur));
+    }
+    if (action === 'ping') {
+      return out({ ok: true, version: 'TT-4.8', ts: new Date().toISOString() });
+    }
+
+    const role = auth(p);
+    if (!role) return out({ error: 'Accès refusé', code: 403 });
+
+    logAction(action, p.eleve || '', role.qui);
+
+    switch (action) {
+
+      // ═══ ÉLÈVES ═══
+      case 'getDashboard':         return out(getDashboard());
+      case 'getEleve':             return out(getEleve(p.eleve));
+      case 'addEleve':             return out(addEleve(JSON.parse(p.data || '{}')));
+      case 'updateEleve':          return out(updateEleve(p.eleve, JSON.parse(p.data || '{}')));
+      case 'deleteEleve':          return out(deleteEleve(p.eleve));
+      case 'getEleveData':         return out(getEleveData(p.eleve));
+
+      // ═══ VALIDATIONS EP2/EP3 ═══
+      case 'getValidations':       return out(getValidations(p.eleve));
+      case 'saveValidation':       return out(saveValidation(p.eleve, JSON.parse(p.data || '{}')));
+      case 'deleteValidation':     return out(deleteValidation(p.id));
+
+      // ═══ NOTES ═══
+      case 'getNotes':             return out(getNotes(p.eleve));
+      case 'saveNote':             return out(saveNote(p.eleve, JSON.parse(p.data || '{}')));
+      case 'cloturerEpreuve':      return out(cloturerEpreuve(p.eleve, JSON.parse(p.data || '{}')));
+      case 'deverrouillerEpreuve': return out(deverrouillerEpreuve(p.eleve, JSON.parse(p.data || '{}')));
+
+      // ═══ JOURNAL PFMP ═══
+      case 'getJournal':           return out(getJournal(p.eleve));
+      case 'addJournalEntry':      return out(addJournalEntry(p.eleve, JSON.parse(p.entry || p.data || '{}')));
+      case 'deleteJournalEntry':   return out(deleteJournalEntry(p.id, role));
+
+      // ═══ ÉVALUATION TUTEUR ═══
+      case 'getEvalTuteur':        return out(getEvalTuteur(p.eleve, p.pfmp));
+      case 'saveEvalTuteur':       return out(saveEvalTuteur(p.eleve, JSON.parse(p.data || '{}')));
+
+      // ═══ CRITÈRES PERSONNALISÉS ═══
+      case 'getCustomCriteria':    return out(getCustomCriteria(p.eleve));
+      case 'saveCustomCriteria':   return out(saveCustomCriteria(p.eleve, JSON.parse(p.data || '{}')));
+
+      // ═══ ALERTES ═══
+      case 'getAlertes':           return out(getAlertes());
+
+      // ═══ ADMIN ═══
+      case 'getUsers':             return out(getUsers(role));
+      case 'addUser':              return out(addUser(JSON.parse(p.data || '{}'), role));
+      case 'updateUser':           return out(updateUser(p.userId, JSON.parse(p.data || '{}'), role));
+      case 'deleteUser':           return out(deleteUser(p.userId, role));
+      case 'rotateKey':            return out(rotateKey(p.keyType, role));
+      case 'getAdminLog':          return out(getAdminLog(role));
+      case 'generateTokens':       return out(generateTokens(p.eleve, role));
+
+      default: return out({ error: 'Action inconnue : ' + action, code: 400 });
+    }
+
+  } catch (err) {
+    Logger.log('ERREUR doGet : ' + err.message);
+    return ContentService
+      .createTextOutput(JSON.stringify({ error: err.message, code: 500 }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// ═══ [C] AUTH ═══
+function auth(p) {
+  const key = p.key || '';
+
+  // Admin avec admin key
+  if (key === getAdminKey()) return { role: 'admin', qui: 'admin' };
+
+  // Prof avec master key
+  if (key === getMasterKey()) return { role: 'prof', qui: 'prof' };
+
+  // Utilisateur enregistré dans USERS
+  if (key) {
+    const user = findUserByKey(key);
+    if (user && user.actif !== false) {
+      return { 
+        role: user.role === 'ADMIN' ? 'admin' : (user.role === 'ENSEIGNANT' ? 'prof' : 'lecture'),
+        qui: user.email || user.nom,
+        userId: user.id,
+        classes: user.classes ? JSON.parse(user.classes) : []
+      };
+    }
+  }
+
+  // Élève avec token
+  if (p.token) {
+    const eleve = findEleveByToken(p.token);
+    if (eleve) return { role: 'eleve', qui: eleve.code };
+  }
+
+  // Élève avec code + token
+  if (p.eleve && p.token) {
+    const row = findEleve(p.eleve);
+    if (row && row.token_eleve === p.token) return { role: 'eleve', qui: p.eleve };
+  }
+
+  // Tuteur avec token_tuteur
+  if (p.eleve && p.tuteur) {
+    const row = findEleve(p.eleve);
+    if (row && row.token_tuteur === p.tuteur) return { role: 'tuteur', qui: 'tuteur-' + p.eleve };
+  }
+
+  return null;
+}
+
+// ═══ [ELEVE-1] VÉRIFICATION TOKEN ÉLÈVE ═══
+function verifyEleveToken(token) {
+  if (!token) return { success: false, error: 'Token manquant' };
+  
+  const eleve = findEleveByToken(token);
+  if (!eleve) return { success: false, error: 'Token invalide' };
+  
+  // Récupérer les évaluations pour calculer la progression
+  const validations = getValidations(eleve.code);
+  const evals = { EP2: {}, EP3: {} };
+  
+  validations.forEach(v => {
+    if (v.epreuve && v.competence && v.niveau && !v.critere) {
+      evals[v.epreuve] = evals[v.epreuve] || {};
+      evals[v.epreuve][v.competence] = v.niveau;
+    }
+  });
+  
+  // Récupérer le journal
+  const journal = getJournal(eleve.code);
+  
+  return {
+    success: true,
+    eleve: {
+      code: eleve.code,
+      nom: eleve.nom,
+      prenom: eleve.prenom,
+      classe: eleve.classe,
+      entreprise_nom: eleve.pfmp1_entreprise || eleve.pfmp2_entreprise || '',
+      tuteur_nom: eleve.pfmp1_tuteur_nom || eleve.pfmp2_tuteur_nom || '',
+      pfmp_debut: eleve.pfmp1_date_debut || eleve.pfmp2_date_debut || '',
+      pfmp_fin: eleve.pfmp1_date_fin || eleve.pfmp2_date_fin || '',
+    },
+    evals: evals,
+    journal: journal.map(j => ({
+      id: j.id,
+      date: j.date || j.timestamp,
+      type: j.type || 'activite',
+      text: j.description || j.activite || '',
+      photos: j.photos ? (typeof j.photos === 'string' ? JSON.parse(j.photos) : j.photos) : [],
+      synced: true
+    }))
+  };
+}
+
+function findEleveByToken(token) {
+  const rows = getSheetData(SH.ELEVES);
+  return rows.find(r => r.token_eleve === token) || null;
+}
+
+function findUserByKey(key) {
+  try {
+    ensureSheet(SH.USERS, ['id', 'nom', 'prenom', 'email', 'role', 'classes', 'key', 'actif', 'created_at', 'updated_at']);
+    const rows = getSheetData(SH.USERS);
+    return rows.find(r => r.key === key && r.actif !== false) || null;
+  } catch(e) {
+    return null;
+  }
+}
+
+// ═══ [TUTEUR-1] VÉRIFICATION TOKEN TUTEUR ═══
+function verifyTuteurToken(eleveCode, tuteurToken) {
+  if (!eleveCode || !tuteurToken) {
+    return { success: false, error: 'Paramètres manquants (eleve + tuteur requis)' };
+  }
+  
+  const eleve = findEleve(eleveCode);
+  if (!eleve) {
+    return { success: false, error: 'Élève introuvable : ' + eleveCode };
+  }
+  
+  // Vérifier le token tuteur
+  if (eleve.token_tuteur !== tuteurToken) {
+    return { success: false, error: 'Token tuteur invalide' };
+  }
+  
+  // Token OK — renvoyer les infos élève (sans données sensibles)
+  return {
+    success: true,
+    eleve: {
+      code: eleve.code,
+      nom: eleve.nom,
+      prenom: eleve.prenom,
+      classe: eleve.classe,
+      entreprise_nom: eleve.pfmp1_entreprise || eleve.pfmp2_entreprise || '',
+      tuteur_nom: eleve.pfmp1_tuteur_nom || eleve.pfmp2_tuteur_nom || '',
+      pfmp_debut: eleve.pfmp1_date_debut || eleve.pfmp2_date_debut || '',
+      pfmp_fin: eleve.pfmp1_date_fin || eleve.pfmp2_date_fin || '',
+    },
+    // Récupérer les évaluations tuteur existantes
+    evalTuteur: getEvalTuteur(eleveCode)
+  };
+}
+
+// ═══ [ELEVE-2] DONNÉES ÉLÈVE COMPLÈTES ═══
+function getEleveData(code) {
+  const eleve = findEleve(code);
+  if (!eleve) return { error: 'Élève introuvable' };
+  
+  const validations = getValidations(code);
+  const notes = getNotes(code);
+  const journal = getJournal(code);
+  const evalTuteur = getEvalTuteur(code);
+  
+  return {
+    eleve,
+    validations,
+    notes,
+    journal,
+    evalTuteur
+  };
+}
+
+// ═══ [D] ÉLÈVES ═══
+function getDashboard() {
+  const rows = getSheetData(SH.ELEVES);
+  return rows.filter(r => r.statut !== 'archive').map(r => ({
+    code:           r.code,
+    nom:            r.nom,
+    prenom:         r.prenom,
+    classe:         r.classe,
+    referentiel:    r.referentiel,
+    statut:         r.statut,
+    token_eleve:    r.token_eleve,
+    token_tuteur:   r.token_tuteur,
+    pfmp1_sem:      r.pfmp1_sem,
+    pfmp2_sem:      r.pfmp2_sem,
+    entreprise_nom: r.pfmp1_entreprise || r.pfmp2_entreprise || '',
+    tuteur_nom:     r.pfmp1_tuteur_nom || r.pfmp2_tuteur_nom  || '',
+    tuteur_email:   r.pfmp1_tuteur_email || '',
+    derniere_eval:  r.derniere_eval || '',
+    alerte:         r.alerte || '',
+  }));
+}
+
+function getEleve(code) {
+  const row = findEleve(code);
+  if (!row) return { error: 'Élève introuvable : ' + code };
+  return row;
+}
+
+function addEleve(data) {
+  const ss    = SpreadsheetApp.openById(SHEET_ID);
+  const sheet = ss.getSheetByName(SH.ELEVES);
+  const rows  = getSheetData(SH.ELEVES);
+
+  const exists = rows.find(r => r.nom === data.nom && r.prenom === data.prenom);
+  if (exists) return { error: 'Élève déjà existant', code: exists.code };
+
+  const nums = rows.map(r => parseInt((r.code || '').replace('ELV-', '')) || 0);
+  const next = (Math.max(0, ...nums) + 1).toString().padStart(3, '0');
+  const code = 'ELV-' + next;
+
+  const now = new Date().toISOString();
+  const row = [
+    code,
+    (data.nom || '').toUpperCase(),
+    data.prenom || '',
+    data.classe || 'CAP IFCA 1',
+    data.referentiel || 'CAP_IFCA',
+    'actif',
+    genToken(),  // token_eleve
+    genToken(),  // token_tuteur
+    data.pfmp1_sem || 3,
+    data.pfmp2_sem || 3,
+    data.pfmp1_entreprise || '', data.pfmp1_secteur || '',
+    data.pfmp1_tuteur_nom || '', data.pfmp1_tuteur_fonction || '',
+    data.pfmp1_tuteur_email || '', data.pfmp1_tuteur_tel || '',
+    data.pfmp1_date_debut || '', data.pfmp1_date_fin || '',
+    'non_envoye',
+    data.pfmp2_entreprise || '', data.pfmp2_secteur || '',
+    data.pfmp2_tuteur_nom || '', data.pfmp2_tuteur_fonction || '',
+    data.pfmp2_tuteur_email || '', data.pfmp2_tuteur_tel || '',
+    data.pfmp2_date_debut || '', data.pfmp2_date_fin || '',
+    'non_envoye',
+    '', '', now, now,
+  ];
+
+  sheet.appendRow(row);
+  return { ok: true, code, token_eleve: row[6], token_tuteur: row[7] };
+}
+
+function updateEleve(code, data) {
+  const ss      = SpreadsheetApp.openById(SHEET_ID);
+  const sheet   = ss.getSheetByName(SH.ELEVES);
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const rows    = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][0] === code) {
+      Object.entries(data).forEach(([key, val]) => {
+        const col = headers.indexOf(key);
+        if (col >= 0) sheet.getRange(i + 1, col + 1).setValue(val);
+      });
+      const updCol = headers.indexOf('updated_at');
+      if (updCol >= 0) sheet.getRange(i + 1, updCol + 1).setValue(new Date().toISOString());
+      return { ok: true, code };
+    }
+  }
+  return { error: 'Élève introuvable : ' + code };
+}
+
+function deleteEleve(code) {
+  return updateEleve(code, { statut: 'archive' });
+}
+
+// ═══ [E] VALIDATIONS EP2/EP3 ═══
+function getValidations(code) {
+  const rows = getSheetData(SH.VALIDATIONS);
+  return rows.filter(r => r.eleve === code);
+}
+
+function saveValidation(code, data) {
+  const ss    = SpreadsheetApp.openById(SHEET_ID);
+  const sheet = ss.getSheetByName(SH.VALIDATIONS);
+  const id    = data.id || uuid();
+  const now   = data.timestamp || new Date().toISOString();
+
+  sheet.appendRow([
+    id, code,
+    data.epreuve    || '',
+    data.competence || '',
+    data.critere    || '',
+    data.niveau     || '',
+    data.contexte   || '',
+    data.phase      || 'formatif',
+    data.evaluateur || '',
+    now,
+    data.session    || '2026',
+    true,
+  ]);
+
+  updateEleve(code, { derniere_eval: now });
+  return { ok: true, id };
+}
+
+function deleteValidation(id) {
+  const ss    = SpreadsheetApp.openById(SHEET_ID);
+  const sheet = ss.getSheetByName(SH.VALIDATIONS);
+  const rows  = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][0] === id) {
+      sheet.deleteRow(i + 1);
+      return { ok: true };
+    }
+  }
+  return { error: 'Validation introuvable : ' + id };
+}
+
+// ═══ [F] NOTES ═══
+function getNotes(code) {
+  const rows = getSheetData(SH.NOTES);
+  return rows.filter(r => r.eleve === code);
+}
+
+function saveNote(code, data) {
+  const ss    = SpreadsheetApp.openById(SHEET_ID);
+  const sheet = ss.getSheetByName(SH.NOTES);
+  const rows  = sheet.getDataRange().getValues();
+  const hdrs  = rows[0];
+  const now   = new Date().toISOString();
+
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][0] === code && rows[i][1] === data.epreuve) {
+      if (data.note_proposee !== undefined) sheet.getRange(i+1, hdrs.indexOf('note_proposee')+1).setValue(data.note_proposee);
+      if (data.note_finale   !== undefined) sheet.getRange(i+1, hdrs.indexOf('note_finale')+1).setValue(data.note_finale);
+      if (data.eligible      !== undefined) sheet.getRange(i+1, hdrs.indexOf('eligible')+1).setValue(data.eligible);
+      sheet.getRange(i+1, hdrs.indexOf('timestamp')+1).setValue(now);
+      return { ok: true, updated: true };
+    }
+  }
+
+  sheet.appendRow([
+    code, data.epreuve || '',
+    data.note_proposee || '', data.note_finale || '',
+    data.eligible || false, false, '', '',
+    data.evaluateur || '', now,
+  ]);
+  return { ok: true, created: true };
+}
+
+function cloturerEpreuve(code, data) {
+  const ss    = SpreadsheetApp.openById(SHEET_ID);
+  const sheet = ss.getSheetByName(SH.NOTES);
+  const rows  = sheet.getDataRange().getValues();
+  const hdrs  = rows[0];
+  const now   = new Date().toISOString();
+
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][0] === code && rows[i][1] === data.epreuve) {
+      sheet.getRange(i+1, hdrs.indexOf('cloture')+1).setValue(true);
+      sheet.getRange(i+1, hdrs.indexOf('date_cloture')+1).setValue(now);
+      sheet.getRange(i+1, hdrs.indexOf('evaluateur')+1).setValue(data.evaluateur || '');
+      sheet.getRange(i+1, hdrs.indexOf('note_proposee')+1).setValue(data.note_proposee || '');
+      sheet.getRange(i+1, hdrs.indexOf('eligible')+1).setValue(data.eligible || false);
+      return { ok: true };
+    }
+  }
+  sheet.appendRow([code, data.epreuve, data.note_proposee||'', '', data.eligible||false, true, now, '', data.evaluateur||'', now]);
+  return { ok: true, created: true };
+}
+
+function deverrouillerEpreuve(code, data) {
+  const ss    = SpreadsheetApp.openById(SHEET_ID);
+  const sheet = ss.getSheetByName(SH.NOTES);
+  const rows  = sheet.getDataRange().getValues();
+  const hdrs  = rows[0];
+
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][0] === code && rows[i][1] === data.epreuve) {
+      sheet.getRange(i+1, hdrs.indexOf('cloture')+1).setValue(false);
+      sheet.getRange(i+1, hdrs.indexOf('motif_devrouillage')+1).setValue(data.motif || '');
+      return { ok: true };
+    }
+  }
+  return { error: 'Note introuvable pour déverrouillage' };
+}
+
+// ═══ [G] JOURNAL PFMP (AVEC PHOTOS) ═══
+function getJournal(code) {
+  const rows = getSheetData(SH.JOURNAL);
+  return rows.filter(r => r.eleve === code).map(r => ({
+    id: r.id,
+    eleve: r.eleve,
+    pfmp: r.pfmp,
+    date: r.date,
+    type: r.type || 'activite',
+    activite: r.activite,
+    description: r.description,
+    text: r.description || r.activite || '',
+    competences: r.competences ? (typeof r.competences === 'string' ? JSON.parse(r.competences || '[]') : r.competences) : [],
+    photos: r.photos ? (typeof r.photos === 'string' ? JSON.parse(r.photos || '[]') : r.photos) : [],
+    humeur: r.humeur,
+    valide_prof: r.valide_prof,
+    timestamp: r.timestamp
+  }));
+}
+
+function addJournalEntry(code, data) {
+  const ss    = SpreadsheetApp.openById(SHEET_ID);
+  const sheet = ss.getSheetByName(SH.JOURNAL);
+  const now   = new Date().toISOString();
+  const id    = data.id || uuid();
+
+  // Gérer les photos : sauvegarder dans Google Drive
+  let photoUrls = [];
+  if (data.photos && Array.isArray(data.photos)) {
+    data.photos.forEach(function(photo, idx) {
+      if (typeof photo === 'string' && photo.startsWith('data:')) {
+        // C'est du base64 → sauvegarder dans Drive
+        const url = savePhotoToDrive(code, photo, idx);
+        if (url) photoUrls.push(url);
+      } else if (typeof photo === 'string' && photo.startsWith('http')) {
+        // C'est déjà une URL Drive → garder tel quel
+        photoUrls.push(photo);
+      }
+    });
+  }
+
+  sheet.appendRow([
+    id,
+    code,
+    data.pfmp        || 1,
+    data.date        || now.split('T')[0],
+    data.type        || 'activite',
+    data.activite    || data.text || '',
+    data.description || data.text || '',
+    JSON.stringify(data.competences || []),
+    JSON.stringify(photoUrls),  // URLs Drive (plus léger que base64)
+    data.humeur      || '',
+    false,
+    now,
+  ]);
+
+  return { ok: true, id: id, photoUrls: photoUrls };
+}
+
+function deleteJournalEntry(id, role) {
+  // Seul le prof peut supprimer
+  if (role.role !== 'prof') return { error: 'Non autorisé' };
+  
+  const ss    = SpreadsheetApp.openById(SHEET_ID);
+  const sheet = ss.getSheetByName(SH.JOURNAL);
+  const rows  = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][0] === id) {
+      sheet.deleteRow(i + 1);
+      return { ok: true };
+    }
+  }
+  return { error: 'Entrée introuvable : ' + id };
+}
+
+// ═══ [H] ÉVALUATION TUTEUR ═══
+function getEvalTuteur(code, pfmp) {
+  const rows = getSheetData(SH.EVAL_TUTEUR);
+  return rows.filter(r => r.eleve === code && (!pfmp || String(r.pfmp) === String(pfmp)));
+}
+
+function saveEvalTuteur(code, data) {
+  const ss    = SpreadsheetApp.openById(SHEET_ID);
+  const sheet = ss.getSheetByName(SH.EVAL_TUTEUR);
+  const rows  = sheet.getDataRange().getValues();
+  const hdrs  = rows[0];
+  const now   = new Date().toISOString();
+
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][0] === code && String(rows[i][2]) === String(data.pfmp || 1)) {
+      Object.entries(data).forEach(([key, val]) => {
+        const col = hdrs.indexOf(key);
+        if (col >= 0) sheet.getRange(i+1, col+1).setValue(typeof val === 'object' ? JSON.stringify(val) : val);
+      });
+      sheet.getRange(i+1, hdrs.indexOf('timestamp')+1).setValue(now);
+      return { ok: true, updated: true };
+    }
+  }
+
+  const newRow = hdrs.map(h => {
+    if (h === 'id')        return uuid();
+    if (h === 'eleve')     return code;
+    if (h === 'timestamp') return now;
+    const v = data[h];
+    return v !== undefined ? (typeof v === 'object' ? JSON.stringify(v) : v) : '';
+  });
+  sheet.appendRow(newRow);
+
+  const pfmpKey = 'pfmp' + (data.pfmp || 1) + '_statut_doc';
+  updateEleve(code, { [pfmpKey]: data.doc_statut || 'soumis' });
+
+  return { ok: true, created: true };
+}
+
+// ═══ [I] CRITÈRES PERSONNALISÉS ═══
+function getCustomCriteria(code) {
+  ensureSheet(SH.CUSTOM_CRITERIA, ['eleve', 'epreuve', 'competence', 'critere', 'timestamp']);
+  const rows = getSheetData(SH.CUSTOM_CRITERIA);
+  const result = {};
+  
+  rows.filter(r => r.eleve === code).forEach(r => {
+    if (!result[r.epreuve]) result[r.epreuve] = {};
+    if (!result[r.epreuve][r.competence]) result[r.epreuve][r.competence] = [];
+    result[r.epreuve][r.competence].push(r.critere);
+  });
+  
+  return result;
+}
+
+function saveCustomCriteria(code, data) {
+  ensureSheet(SH.CUSTOM_CRITERIA, ['eleve', 'epreuve', 'competence', 'critere', 'timestamp']);
+  const ss    = SpreadsheetApp.openById(SHEET_ID);
+  const sheet = ss.getSheetByName(SH.CUSTOM_CRITERIA);
+  const now   = new Date().toISOString();
+  
+  // data = { EP2: { C3.1: ['critère1', 'critère2'] }, EP3: { ... } }
+  Object.entries(data).forEach(([ep, comps]) => {
+    Object.entries(comps).forEach(([comp, crits]) => {
+      crits.forEach(crit => {
+        // Vérifier si existe déjà
+        const rows = getSheetData(SH.CUSTOM_CRITERIA);
+        const exists = rows.find(r => r.eleve === code && r.epreuve === ep && r.competence === comp && r.critere === crit);
+        if (!exists) {
+          sheet.appendRow([code, ep, comp, crit, now]);
+        }
+      });
+    });
+  });
+  
+  return { ok: true };
+}
+
+// ═══ [J] ALERTES ═══
+function getAlertes() {
+  const eleves = getDashboard();
+  const alertes = [];
+  const now = new Date();
+  
+  eleves.forEach(e => {
+    const journal = getJournal(e.code);
+    
+    if (journal.length === 0) {
+      alertes.push({
+        code: e.code,
+        nom: e.nom,
+        prenom: e.prenom,
+        type: 'no_journal',
+        message: 'Aucune entrée de journal',
+        daysSince: null
+      });
+      return;
+    }
+    
+    // Trouver la dernière entrée
+    const sorted = journal.sort((a, b) => new Date(b.date || b.timestamp) - new Date(a.date || a.timestamp));
+    const last = sorted[0];
+    const lastDate = new Date(last.date || last.timestamp);
+    const daysSince = Math.floor((now - lastDate) / (1000 * 60 * 60 * 24));
+    
+    if (daysSince >= 5) {
+      alertes.push({
+        code: e.code,
+        nom: e.nom,
+        prenom: e.prenom,
+        type: 'inactive',
+        message: `${daysSince} jours sans activité`,
+        daysSince: daysSince
+      });
+    }
+  });
+  
+  return alertes.sort((a, b) => (b.daysSince || 999) - (a.daysSince || 999));
+}
+
+// ═══ [K] UTILITAIRES SHEET ═══
+function getSheetData(sheetName) {
+  const ss    = SpreadsheetApp.openById(SHEET_ID);
+  const sheet = ss.getSheetByName(sheetName);
+  if (!sheet) return [];
+  const data = sheet.getDataRange().getValues();
+  if (data.length < 2) return [];
+  const headers = data[0];
+  return data.slice(1).map(row => {
+    const obj = {};
+    headers.forEach((h, i) => { obj[h] = row[i]; });
+    return obj;
+  });
+}
+
+function findEleve(code) {
+  const rows = getSheetData(SH.ELEVES);
+  return rows.find(r => r.code === code) || null;
+}
+
+function ensureSheet(name, headers) {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  let sheet = ss.getSheetByName(name);
+  if (!sheet) {
+    sheet = ss.insertSheet(name);
+    sheet.appendRow(headers);
+  }
+  return sheet;
+}
+
+function logAction(action, eleve, qui) {
+  try {
+    const ss    = SpreadsheetApp.openById(SHEET_ID);
+    const sheet = ss.getSheetByName(SH.LOG);
+    if (sheet) sheet.appendRow([new Date(), action, eleve, qui, '', '']);
+  } catch(e) { /* Log non bloquant */ }
+}
+
+// ═══ [L] UTILITAIRES GÉNÉRAUX ═══
+function genToken() {
+  const chars = 'ABCDEFGHJKLMNPQRTUVWXYZ2346789';
+  const pick  = () => chars[Math.floor(Math.random() * chars.length)];
+  const seg   = (n) => Array.from({length: n}, pick).join('');
+  return seg(4) + '-' + seg(4) + '-' + seg(4);
+}
+
+function uuid() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+
+// ═══ [M] ADMIN — GESTION UTILISATEURS ═══
+
+function isAdmin(role) {
+  // Seul un utilisateur avec la clé admin peut gérer les utilisateurs
+  return role && role.role === 'admin';
+}
+
+function getUsers(role) {
+  if (!role || (role.role !== 'prof' && role.role !== 'admin')) {
+    return { error: 'Accès refusé', code: 403 };
+  }
+  
+  ensureSheet(SH.USERS, ['id', 'nom', 'prenom', 'email', 'role', 'classes', 'actif', 'created_at', 'updated_at']);
+  const rows = getSheetData(SH.USERS);
+  
+  // Si pas admin, ne renvoie que les infos basiques
+  if (role.role !== 'admin') {
+    return rows.filter(r => r.actif !== false).map(r => ({
+      id: r.id,
+      nom: r.nom,
+      prenom: r.prenom,
+      role: r.role
+    }));
+  }
+  
+  return rows;
+}
+
+function addUser(data, role) {
+  if (!isAdmin(role)) return { error: 'Réservé aux administrateurs', code: 403 };
+  if (!data.nom || !data.email) return { error: 'Nom et email requis', code: 400 };
+  
+  ensureSheet(SH.USERS, ['id', 'nom', 'prenom', 'email', 'role', 'classes', 'key', 'actif', 'created_at', 'updated_at']);
+  
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const sheet = ss.getSheetByName(SH.USERS);
+  const now = new Date().toISOString();
+  const id = 'USR-' + uuid().slice(0, 8).toUpperCase();
+  const userKey = genToken();
+  
+  sheet.appendRow([
+    id,
+    data.nom || '',
+    data.prenom || '',
+    data.email || '',
+    data.role || 'LECTURE',
+    JSON.stringify(data.classes || []),
+    userKey,
+    true,
+    now,
+    now
+  ]);
+  
+  logAdmin('ADD_USER', id, role.qui);
+  
+  return { ok: true, id, key: userKey };
+}
+
+function updateUser(userId, data, role) {
+  if (!isAdmin(role)) return { error: 'Réservé aux administrateurs', code: 403 };
+  if (!userId) return { error: 'userId requis', code: 400 };
+  
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const sheet = ss.getSheetByName(SH.USERS);
+  if (!sheet) return { error: 'Onglet USERS introuvable', code: 500 };
+  
+  const rows = sheet.getDataRange().getValues();
+  const hdrs = rows[0];
+  const now = new Date().toISOString();
+  
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][0] === userId) {
+      if (data.nom !== undefined) sheet.getRange(i+1, hdrs.indexOf('nom')+1).setValue(data.nom);
+      if (data.prenom !== undefined) sheet.getRange(i+1, hdrs.indexOf('prenom')+1).setValue(data.prenom);
+      if (data.email !== undefined) sheet.getRange(i+1, hdrs.indexOf('email')+1).setValue(data.email);
+      if (data.role !== undefined) sheet.getRange(i+1, hdrs.indexOf('role')+1).setValue(data.role);
+      if (data.classes !== undefined) sheet.getRange(i+1, hdrs.indexOf('classes')+1).setValue(JSON.stringify(data.classes));
+      if (data.actif !== undefined) sheet.getRange(i+1, hdrs.indexOf('actif')+1).setValue(data.actif);
+      sheet.getRange(i+1, hdrs.indexOf('updated_at')+1).setValue(now);
+      
+      logAdmin('UPDATE_USER', userId, role.qui);
+      return { ok: true, updated: true };
+    }
+  }
+  
+  return { error: 'Utilisateur introuvable', code: 404 };
+}
+
+function deleteUser(userId, role) {
+  if (!isAdmin(role)) return { error: 'Réservé aux administrateurs', code: 403 };
+  if (!userId) return { error: 'userId requis', code: 400 };
+  
+  // Soft delete — on désactive, on ne supprime pas
+  const result = updateUser(userId, { actif: false }, role);
+  if (result.ok) {
+    logAdmin('DELETE_USER', userId, role.qui);
+  }
+  return result;
+}
+
+function rotateKey(keyType, role) {
+  if (!isAdmin(role)) return { error: 'Réservé aux administrateurs', code: 403 };
+  
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const sheet = ss.getSheetByName(SH.CONFIG);
+  if (!sheet) return { error: 'Onglet CONFIG introuvable', code: 500 };
+  
+  const rows = sheet.getDataRange().getValues();
+  const newKey = genToken() + '-' + genToken();
+  const now = new Date().toISOString();
+  
+  const keyName = keyType === 'admin' ? 'admin_key' : 'master_key';
+  
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][0] === keyName) {
+      // Archiver l'ancienne clé
+      const oldKey = rows[i][1];
+      sheet.getRange(i+1, 3).setValue(oldKey); // Colonne C = old_value
+      sheet.getRange(i+1, 2).setValue(newKey);
+      sheet.getRange(i+1, 4).setValue(now); // Colonne D = updated_at
+      
+      // Invalider le cache
+      if (keyType === 'admin') _adminKeyCache = null;
+      else _masterKeyCache = null;
+      
+      logAdmin('ROTATE_KEY', keyType, role.qui);
+      return { ok: true, newKey, rotatedAt: now };
+    }
+  }
+  
+  // Clé pas trouvée, on la crée
+  sheet.appendRow([keyName, newKey, '', now]);
+  logAdmin('CREATE_KEY', keyType, role.qui);
+  
+  return { ok: true, newKey, created: true };
+}
+
+function generateTokens(eleveCode, role) {
+  if (!role || (role.role !== 'prof' && role.role !== 'admin')) {
+    return { error: 'Accès refusé', code: 403 };
+  }
+  if (!eleveCode) return { error: 'Code élève requis', code: 400 };
+  
+  const tokenEleve = genToken();
+  const tokenTuteur = genToken();
+  
+  const result = updateEleve(eleveCode, {
+    token_eleve: tokenEleve,
+    token_tuteur: tokenTuteur
+  });
+  
+  if (result.error) return result;
+  
+  logAdmin('GENERATE_TOKENS', eleveCode, role.qui);
+  
+  return {
+    ok: true,
+    eleve: eleveCode,
+    token_eleve: tokenEleve,
+    token_tuteur: tokenTuteur
+  };
+}
+
+function getAdminLog(role) {
+  if (!isAdmin(role)) return { error: 'Réservé aux administrateurs', code: 403 };
+  
+  ensureSheet(SH.ADMIN_LOG, ['timestamp', 'action', 'target', 'actor', 'details']);
+  const rows = getSheetData(SH.ADMIN_LOG);
+  
+  // Retourner les 100 dernières entrées
+  return rows.slice(-100).reverse();
+}
+
+function logAdmin(action, target, actor) {
+  try {
+    ensureSheet(SH.ADMIN_LOG, ['timestamp', 'action', 'target', 'actor', 'details']);
+    const ss = SpreadsheetApp.openById(SHEET_ID);
+    const sheet = ss.getSheetByName(SH.ADMIN_LOG);
+    if (sheet) {
+      sheet.appendRow([new Date().toISOString(), action, target, actor, '']);
+    }
+  } catch(e) { /* Log non bloquant */ }
+}
+
+// ═══ [N] TESTS LOCAUX ═══
+function testAPI() {
+  const fakeE = { parameter: { key: getMasterKey(), action: 'getDashboard' } };
+  Logger.log(doGet(fakeE).getContent());
+}
+
+function testPing() {
+  const fakeE = { parameter: { key: getMasterKey(), action: 'ping' } };
+  Logger.log(doGet(fakeE).getContent());
+}
+
+function testVerifyToken() {
+  // Remplacer par un vrai token élève pour tester
+  const fakeE = { parameter: { action: 'verifyEleveToken', token: 'XXXX-XXXX-XXXX' } };
+  Logger.log(doGet(fakeE).getContent());
+}

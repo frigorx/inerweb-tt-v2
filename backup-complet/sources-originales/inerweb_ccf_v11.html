@@ -1,0 +1,2540 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCF v11 — EP2 + EP3 | inerWeb Édu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+/* ===== VARIABLES ===== */
+:root {
+    --bleu: #1b3a63;
+    --bleu-clair: #2d5a8c;
+    --bleu-tres-clair: #e8f0f8;
+    --orange: #ff6b35;
+    --orange-clair: #ff8c5a;
+    --orange-pale: #fff5f0;
+    --blanc: #ffffff;
+    --gris-clair: #f8f9fa;
+    --gris-moyen: #e9ecef;
+    --gris: #6c757d;
+    --texte: #2c3e50;
+    --succes: #27ae60;
+    --succes-clair: #d4edda;
+    --violet: #9b59b6;
+    --violet-clair: #f3e5f5;
+    --danger: #e74c3c;
+    --danger-clair: #f8d7da;
+    --warning: #f39c12;
+    --warning-clair: #fff3cd;
+    --info: #3498db;
+    --info-clair: #d1ecf1;
+    --ep2: #2d5a8c;
+    --ep3: #8e44ad;
+    --ep3a: #9b59b6;
+    --ep3b: #3498db;
+    --ep3c: #1abc9c;
+    --radius: 12px;
+    --shadow: 0 4px 20px rgba(27,58,99,0.15);
+    --transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body { font-family:'Nunito',sans-serif; color:var(--texte); line-height:1.7; background:var(--blanc); }
+
+/* ===== MODE SWITCH ===== */
+#guide-section { display:block; }
+#app-section { display:none; }
+body.app-mode #guide-section { display:none; }
+body.app-mode #app-section { display:block; }
+
+/* ===== DEMO MODE ===== */
+body.demo-mode .app-header { background: repeating-linear-gradient(45deg, var(--bleu), var(--bleu) 10px, #1e4070 10px, #1e4070 20px) !important; }
+body.demo-mode::after { content:'MODE DÉMO'; position:fixed; top:60px; left:50%; transform:translateX(-50%); background:var(--warning); color:#333; font-weight:900; font-size:0.7rem; padding:0.15rem 1rem; border-radius:0 0 8px 8px; z-index:3000; letter-spacing:1px; }
+
+/* ===== GUIDE NAV ===== */
+.guide-nav { background:var(--bleu); position:sticky; top:0; z-index:1000; padding:0.6rem 0; }
+.guide-nav .container { display:flex; align-items:center; justify-content:space-between; max-width:1200px; margin:0 auto; padding:0 1.5rem; }
+.nav-logo { display:flex; align-items:center; gap:0.5rem; text-decoration:none; color:white; font-weight:800; font-size:1.1rem; }
+.nav-logo .icon { font-size:1.4rem; }
+.nav-logo em { background:var(--orange); padding:0.1rem 0.5rem; border-radius:6px; font-style:normal; font-size:0.75rem; }
+.nav-links { display:flex; gap:0.5rem; list-style:none; }
+.nav-links a { color:rgba(255,255,255,0.8); text-decoration:none; font-size:0.82rem; font-weight:600; padding:0.3rem 0.6rem; border-radius:6px; transition:var(--transition); }
+.nav-links a:hover { color:white; background:rgba(255,255,255,0.15); }
+
+/* ===== HERO ===== */
+.hero { background:linear-gradient(135deg, var(--bleu) 0%, var(--bleu-clair) 100%); color:white; padding:4rem 0 3rem; }
+.hero .container { max-width:1200px; margin:0 auto; padding:0 1.5rem; display:grid; grid-template-columns:1fr 1fr; gap:3rem; align-items:center; }
+.hero-badge { display:inline-block; background:var(--orange); padding:0.3rem 1rem; border-radius:20px; font-size:0.8rem; font-weight:700; margin-bottom:1rem; }
+.hero h1 { font-size:2.8rem; font-weight:900; line-height:1.2; margin-bottom:1rem; }
+.hero h1 span { color:var(--orange); }
+.hero p { font-size:1.05rem; opacity:0.9; margin-bottom:1.5rem; }
+.hero-buttons { display:flex; gap:1rem; }
+
+/* ===== BUTTONS ===== */
+.btn { display:inline-flex; align-items:center; gap:0.4rem; padding:0.7rem 1.5rem; border-radius:10px; font-family:inherit; font-weight:700; font-size:0.9rem; cursor:pointer; border:none; transition:var(--transition); text-decoration:none; }
+.btn:hover { transform:translateY(-2px); filter:brightness(1.1); }
+.btn-primary { background:var(--orange); color:white; }
+.btn-secondary { background:rgba(255,255,255,0.2); color:white; border:2px solid rgba(255,255,255,0.4); }
+.btn-white { background:white; color:var(--bleu); }
+.btn-sm { padding:0.4rem 0.8rem; font-size:0.8rem; border-radius:8px; }
+.btn-xs { padding:0.2rem 0.5rem; font-size:0.72rem; border-radius:6px; }
+.btn-danger { background:var(--danger); color:white; }
+
+/* ===== CONTAINER ===== */
+.container { max-width:1200px; margin:0 auto; padding:0 1.5rem; }
+
+/* ===== APP HEADER ===== */
+.app-header { background:var(--bleu); color:white; padding:0.7rem 1.5rem; position:sticky; top:0; z-index:1000; }
+.app-header-content { display:flex; align-items:center; justify-content:space-between; max-width:1400px; margin:0 auto; gap:1rem; }
+.app-logo { display:flex; align-items:center; gap:0.5rem; flex-shrink:0; }
+.app-logo .icon { font-size:1.4rem; }
+.app-logo h1 { font-size:1rem; font-weight:800; white-space:nowrap; }
+.app-logo h1 span { color:var(--orange); }
+.app-header-center { flex:1; text-align:center; min-width:0; }
+.app-header-center h2 { font-size:0.78rem; font-weight:600; opacity:0.9; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.app-header-actions { display:flex; align-items:center; gap:0.4rem; flex-shrink:0; }
+.storage-indicator { display:flex; align-items:center; gap:0.3rem; font-size:0.72rem; opacity:0.8; }
+.storage-bar { width:40px; height:6px; background:rgba(255,255,255,0.2); border-radius:3px; overflow:hidden; }
+.storage-fill { height:100%; background:var(--succes); border-radius:3px; transition:width 0.3s; }
+.storage-fill.warning { background:var(--warning); }
+.storage-fill.danger { background:var(--danger); }
+
+/* ===== APP TABS ===== */
+.app-tabs { background:white; border-bottom:2px solid var(--gris-moyen); position:sticky; top:48px; z-index:999; }
+.app-tabs-inner { display:flex; max-width:1400px; margin:0 auto; overflow-x:auto; padding:0 0.5rem; gap:2px; }
+.tab-btn { padding:0.6rem 0.8rem; border:none; background:transparent; font-family:inherit; font-size:0.78rem; font-weight:700; color:var(--gris); cursor:pointer; border-bottom:3px solid transparent; transition:var(--transition); white-space:nowrap; }
+.tab-btn:hover { color:var(--bleu); background:var(--bleu-tres-clair); }
+.tab-btn.active { color:var(--bleu); border-bottom-color:var(--orange); }
+.tab-btn.ep2 { border-left:3px solid var(--ep2); }
+.tab-btn.ep3 { border-left:3px solid var(--ep3); }
+
+/* ===== SUB-TABS ===== */
+.sub-tabs { display:flex; gap:4px; padding:0.5rem; background:var(--gris-clair); border-radius:var(--radius); margin-bottom:1rem; overflow-x:auto; }
+.sub-tab { padding:0.4rem 0.8rem; border:none; background:white; font-family:inherit; font-size:0.75rem; font-weight:700; color:var(--gris); cursor:pointer; border-radius:8px; transition:var(--transition); white-space:nowrap; }
+.sub-tab:hover { color:var(--bleu); }
+.sub-tab.active { background:var(--bleu); color:white; }
+.sub-tab.active.ep3a { background:var(--ep3a); }
+.sub-tab.active.ep3b { background:var(--ep3b); }
+.sub-tab.active.ep3c { background:var(--ep3c); }
+
+/* ===== APP MAIN ===== */
+.app-main { max-width:1400px; margin:0 auto; padding:1rem 1.5rem 4rem; }
+.tab-content { display:none; }
+.tab-content.active { display:block; animation:fadeIn 0.3s ease; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+/* ===== CARDS ===== */
+.card { background:white; border-radius:var(--radius); box-shadow:var(--shadow); padding:1.2rem; margin-bottom:1rem; }
+.card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.8rem; flex-wrap:wrap; gap:0.5rem; }
+.card-title { font-size:1rem; font-weight:800; display:flex; align-items:center; gap:0.4rem; }
+.card-title .icon { font-size:1.2rem; }
+
+/* ===== STATS ===== */
+.stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:0.8rem; margin-bottom:1rem; }
+.stat-card { background:white; border-radius:var(--radius); box-shadow:var(--shadow); padding:1rem; text-align:center; border-top:4px solid var(--bleu); }
+.stat-card.success { border-top-color:var(--succes); }
+.stat-card.orange { border-top-color:var(--orange); }
+.stat-card.warning { border-top-color:var(--warning); }
+.stat-card.violet { border-top-color:var(--violet); }
+.stat-card.info { border-top-color:var(--info); }
+.stat-value { font-size:1.8rem; font-weight:900; color:var(--bleu); }
+.stat-label { font-size:0.75rem; color:var(--gris); font-weight:600; }
+
+/* ===== FORMS ===== */
+.form-group { margin-bottom:0.6rem; }
+.form-group label { display:block; font-size:0.8rem; font-weight:700; margin-bottom:0.2rem; color:var(--bleu); }
+.form-group input, .form-group select, .form-group textarea { width:100%; padding:0.5rem 0.8rem; border:2px solid var(--gris-moyen); border-radius:8px; font-family:inherit; font-size:0.85rem; transition:var(--transition); }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:var(--bleu); outline:none; box-shadow:0 0 0 3px rgba(27,58,99,0.1); }
+.form-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:0.6rem; }
+.settings-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1rem; }
+.settings-section h4 { font-size:0.85rem; margin-bottom:0.5rem; color:var(--bleu); }
+
+/* ===== IMPORT ZONE ===== */
+.import-zone { border:3px dashed var(--gris-moyen); border-radius:var(--radius); padding:2rem; text-align:center; cursor:pointer; transition:var(--transition); }
+.import-zone:hover { border-color:var(--orange); background:var(--orange-pale); }
+.import-zone .icon { font-size:2rem; margin-bottom:0.5rem; }
+.import-zone h3 { font-size:0.9rem; margin-bottom:0.3rem; }
+.import-zone p { font-size:0.75rem; color:var(--gris); }
+
+/* ===== TABLE ===== */
+.table-wrap { overflow-x:auto; }
+table.data-table { width:100%; border-collapse:collapse; font-size:0.8rem; }
+table.data-table th { background:var(--bleu); color:white; padding:0.5rem; text-align:left; font-weight:700; position:sticky; top:0; }
+table.data-table td { padding:0.5rem; border-bottom:1px solid var(--gris-moyen); }
+table.data-table tr:hover { background:var(--bleu-tres-clair); }
+
+/* ===== EVAL HEADER ===== */
+.eval-header { display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap; }
+.eval-header select { flex:1; min-width:150px; padding:0.5rem; border:2px solid var(--gris-moyen); border-radius:8px; font-family:inherit; font-weight:700; font-size:0.85rem; }
+.eval-nav-btn { width:36px; height:36px; border-radius:50%; border:2px solid var(--bleu); background:white; color:var(--bleu); font-weight:900; font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:var(--transition); }
+.eval-nav-btn:hover { background:var(--bleu); color:white; }
+.eval-nav-btn:disabled { opacity:0.3; cursor:default; }
+
+/* ===== COULEURS ÉCOLE DIRECTE ===== */
+:root {
+    --ed-rouge: #e53935; --ed-rouge-bg: #ffebee; --ed-rouge-border: #ffcdd2;
+    --ed-orange: #fb8c00; --ed-orange-bg: #fff3e0; --ed-orange-border: #ffe0b2;
+    --ed-vert: #43a047; --ed-vert-bg: #e8f5e9; --ed-vert-border: #c8e6c9;
+    --ed-bleu: #1e88e5; --ed-bleu-bg: #e3f2fd; --ed-bleu-border: #bbdefb;
+    --ed-gris: #9e9e9e; --ed-gris-bg: #f5f5f5;
+}
+
+/* ===== COMPETENCE GRID — ÉCOLE DIRECTE ===== */
+.comp-section { margin-bottom:1rem; border-radius:var(--radius); overflow:hidden; border:2px solid var(--gris-moyen); }
+.comp-section[data-level="NE"] { border-left:5px solid var(--ed-rouge); }
+.comp-section[data-level="EC"] { border-left:5px solid var(--ed-orange); }
+.comp-section[data-level="M"]  { border-left:5px solid var(--ed-vert); }
+.comp-section[data-level="PM"] { border-left:5px solid var(--ed-bleu); }
+.comp-section[data-level=""]   { border-left:5px solid var(--ed-gris); }
+.comp-header { display:flex; align-items:center; justify-content:space-between; padding:0.6rem 0.8rem; cursor:pointer; transition:var(--transition); }
+.comp-section[data-level="NE"] .comp-header { background:linear-gradient(90deg,var(--ed-rouge-bg),var(--gris-clair) 50%); }
+.comp-section[data-level="EC"] .comp-header { background:linear-gradient(90deg,var(--ed-orange-bg),var(--gris-clair) 50%); }
+.comp-section[data-level="M"]  .comp-header { background:linear-gradient(90deg,var(--ed-vert-bg),var(--gris-clair) 50%); }
+.comp-section[data-level="PM"] .comp-header { background:linear-gradient(90deg,var(--ed-bleu-bg),var(--gris-clair) 50%); }
+.comp-section[data-level=""]   .comp-header { background:var(--gris-clair); }
+.comp-header:hover { filter:brightness(0.97); }
+.comp-header .comp-code { font-weight:900; font-size:0.85rem; min-width:48px; padding:0.15rem 0.5rem; border-radius:6px; text-align:center; color:white; }
+.comp-section[data-level="NE"] .comp-code { background:var(--ed-rouge); }
+.comp-section[data-level="EC"] .comp-code { background:var(--ed-orange); }
+.comp-section[data-level="M"]  .comp-code { background:var(--ed-vert); }
+.comp-section[data-level="PM"] .comp-code { background:var(--ed-bleu); }
+.comp-section[data-level=""]   .comp-code { background:var(--ed-gris); }
+.comp-header .comp-name { flex:1; font-weight:700; font-size:0.82rem; margin:0 0.5rem; }
+.comp-header .comp-badges { display:flex; gap:0.3rem; align-items:center; }
+.comp-body { padding:0.8rem; display:none; background:white; }
+.comp-body.open { display:block; animation:fadeIn 0.2s ease; }
+.crit-row { display:flex; align-items:center; gap:0.4rem; padding:0.35rem 0.3rem; border-bottom:1px solid #f0f0f0; flex-wrap:wrap; border-radius:4px; }
+.crit-row:hover { background:#fafafa; }
+.crit-label { flex:1; font-size:0.8rem; min-width:150px; }
+.crit-del { width:22px; height:22px; border:none; background:transparent; color:#ccc; font-size:0.7rem; cursor:pointer; border-radius:4px; display:flex; align-items:center; justify-content:center; }
+.crit-del:hover { background:var(--danger-clair); color:var(--danger); }
+.add-crit-row { display:flex; align-items:center; gap:0.3rem; padding:0.3rem; margin-top:0.3rem; }
+.add-crit-input { flex:1; padding:0.3rem 0.5rem; border:2px dashed var(--gris-moyen); border-radius:6px; font-family:inherit; font-size:0.78rem; }
+.add-crit-input:focus { border-color:var(--ed-vert); outline:none; }
+.add-crit-btn { padding:0.3rem 0.6rem; border:none; background:var(--ed-vert); color:white; border-radius:6px; font-size:0.72rem; font-weight:700; cursor:pointer; white-space:nowrap; }
+.add-crit-btn:hover { filter:brightness(0.9); }
+.level-btns { display:flex; gap:3px; }
+.level-btn { width:38px; height:30px; border-radius:8px; font-size:0.68rem; font-weight:900; cursor:pointer; transition:all 0.15s ease; display:flex; align-items:center; justify-content:center; }
+.level-btn.ne { background:var(--ed-rouge-bg); color:var(--ed-rouge); border:2px solid var(--ed-rouge-border); }
+.level-btn.ec { background:var(--ed-orange-bg); color:var(--ed-orange); border:2px solid var(--ed-orange-border); }
+.level-btn.m  { background:var(--ed-vert-bg);  color:var(--ed-vert);  border:2px solid var(--ed-vert-border); }
+.level-btn.pm { background:var(--ed-bleu-bg);  color:var(--ed-bleu);  border:2px solid var(--ed-bleu-border); }
+.level-btn:hover { transform:scale(1.12); filter:brightness(0.93); }
+.level-btn.ne.active { background:var(--ed-rouge); color:white; border-color:#c62828; box-shadow:0 2px 8px rgba(229,57,53,0.35); }
+.level-btn.ec.active { background:var(--ed-orange); color:white; border-color:#ef6c00; box-shadow:0 2px 8px rgba(251,140,0,0.35); }
+.level-btn.m.active  { background:var(--ed-vert);  color:white; border-color:#2e7d32; box-shadow:0 2px 8px rgba(67,160,71,0.35); }
+.level-btn.pm.active { background:var(--ed-bleu);  color:white; border-color:#1565c0; box-shadow:0 2px 8px rgba(30,136,229,0.35); }
+
+/* ===== LEVEL BADGES — ÉCOLE DIRECTE ===== */
+.level-badge { display:inline-flex; align-items:center; justify-content:center; padding:0.15rem 0.5rem; border-radius:6px; font-size:0.7rem; font-weight:900; }
+.level-badge.ne { background:var(--ed-rouge-bg); color:var(--ed-rouge); }
+.level-badge.ec { background:var(--ed-orange-bg); color:var(--ed-orange); }
+.level-badge.m  { background:var(--ed-vert-bg);  color:var(--ed-vert); }
+.level-badge.pm { background:var(--ed-bleu-bg);  color:var(--ed-bleu); }
+
+/* ===== SYNTHESIS CARD ===== */
+.synth-card { background:var(--gris-clair); border-radius:var(--radius); padding:1rem; margin-bottom:1rem; }
+.synth-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(80px,1fr)); gap:0.5rem; }
+.synth-item { text-align:center; padding:0.3rem; border-radius:8px; }
+.synth-item[data-level="NE"] { background:var(--ed-rouge-bg); }
+.synth-item[data-level="EC"] { background:var(--ed-orange-bg); }
+.synth-item[data-level="M"]  { background:var(--ed-vert-bg); }
+.synth-item[data-level="PM"] { background:var(--ed-bleu-bg); }
+.synth-code { font-size:0.7rem; font-weight:900; color:var(--bleu); }
+
+/* ===== BILAN TABLE ===== */
+.bilan-table { width:100%; border-collapse:collapse; font-size:0.8rem; }
+.bilan-table th { background:var(--bleu); color:white; padding:0.5rem; text-align:center; font-weight:700; }
+.bilan-table td { padding:0.4rem; border:1px solid var(--gris-moyen); text-align:center; }
+.bilan-table .comp-col { text-align:left; font-weight:700; }
+
+/* ===== PHASE TOGGLE ===== */
+.phase-toggle { display:flex; gap:4px; background:var(--gris-clair); border-radius:10px; padding:3px; margin-bottom:1rem; width:fit-content; }
+.phase-btn { padding:0.4rem 1rem; border:none; background:transparent; font-family:inherit; font-size:0.78rem; font-weight:700; color:var(--gris); cursor:pointer; border-radius:8px; transition:var(--transition); }
+.phase-btn.active { background:white; color:var(--bleu); box-shadow:0 2px 8px rgba(0,0,0,0.1); }
+.phase-btn.formatif.active { background:var(--info); color:white; }
+.phase-btn.certificatif.active { background:var(--orange); color:white; }
+
+/* ===== EXPOSITION BAR ===== */
+.expo-bar { display:flex; align-items:center; gap:0.5rem; margin:0.3rem 0; }
+.expo-track { flex:1; height:8px; background:var(--gris-moyen); border-radius:4px; overflow:hidden; }
+.expo-fill { height:100%; border-radius:4px; transition:width 0.4s; }
+.expo-fill.good { background:var(--succes); }
+.expo-fill.medium { background:var(--warning); }
+.expo-fill.low { background:var(--danger); }
+.expo-label { font-size:0.72rem; font-weight:700; min-width:50px; text-align:right; }
+
+/* ===== PFMP CARD ===== */
+.pfmp-card { border:2px solid var(--gris-moyen); border-radius:var(--radius); padding:1rem; margin-bottom:1rem; }
+.pfmp-card.active { border-color:var(--succes); background:var(--succes-clair); }
+.pfmp-card h4 { font-size:0.9rem; color:var(--bleu); margin-bottom:0.5rem; }
+.pfmp-status { display:inline-flex; align-items:center; gap:0.3rem; padding:0.2rem 0.6rem; border-radius:6px; font-size:0.72rem; font-weight:700; }
+
+/* ===== IMPOSSIBILITE ===== */
+.impos-chip { display:inline-flex; align-items:center; gap:0.3rem; padding:0.2rem 0.5rem; border-radius:6px; font-size:0.72rem; font-weight:700; background:var(--danger-clair); color:var(--danger); margin:0.15rem; }
+
+/* ===== JOURNAL ===== */
+.journal-entry { padding:0.4rem 0.6rem; border-left:3px solid var(--gris-moyen); margin-bottom:0.3rem; font-size:0.75rem; }
+.journal-entry .j-date { color:var(--gris); font-weight:600; }
+.journal-entry .j-eval { color:var(--bleu); font-weight:700; }
+.journal-entry .j-action { color:var(--texte); }
+.journal-entry.cert { border-left-color:var(--orange); }
+.journal-entry.format { border-left-color:var(--info); }
+
+/* ===== ALERT ===== */
+.alert { display:flex; gap:0.8rem; padding:0.8rem 1rem; border-radius:var(--radius); margin-bottom:1rem; align-items:flex-start; }
+.alert.alert-info { background:var(--info-clair); }
+.alert.alert-warning { background:var(--warning-clair); }
+.alert.alert-danger { background:var(--danger-clair); }
+.alert.alert-success { background:var(--succes-clair); }
+.alert .icon { font-size:1.2rem; flex-shrink:0; }
+.alert-content h4 { font-size:0.85rem; margin-bottom:0.2rem; }
+.alert-content p { font-size:0.8rem; }
+
+/* ===== TOAST ===== */
+.toast-container { position:fixed; top:60px; right:20px; z-index:5000; }
+.toast { padding:0.6rem 1.2rem; border-radius:10px; font-size:0.82rem; font-weight:700; color:white; margin-bottom:0.4rem; animation:slideIn 0.3s ease, fadeOut 0.3s 2.7s forwards; box-shadow:0 4px 15px rgba(0,0,0,0.2); }
+.toast.success { background:var(--succes); }
+.toast.error { background:var(--danger); }
+.toast.warning { background:var(--warning); color:#333; }
+.toast.info { background:var(--info); }
+@keyframes slideIn { from{transform:translateX(100px);opacity:0} to{transform:none;opacity:1} }
+@keyframes fadeOut { to{opacity:0;transform:translateX(50px)} }
+
+/* ===== MODAL ===== */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:4000; display:none; align-items:center; justify-content:center; }
+.modal-overlay.active { display:flex; }
+.modal { background:white; border-radius:var(--radius); max-width:560px; width:90%; max-height:85vh; overflow-y:auto; padding:1.5rem; box-shadow:0 20px 60px rgba(0,0,0,0.3); }
+.modal h3 { font-size:1rem; margin-bottom:0.8rem; }
+.modal-footer { display:flex; gap:0.5rem; justify-content:flex-end; margin-top:1rem; }
+
+/* ===== CYCLE STATUS ===== */
+.cycle-badge { display:inline-flex; align-items:center; gap:0.3rem; padding:0.25rem 0.8rem; border-radius:8px; font-size:0.75rem; font-weight:800; }
+.cycle-badge.formatif { background:var(--info-clair); color:var(--info); }
+.cycle-badge.certificatif { background:var(--orange-pale); color:var(--orange); }
+.cycle-badge.cloture { background:var(--succes-clair); color:var(--succes); }
+
+/* ===== EMPTY STATE ===== */
+.empty-state { text-align:center; padding:3rem; color:var(--gris); }
+.empty-state .icon { font-size:3rem; margin-bottom:1rem; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width:768px) {
+    .hero .container { grid-template-columns:1fr; }
+    .hero h1 { font-size:2rem; }
+    .nav-links { display:none; }
+    .app-header-center h2 { font-size:0.65rem; }
+    .app-tabs-inner { gap:0; }
+    .tab-btn { padding:0.5rem 0.5rem; font-size:0.7rem; }
+    .settings-grid { grid-template-columns:1fr; }
+    .form-grid { grid-template-columns:1fr; }
+    .stats-grid { grid-template-columns:repeat(2,1fr); }
+    .level-btn { width:30px; height:26px; font-size:0.6rem; }
+}
+
+/* ===== CTA SECTION ===== */
+.cta-section { background:linear-gradient(135deg, var(--bleu) 0%, var(--bleu-clair) 100%); color:white; padding:3rem 0; text-align:center; }
+.cta-section h2 { font-size:1.8rem; margin-bottom:0.5rem; }
+.cta-section p { opacity:0.9; margin-bottom:1.5rem; }
+
+/* ===== FAQ ===== */
+.faq-item { border:2px solid var(--gris-moyen); border-radius:var(--radius); margin-bottom:0.5rem; }
+.faq-q { padding:0.8rem 1rem; font-weight:700; cursor:pointer; display:flex; justify-content:space-between; align-items:center; }
+.faq-q:hover { background:var(--gris-clair); }
+.faq-a { padding:0 1rem 0.8rem; font-size:0.85rem; display:none; }
+.faq-item.open .faq-a { display:block; }
+.faq-item.open .faq-q .arrow { transform:rotate(180deg); }
+.faq-q .arrow { transition:var(--transition); }
+
+/* ===== PRINT ===== */
+@media print {
+    .app-header, .app-tabs, .btn, .toast-container, .modal-overlay { display:none !important; }
+    .app-main { padding:0; }
+    .tab-content { display:block !important; }
+}
+
+/* ===== NE TYPE BADGES ===== */
+.ne-badge { font-size:0.65rem; font-weight:700; padding:0.1rem 0.4rem; border-radius:4px; }
+.ne-badge.pedagogique { background:#fce4ec; color:#c62828; }
+.ne-badge.structurel { background:#fff3e0; color:#e65100; }
+
+/* ===== MULTI-EVAL INDICATOR ===== */
+.eval-indicator { display:inline-flex; align-items:center; gap:0.2rem; font-size:0.65rem; font-weight:700; padding:0.1rem 0.4rem; border-radius:4px; background:var(--violet-clair); color:var(--violet); }
+    </style>
+</head>
+<body>
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ====== GUIDE SECTION ====== -->
+    <div id="guide-section">
+        <nav class="guide-nav">
+            <div class="container">
+                <a href="#" class="nav-logo">
+                    <span class="icon">❄️</span>
+                    <span>inerWeb <em>Édu</em></span>
+                </a>
+                <ul class="nav-links">
+                    <li><a href="#principes">Principes</a></li>
+                    <li><a href="#faq-section">FAQ</a></li>
+                    <li><a href="#" onclick="switchMode('app');return false">🚀 App</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <section class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <div class="hero-badge">🎓 CAP IFCA — EP2 + EP3 — v11</div>
+                    <h1>Univers <span>Compétences</span></h1>
+                    <p>Évaluation CCF continue — EP2 (installation, coeff. 6) + EP3 (entretien & mise en service, coeff. 4). Activité collective, validation individuelle. Conforme inspection.</p>
+                    <div class="hero-buttons">
+                        <button class="btn btn-primary" onclick="switchMode('app')">🚀 Lancer l'application</button>
+                        <a href="#principes" class="btn btn-secondary">📖 Principes v11</a>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <div style="background:rgba(255,255,255,0.1);border-radius:var(--radius);padding:1.5rem;">
+                        <h3 style="margin-bottom:1rem;">🏗️ Architecture v11</h3>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;">
+                            <div style="background:rgba(255,255,255,0.15);padding:0.6rem;border-radius:8px;text-align:center;">
+                                <div style="font-size:1.5rem;">🔧</div>
+                                <div style="font-size:0.75rem;font-weight:700;">EP2 — Coeff. 6</div>
+                                <div style="font-size:0.65rem;opacity:0.8;">C3.1→C3.9 + C1.2</div>
+                                <div style="font-size:0.65rem;opacity:0.7;">Atelier + 2 PFMP + Dossier</div>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.15);padding:0.6rem;border-radius:8px;text-align:center;">
+                                <div style="font-size:1.5rem;">⚡</div>
+                                <div style="font-size:0.75rem;font-weight:700;">EP3 — Coeff. 4</div>
+                                <div style="font-size:0.65rem;opacity:0.8;">C4.x + C5.1 + C1.x</div>
+                                <div style="font-size:0.65rem;opacity:0.7;">3 situations TP tournant</div>
+                            </div>
+                        </div>
+                        <div style="margin-top:1rem;text-align:center;font-size:0.75rem;opacity:0.8;">
+                            ✅ Validation individuelle · 📊 Multi-évaluateurs · 🔄 Cycle formatif→certificatif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="principes" style="padding:3rem 0;">
+            <div class="container">
+                <h2 style="font-size:1.5rem;margin-bottom:1.5rem;color:var(--bleu);">🎯 Principes v11 — Ce qui change</h2>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;">
+                    <div class="card" style="border-top:4px solid var(--orange);">
+                        <h3 style="font-size:0.9rem;margin-bottom:0.5rem;">🔄 Validation individuelle</h3>
+                        <p style="font-size:0.82rem;color:var(--gris);">L'activité est collective, la validation est individuelle. Chaque élève est validé quand il est prêt — pas de date unique pour tous.</p>
+                    </div>
+                    <div class="card" style="border-top:4px solid var(--ep3);">
+                        <h3 style="font-size:0.9rem;margin-bottom:0.5rem;">⚡ EP3 intégrée</h3>
+                        <p style="font-size:0.82rem;color:var(--gris);">3 situations de 2h : A (fluidique azote), B (mesures fluide réel), C (documents). TP tournant avec multi-évaluateurs.</p>
+                    </div>
+                    <div class="card" style="border-top:4px solid var(--succes);">
+                        <h3 style="font-size:0.9rem;margin-bottom:0.5rem;">🏭 Double PFMP</h3>
+                        <p style="font-size:0.82rem;color:var(--gris);">2 périodes de stage avec tuteurs distincts, gestion des impossibilités F-GAZ, document tuteur avec suivi.</p>
+                    </div>
+                    <div class="card" style="border-top:4px solid var(--info);">
+                        <h3 style="font-size:0.9rem;margin-bottom:0.5rem;">📊 Cycle pédagogique</h3>
+                        <p style="font-size:0.82rem;color:var(--gris);">Formatif → Certificatif → Clôture. Indicateur d'exposition. Le moteur constate et informe, le jury décide.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="faq-section" style="padding:2rem 0 3rem;">
+            <div class="container">
+                <h2 style="font-size:1.3rem;margin-bottom:1rem;color:var(--bleu);">❓ FAQ</h2>
+                <div class="faq-item"><div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Puis-je évaluer un élève en EP2 et EP3 en même temps ? <span class="arrow">▼</span></div><div class="faq-a">Oui. EP2 et EP3 sont des vues filtrées sur le même flux d'activités. L'onglet Activités les centralise.</div></div>
+                <div class="faq-item"><div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Comment fonctionne le multi-évaluateurs ? <span class="arrow">▼</span></div><div class="faq-a">Le collègue utilise le même fichier HTML. Chacun exporte son JSON. La fusion empile les observations sans jamais écraser. La plus récente prime pour le calcul.</div></div>
+                <div class="faq-item"><div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Que se passe-t-il si un élève n'a pas été évalué sur une compétence ? <span class="arrow">▼</span></div><div class="faq-a">Le NE compte 0 points. Le rapport distingue NE pédagogique (l'élève n'a pas atteint le niveau) et NE structurel (impossibilité matérielle documentée). Le jury décide.</div></div>
+                <div class="faq-item"><div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Les données v10 sont-elles compatibles ? <span class="arrow">▼</span></div><div class="faq-a">Oui. La migration est automatique : détection du format v10, conversion PFMP simple→double, création de la structure EP3 vide. Aucune donnée perdue.</div></div>
+                <div class="faq-item"><div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Comment est calculée la note ? <span class="arrow">▼</span></div><div class="faq-a">Chaque compétence a un poids. Le niveau (PM=100%, M=70%, EC=35%, NE=0%) est multiplié par le poids et le coefficient cœur (×1.2 pour les obligatoires). La note est proposée mais l'enseignant valide manuellement.</div></div>
+            </div>
+        </section>
+
+        <section class="cta-section">
+            <div class="container">
+                <h2>Prêt à évaluer ?</h2>
+                <p>L'outil calcule, l'enseignant décide. EP2 + EP3, multi-évaluateurs, rapport inspection automatique.</p>
+                <button class="btn btn-white" onclick="switchMode('app')">🚀 Lancer l'application</button>
+            </div>
+        </section>
+    </div>
+
+    <!-- ====== APP SECTION ====== -->
+    <div id="app-section">
+        <header class="app-header">
+            <div class="app-header-content">
+                <div class="app-logo">
+                    <span class="icon" id="appLogoIcon">❄️</span>
+                    <h1>inerWeb <span>Édu</span></h1>
+                </div>
+                <div class="app-header-center">
+                    <h2 id="headerEtablissement">Configuration requise</h2>
+                </div>
+                <div class="app-header-actions">
+                    <div class="storage-indicator">
+                        <span>💾</span>
+                        <div class="storage-bar"><div class="storage-fill" id="storageFill"></div></div>
+                        <span id="storageText">0 MB</span>
+                    </div>
+                    <button class="btn btn-sm" style="background:var(--info);color:white;" id="btnBackup" title="Backup JSON">💾</button>
+                    <button class="btn btn-sm" style="background:var(--gris);color:white;" id="btnRestore" title="Restaurer JSON">📂</button>
+                    <input type="file" id="restoreInput" accept=".json" style="display:none">
+                    <button class="btn btn-sm" style="background:var(--orange);color:white;" onclick="switchMode('guide')" title="Guide">❓</button>
+                </div>
+            </div>
+        </header>
+
+        <nav class="app-tabs">
+            <div class="app-tabs-inner">
+                <button class="tab-btn active" data-tab="config">⚙️ Config</button>
+                <button class="tab-btn" data-tab="eleves">👥 Élèves</button>
+                <button class="tab-btn ep2" data-tab="ep2">🔧 EP2</button>
+                <button class="tab-btn ep3" data-tab="ep3">⚡ EP3</button>
+                <button class="tab-btn" data-tab="activites">📋 Activités</button>
+                <button class="tab-btn" data-tab="bilan">🏆 Bilan</button>
+                <button class="tab-btn" data-tab="export">📤 Export</button>
+            </div>
+        </nav>
+
+        <main class="app-main">
+            <!-- ===== CONFIG TAB ===== -->
+            <div id="tab-config" class="tab-content active">
+                <div class="alert alert-info">
+                    <span class="icon">❄️</span>
+                    <div class="alert-content">
+                        <h4>Univers Compétences v11 — EP2 + EP3</h4>
+                        <p>Validation individuelle continue. Double PFMP. Multi-évaluateurs. Cycle formatif → certificatif. <strong>Migration v10 automatique.</strong></p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><span class="icon">⚙️</span> Paramètres</h3>
+                        <button class="btn btn-primary btn-sm" id="saveConfig">💾 Enregistrer</button>
+                    </div>
+                    <div class="settings-grid">
+                        <div class="settings-section">
+                            <h4>🏫 Établissement</h4>
+                            <div class="form-group"><label>Nom</label><input type="text" id="configEtablissement" placeholder="Lycée Professionnel..."></div>
+                            <div class="form-group"><label>Ville</label><input type="text" id="configVille" placeholder="Marseille"></div>
+                            <div class="form-group"><label>Académie</label><input type="text" id="configAcademie" placeholder="Aix-Marseille"></div>
+                            <div class="form-group"><label>Session</label><input type="number" id="configSession" value="2026"></div>
+                        </div>
+                        <div class="settings-section">
+                            <h4>👥 Évaluateurs</h4>
+                            <div class="form-group"><label>Évaluateur principal (vous)</label><input type="text" id="configEvaluateur" placeholder="M. HENNINOT"></div>
+                            <div class="form-group"><label>Épreuves</label>
+                                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.3rem;">
+                                    <label style="font-size:0.78rem;display:flex;align-items:center;gap:0.3rem;"><input type="checkbox" id="evalEP2" checked> EP2</label>
+                                    <label style="font-size:0.78rem;display:flex;align-items:center;gap:0.3rem;"><input type="checkbox" id="evalEP3C" checked> EP3-C</label>
+                                </div>
+                            </div>
+                            <div class="form-group"><label>Collègue EP3 (situations A+B)</label><input type="text" id="configCollegue" placeholder="M./Mme ..."></div>
+                        </div>
+                        <div class="settings-section">
+                            <h4>⚖️ Barème</h4>
+                            <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+                                <div class="form-group"><label>PM</label><input type="number" id="cfgPctPM" value="100" min="0" max="100" style="width:60px;text-align:center;"> %</div>
+                                <div class="form-group"><label>M</label><input type="number" id="cfgPctM" value="70" min="0" max="100" style="width:60px;text-align:center;"> %</div>
+                                <div class="form-group"><label>EC</label><input type="number" id="cfgPctEC" value="35" min="0" max="100" style="width:60px;text-align:center;"> %</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CYCLE -->
+                <div class="card" style="border-top:4px solid var(--info);">
+                    <div class="card-header">
+                        <h3 class="card-title"><span class="icon">🔄</span> Phase du cycle</h3>
+                    </div>
+                    <div class="phase-toggle">
+                        <button class="phase-btn formatif active" onclick="setPhase('formatif')">📘 Formatif</button>
+                        <button class="phase-btn certificatif" onclick="setPhase('certificatif')">📙 Certificatif</button>
+                    </div>
+                    <p style="font-size:0.8rem;color:var(--gris);" id="phaseDesc">Phase formatif : les observations alimentent les propositions de niveaux. Pas encore de validation officielle.</p>
+                </div>
+
+                <!-- REFERENTIEL -->
+                <div class="card" style="border-top:4px solid var(--violet);">
+                    <div class="card-header">
+                        <h3 class="card-title"><span class="icon">📦</span> Référentiel</h3>
+                        <button class="btn btn-sm" style="background:var(--warning);color:white;" onclick="resetReferentiel()">🔄 Défaut IFCA</button>
+                    </div>
+                    <div id="refStatusCard" style="background:var(--gris-clair);border-radius:10px;padding:0.8rem;margin-bottom:0.8rem;">
+                        <div style="display:flex;align-items:center;gap:0.5rem;">
+                            <span id="refStatusIcon">❄️</span>
+                            <strong id="refStatusLabel" style="font-size:0.85rem;">CAP IFCA — EP2 + EP3</strong>
+                        </div>
+                        <p id="refStatusDetail" style="font-size:0.75rem;color:var(--gris);margin:0;">EP2: 10 compétences • EP3: 10 compétences</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Importer un référentiel (JSON)</label>
+                        <input type="file" id="cfgImportReferentiel" accept=".json">
+                    </div>
+                </div>
+
+                <!-- ADMIN -->
+                <div class="card" style="border-top:4px solid var(--danger);">
+                    <div class="card-header">
+                        <h3 class="card-title"><span class="icon">🛠️</span> Administration</h3>
+                    </div>
+                    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                        <button class="btn btn-sm" style="background:var(--info);color:white;" id="btnToggleDemo">🎭 Mode DÉMO</button>
+                        <button class="btn btn-sm" style="background:var(--warning);color:white;" onclick="resetStudentsDialog()">🔄 Réinit. évaluations</button>
+                        <button class="btn btn-sm" style="background:var(--danger);color:white;" id="purgeAll">🗑️ Purger tout</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== ELEVES TAB ===== -->
+            <div id="tab-eleves" class="tab-content">
+                <div class="stats-grid" id="elevesStats"></div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><span class="icon">📥</span> Importer / Ajouter</h3>
+                        <div style="display:flex;gap:0.3rem;">
+                            <button class="btn btn-primary btn-sm" id="btnAddManual">➕ Ajouter</button>
+                            <button class="btn btn-sm" style="background:var(--gris);color:white;display:none;" id="btnDeleteSelected">🗑️ Supprimer</button>
+                        </div>
+                    </div>
+                    <div class="import-zone" id="importZone">
+                        <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" style="display:none">
+                        <div class="icon">📂</div>
+                        <h3>Glissez votre fichier Excel/CSV</h3>
+                        <p>Colonnes : Nom, Prénom, Classe, Entreprise, Secteur, Tuteur, Fonction tuteur</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><span class="icon">👥</span> Liste des élèves</h3>
+                        <div style="display:flex;gap:0.3rem;align-items:center;">
+                            <label style="font-size:0.75rem;display:flex;align-items:center;gap:0.3rem;"><input type="checkbox" id="checkAll"> Tous</label>
+                        </div>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="data-table" id="studentTable">
+                            <thead><tr><th style="width:30px;"></th><th>Nom</th><th>Prénom</th><th>Classe</th><th>EP2</th><th>EP3</th><th>Expo.</th><th style="width:80px;">Actions</th></tr></thead>
+                            <tbody id="studentTableBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="empty-state" id="emptyStudents" style="display:none;">
+                        <div class="icon">👥</div>
+                        <p>Aucun élève. Importez un fichier ou ajoutez manuellement.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== EP2 TAB ===== -->
+            <div id="tab-ep2" class="tab-content">
+                <div class="sub-tabs">
+                    <button class="sub-tab active" data-ep2sub="atelier" onclick="switchEP2Sub('atelier')">🔧 Atelier</button>
+                    <button class="sub-tab" data-ep2sub="pfmp1" onclick="switchEP2Sub('pfmp1')">🏭 PFMP 1</button>
+                    <button class="sub-tab" data-ep2sub="pfmp2" onclick="switchEP2Sub('pfmp2')">🏭 PFMP 2</button>
+                    <button class="sub-tab" data-ep2sub="dossier1" onclick="switchEP2Sub('dossier1')">📊 Retour stage 1</button>
+                    <button class="sub-tab" data-ep2sub="dossier2" onclick="switchEP2Sub('dossier2')">📊 Retour stage 2</button>
+                </div>
+                <div class="eval-header">
+                    <button class="eval-nav-btn" id="prevEP2" title="Précédent">◀</button>
+                    <select id="studentSelectEP2"></select>
+                    <button class="eval-nav-btn" id="nextEP2" title="Suivant">▶</button>
+                    <span class="cycle-badge" id="ep2Phase">📘 Formatif</span>
+                </div>
+                <div id="ep2SynthCard" class="synth-card" style="display:none;"></div>
+                <div id="ep2Content"></div>
+                <div class="card" style="margin-top:1rem;">
+                    <h4 style="font-size:0.85rem;margin-bottom:0.5rem;">💬 Observations EP2</h4>
+                    <textarea id="obsEP2" rows="3" style="width:100%;padding:0.5rem;border:2px solid var(--gris-moyen);border-radius:8px;font-family:inherit;font-size:0.82rem;" placeholder="Notes libres sur cet élève en EP2..."></textarea>
+                </div>
+            </div>
+
+            <!-- ===== EP3 TAB ===== -->
+            <div id="tab-ep3" class="tab-content">
+                <div class="sub-tabs">
+                    <button class="sub-tab active ep3a" data-ep3sub="A" onclick="switchEP3Sub('A')">🔬 Situation A</button>
+                    <button class="sub-tab ep3b" data-ep3sub="B" onclick="switchEP3Sub('B')">📏 Situation B</button>
+                    <button class="sub-tab ep3c" data-ep3sub="C" onclick="switchEP3Sub('C')">📄 Situation C</button>
+                </div>
+                <div class="eval-header">
+                    <button class="eval-nav-btn" id="prevEP3" title="Précédent">◀</button>
+                    <select id="studentSelectEP3"></select>
+                    <button class="eval-nav-btn" id="nextEP3" title="Suivant">▶</button>
+                    <span class="cycle-badge" id="ep3Phase">📘 Formatif</span>
+                    <span class="eval-indicator" id="ep3Evaluator"></span>
+                </div>
+                <div class="alert alert-info" id="ep3Info" style="display:none;"></div>
+                <div id="ep3SynthCard" class="synth-card" style="display:none;"></div>
+                <div id="ep3Content"></div>
+                <div class="card" style="margin-top:1rem;">
+                    <h4 style="font-size:0.85rem;margin-bottom:0.5rem;">💬 Observations EP3</h4>
+                    <textarea id="obsEP3" rows="3" style="width:100%;padding:0.5rem;border:2px solid var(--gris-moyen);border-radius:8px;font-family:inherit;font-size:0.82rem;" placeholder="Notes libres sur cet élève en EP3..."></textarea>
+                </div>
+            </div>
+
+            <!-- ===== ACTIVITÉS TAB ===== -->
+            <div id="tab-activites" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><span class="icon">📋</span> Activités pédagogiques</h3>
+                        <button class="btn btn-primary btn-sm" onclick="addActivite()">➕ Nouvelle activité</button>
+                    </div>
+                    <p style="font-size:0.82rem;color:var(--gris);margin-bottom:1rem;">Les activités sont le flux central. EP2 et EP3 sont des vues filtrées sur ce flux.</p>
+                    <div id="activitesList"></div>
+                    <div class="empty-state" id="emptyActivites" style="display:none;">
+                        <div class="icon">📋</div>
+                        <p>Aucune activité. Créez votre première activité pédagogique.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== BILAN TAB ===== -->
+            <div id="tab-bilan" class="tab-content">
+                <div class="eval-header">
+                    <button class="eval-nav-btn" id="prevBilan" title="Précédent">◀</button>
+                    <select id="studentSelectBilan"></select>
+                    <button class="eval-nav-btn" id="nextBilan" title="Suivant">▶</button>
+                </div>
+                <div id="bilanContent"></div>
+            </div>
+
+            <!-- ===== EXPORT TAB ===== -->
+            <div id="tab-export" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><span class="icon">📤</span> Export & Rapport</h3>
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;">
+                        <div style="text-align:center;padding:1rem;">
+                            <div style="font-size:2rem;margin-bottom:0.5rem;">📊</div>
+                            <button class="btn btn-primary btn-sm" id="exportExcel">Export Excel EP2+EP3</button>
+                            <p style="font-size:0.72rem;color:var(--gris);margin-top:0.3rem;">Toutes notes et compétences</p>
+                        </div>
+                        <div style="text-align:center;padding:1rem;">
+                            <div style="font-size:2rem;margin-bottom:0.5rem;">📄</div>
+                            <button class="btn btn-sm" style="background:var(--bleu);color:white;" id="exportAllPdf">PDF fiches élèves</button>
+                            <p style="font-size:0.72rem;color:var(--gris);margin-top:0.3rem;">1 PDF par élève (EP2+EP3)</p>
+                        </div>
+                        <div style="text-align:center;padding:1rem;">
+                            <div style="font-size:2rem;margin-bottom:0.5rem;">📋</div>
+                            <button class="btn btn-sm" style="background:var(--violet);color:white;" id="exportRapport">Rapport Inspection</button>
+                            <p style="font-size:0.72rem;color:var(--gris);margin-top:0.3rem;">PDF synthétique pour jury</p>
+                        </div>
+                        <div style="text-align:center;padding:1rem;">
+                            <div style="font-size:2rem;margin-bottom:0.5rem;">💾</div>
+                            <button class="btn btn-sm" style="background:var(--succes);color:white;" id="exportBackup">Backup JSON</button>
+                            <p style="font-size:0.72rem;color:var(--gris);margin-top:0.3rem;">Sauvegarde complète</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FUSION -->
+                <div class="card" style="border-top:4px solid var(--violet);">
+                    <div class="card-header">
+                        <h3 class="card-title"><span class="icon">🔄</span> Fusion multi-évaluateurs</h3>
+                    </div>
+                    <p style="font-size:0.82rem;color:var(--gris);margin-bottom:0.8rem;">Importez le JSON de votre collègue. Les observations sont empilées, jamais écrasées.</p>
+                    <div class="import-zone" id="fusionZone">
+                        <input type="file" id="fusionInput" accept=".json" style="display:none">
+                        <div class="icon">🔄</div>
+                        <h3>Déposez le fichier collègue</h3>
+                        <p>Les observations seront fusionnées avec les vôtres</p>
+                    </div>
+                    <div id="fusionLog" style="margin-top:0.5rem;"></div>
+                </div>
+
+                <!-- JOURNAL -->
+                <div class="card" style="border-top:4px solid var(--info);">
+                    <div class="card-header">
+                        <h3 class="card-title"><span class="icon">📖</span> Journal global</h3>
+                    </div>
+                    <div id="journalGlobal" style="max-height:300px;overflow-y:auto;"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <h3 id="modalTitle"></h3>
+            <div id="modalBody"></div>
+            <div class="modal-footer" id="modalFooter"></div>
+        </div>
+    </div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+ *  inerWeb Édu — CCF v11 — EP2 + EP3
+ *  Moteur complet : validation individuelle continue
+ *  Franck HENNINOT — inerWeb Édu — 2026
+ *  Licence CC BY-NC-SA 4.0
+ * ═══════════════════════════════════════════════════════════════ */
+
+// =============================================
+// RÉFÉRENTIEL EP2 — CAP IFCA
+// =============================================
+const COMP_EP2 = [
+    { code:"C1.2", nom:"Communiquer", full:"Communiquer avec les différents acteurs", obligatoire:false, poidsDefaut:1, lieu:"R" },
+    { code:"C3.1", nom:"Organisation", full:"Organiser le poste de travail", obligatoire:true, poidsDefaut:1.5, lieu:"A+P" },
+    { code:"C3.2", nom:"Identifier réseaux", full:"Identifier sur site les réseaux d'alimentation", obligatoire:true, poidsDefaut:1.5, lieu:"A+P" },
+    { code:"C3.3", nom:"Implanter, fixer", full:"Implanter, manutentionner, fixer les supportages", obligatoire:true, poidsDefaut:2, lieu:"A+P" },
+    { code:"C3.4", nom:"Façonner, raccorder", full:"Façonner, raccorder, assembler, isoler les circuits", obligatoire:true, poidsDefaut:5, lieu:"A+P" },
+    { code:"C3.5", nom:"Soudure/PER", full:"Soudage acier et raccorder le PER", obligatoire:false, poidsDefaut:1.5, lieu:"A" },
+    { code:"C3.6", nom:"Câbler, connecter", full:"Câbler, repérer, connecter les liaisons électriques", obligatoire:true, poidsDefaut:3, lieu:"A+P" },
+    { code:"C3.7", nom:"Contrôles", full:"Contrôler la mise en œuvre des équipements", obligatoire:true, poidsDefaut:2, lieu:"A+P" },
+    { code:"C3.8", nom:"Tri déchets", full:"Trier, valoriser les déchets", obligatoire:true, poidsDefaut:1, lieu:"A+P" },
+    { code:"C3.9", nom:"Étanchéité", full:"Vérifier l'étanchéité avant mise en service", obligatoire:true, poidsDefaut:2.5, lieu:"A+P" },
+];
+
+const CRITERES_EP2 = {
+    "C1.2": { atelier:[], pfmp:["Identifier les différents acteurs"], dossier:["Qualité de restitution orale","Vocabulaire technique adapté"] },
+    "C3.1": { atelier:["Zone sécurisée et protégée","Outillage correctement utilisé","Zone rangée et propre","Outils adaptés à la chronologie"], pfmp:["Zone sécurisée et protégée","Outillage correctement utilisé","Zone rangée et propre"], dossier:[] },
+    "C3.2": { atelier:["Réseaux nécessaires repérés","Sens de circulation identifiés"], pfmp:["Réseaux repérés et étiquetés","Sens de circulation identifiés"], dossier:[] },
+    "C3.3": { atelier:["Implantation conforme","Supports et fixations correctement posés"], pfmp:["Tracés conformes au dossier","Implantation conforme","Supports correctement posés","Gestes et postures adaptés"], dossier:[] },
+    "C3.4": { atelier:["Brasage fort (OA) — joints étanches","Dudgeon / Flare conformes","Cintrage — changements de direction","Assemblages réalisés","Isolation continue et esthétique"], pfmp:["Raccordements conformes","Raccordements facilitant les interventions","Isolation continue et esthétique"], dossier:[] },
+    "C3.5": { atelier:["Appareil de soudure réglé","Alignement, pointage, équerrage","Métal d'apport adapté","Sertissage PER étanche"], pfmp:[], dossier:[] },
+    "C3.6": { atelier:["Conducteurs et sections identifiés","Câblage puissance conforme","Câblage commande conforme","Câbles rangés, repérés, fixés"], pfmp:["Câbles rangés, repérés, fixés","Connexions conformes","Éléments correctement repérés"], dossier:[] },
+    "C3.7": { atelier:["Vérification partie fluidique","Vérification partie électrique"], pfmp:["Vérification fluidique","Vérification électrique","Vérifications validant la mise en service"], dossier:[] },
+    "C3.8": { atelier:["Déchets identifiés et stockés réglementairement"], pfmp:["Déchets identifiés et stockés","Documents de traçabilité transmis"], dossier:[] },
+    "C3.9": { atelier:["Épreuve pression gaz inerte","Étanchéité frigorifique validée"], pfmp:["Épreuve pression gaz inerte","Étanchéité frigorifique validée","Étanchéité hydraulique/condensats"], dossier:[] }
+};
+
+// =============================================
+// RÉFÉRENTIEL EP3 — CAP IFCA
+// =============================================
+const COMP_EP3 = [
+    { code:"C4.1", nom:"Tirer au vide", full:"Tirer au vide le circuit frigorifique", obligatoire:true, poidsDefaut:2.5, situations:["A"] },
+    { code:"C4.2", nom:"Manipuler fluide", full:"Manipuler le fluide frigorigène et les huiles", obligatoire:true, poidsDefaut:2.5, situations:["A"] },
+    { code:"C4.3", nom:"Étanchéité", full:"Contrôler l'étanchéité d'un circuit", obligatoire:true, poidsDefaut:2, situations:["A","B"] },
+    { code:"C4.4", nom:"Identifier panne", full:"Identifier la panne", obligatoire:false, poidsDefaut:1, situations:["B"] },
+    { code:"C4.5", nom:"Mesurer", full:"Mesurer et comparer des grandeurs", obligatoire:true, poidsDefaut:2.5, situations:["A","B"] },
+    { code:"C4.6", nom:"Régler", full:"Régler les organes de régulation", obligatoire:true, poidsDefaut:2, situations:["A","B"] },
+    { code:"C4.7", nom:"Raccorder", full:"Raccorder les équipements de charge et mesure", obligatoire:true, poidsDefaut:2, situations:["A"] },
+    { code:"C5.1", nom:"Remplacer", full:"Remplacer un composant", obligatoire:true, poidsDefaut:2, situations:["A"] },
+    { code:"C1.1", nom:"Compléter", full:"Compléter et transmettre des documents", obligatoire:true, poidsDefaut:1.5, situations:["C"] },
+    { code:"C1.3", nom:"Rendre compte", full:"Rendre compte de son intervention", obligatoire:true, poidsDefaut:2, situations:["C"] },
+];
+
+const CRITERES_EP3 = {
+    "C4.1": { A:["Raccordement pompe à vide correct","Durée et pression de vide conformes","Consignes sécurité respectées","Lecture instruments conforme"] },
+    "C4.2": { A:["Bouteille de charge raccordée correctement","Pesée et quantité conformes","Fluide identifié (type + GWP)","Huile vérifiée (type, niveau)"] },
+    "C4.3": { A:["Détection fuite méthode savon maîtrisée","Joints et raccords vérifiés"], B:["Détecteur électronique utilisé correctement","Sensibilité et calibration vérifiées"] },
+    "C4.4": { B:["Symptômes identifiés","Hypothèse cohérente formulée"] },
+    "C4.5": { A:["Lecture manomètres BP/HP correcte","Valeurs relevées et comparées aux attendus"], B:["Mesures températures/pressions réalisées","Écarts analysés et interprétés","Instruments adaptés utilisés"] },
+    "C4.6": { A:["Pressostats BP réglés","Pressostats HP réglés","Valeurs conformes documentation"], B:["Consignes régulation saisies","Paramètres cohérents avec le système"] },
+    "C4.7": { A:["Flexibles et manifold raccordés sans fuite","Vannes manœuvrées dans le bon ordre","Circuit de charge opérationnel"] },
+    "C5.1": { A:["Composant identifié et déposé proprement","Nouveau composant installé conformément","Circuit remis en service après remplacement"] },
+    "C1.1": { C:["Fiche d'intervention complétée intégralement","Informations techniques exactes","Document transmis au bon interlocuteur"] },
+    "C1.3": { C:["Compte rendu oral structuré","Vocabulaire technique approprié","Difficultés et solutions rapportées"] }
+};
+
+// Mapping EP3 situations → compétences
+const EP3_SITUATIONS = {
+    A: { nom:"Manipulation fluidique sous azote", duree:"2h", competences:["C4.1","C4.2","C4.3","C4.5","C4.6","C4.7","C5.1"] },
+    B: { nom:"Mesures sur installations sous fluide réel", duree:"2h", competences:["C4.3","C4.4","C4.5","C4.6"] },
+    C: { nom:"Documents", duree:"2h", competences:["C1.1","C1.3"] }
+};
+
+// =============================================
+// CONSTANTES
+// =============================================
+const LEVELS = ['NE','EC','M','PM'];
+const LEVEL_ORDER = { NE:0, EC:1, M:2, PM:3 };
+const EP2_CONTEXTS = ['atelier','pfmp','dossier'];
+const COEF_COEUR = 1.2;
+const MOTIFS_PFMP = [
+    "Tuteur indisponible/itinérant","Tuteur refuse le rôle","Activités non conformes",
+    "Tâches périphériques uniquement","Manipulations interdites F-GAZ/habilitation",
+    "Chantier mobile/accès impossible","Document tuteur non retourné","Stage non effectué/annulé"
+];
+const MOTIFS_EP3 = ["Élève absent","Matériel en panne","Niveau insuffisant (report)","Autre (commentaire libre)"];
+
+// =============================================
+// DATA MODEL v11
+// =============================================
+let appData = {
+    version: "11.0",
+    config: {
+        etablissement:'', ville:'', academie:'', session:2026,
+        evaluateurs: [
+            { id:'principal', nom:'', role:'principal', epreuves:['EP2','EP3-C'] },
+            { id:'collegue', nom:'', role:'collegue', epreuves:['EP3-A','EP3-B'] }
+        ],
+        phase: 'formatif', // 'formatif' | 'certificatif'
+        pctPM:100, pctM:70, pctEC:35,
+        poids_ep2: {},
+        poids_ep3: {},
+        criteres_ep2: {},
+        criteres_ep3: {},
+        referentiel: null,
+        refMeta: null
+    },
+    students: [],
+    activites: [],
+    currentIndex: 0,
+    currentEP2Sub: 'atelier',
+    currentEP3Sub: 'A'
+};
+
+// =============================================
+// HELPERS
+// =============================================
+function generateId(nom, prenom) {
+    return `${(nom||'').toUpperCase().trim()}_${(prenom||'').toUpperCase().trim()}`.replace(/\s+/g,'_');
+}
+
+function getEvaluateur() { return appData.config.evaluateurs[0]?.nom || 'Anonyme'; }
+
+function getCompEP2() { return (appData.config.referentiel?.ep2 && Array.isArray(appData.config.referentiel.ep2)) ? appData.config.referentiel.ep2 : COMP_EP2; }
+function getCompEP3() { return (appData.config.referentiel?.ep3 && Array.isArray(appData.config.referentiel.ep3)) ? appData.config.referentiel.ep3 : COMP_EP3; }
+
+function getCriteresEP2(code) {
+    return appData.config.criteres_ep2[code] || CRITERES_EP2[code] || { atelier:[], pfmp:[], dossier:[] };
+}
+
+function getCriteresEP3(code, situation) {
+    const all = appData.config.criteres_ep3[code] || CRITERES_EP3[code] || {};
+    return all[situation] || [];
+}
+
+function coefComp(c) { return c && c.obligatoire ? COEF_COEUR : 1; }
+
+function now() { return new Date().toISOString(); }
+function dateFR(iso) { if (!iso) return '-'; try { return new Date(iso).toLocaleDateString('fr-FR'); } catch { return iso; } }
+function timeFR(iso) { if (!iso) return ''; try { return new Date(iso).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}); } catch { return ''; } }
+
+// =============================================
+// DEFAULT STUDENT STRUCTURE v11
+// =============================================
+function createStudent(nom, prenom, classe, extra={}) {
+    const s = {
+        id: generateId(nom, prenom),
+        nom: nom, prenom: prenom||'', classe: classe||'',
+        pfmp: [
+            { periode:1, entreprise:extra.entreprise||'', secteur:extra.secteur||'', tuteur:extra.tuteur||'', tuteurFonction:extra.tuteurFonction||'', tuteurEmail:'', tuteurTel:'', dateDebut:'', dateFin:'', photos:[], signature:null, documentTuteur:{statut:'non_envoye',dateEnvoi:null,dateRetour:null,donnees:null}, impossibilites:{motifs:[],commentaire:''} },
+            { periode:2, entreprise:'', secteur:'', tuteur:'', tuteurFonction:'', tuteurEmail:'', tuteurTel:'', dateDebut:'', dateFin:'', photos:[], signature:null, documentTuteur:{statut:'non_envoye',dateEnvoi:null,dateRetour:null,donnees:null}, impossibilites:{motifs:[],commentaire:''} }
+        ],
+        validations: {},
+        exposition: { opportunites:0, observationsRealisees:0, parCompetence:{} },
+        journal: [],
+        ep2: { obsAtelier:'', obsPfmp1:'', obsPfmp2:'', obsDossier1:'', obsDossier2:'', noteFinale:null, jury:{date:'',members:[]} },
+        ep3: {
+            situationA:{date:'',evaluateur:'',statut:'non_fait'},
+            situationB:{date:'',evaluateur:'',statut:'non_fait'},
+            situationC:{date:'',evaluateur:'',statut:'non_fait'},
+            obsA:'', obsB:'', obsC:'',
+            noteFinale:null
+        },
+        cycle: { cloturee:false, dateCloture:null, historiqueCloture:[] }
+    };
+    // Init validations for all competences
+    [...getCompEP2(), ...getCompEP3()].forEach(c => {
+        if (!s.validations[c.code]) {
+            s.validations[c.code] = {
+                criteres: {},
+                historique: [],
+                niveauPropose: null,
+                niveauValide: null,
+                dateValidation: null
+            };
+        }
+    });
+    return s;
+}
+
+function ensureStudentV11(s) {
+    if (!s.pfmp) s.pfmp = [
+        { periode:1, entreprise:s.entreprise||'', secteur:s.secteur||'', tuteur:s.tuteur||'', tuteurFonction:s.tuteurFonction||'', tuteurEmail:'', tuteurTel:'', dateDebut:'', dateFin:'', photos:[], signature:null, documentTuteur:{statut:'non_envoye'}, impossibilites:{motifs:[],commentaire:''} },
+        { periode:2, entreprise:'', secteur:'', tuteur:'', tuteurFonction:'', tuteurEmail:'', tuteurTel:'', dateDebut:'', dateFin:'', photos:[], signature:null, documentTuteur:{statut:'non_envoye'}, impossibilites:{motifs:[],commentaire:''} }
+    ];
+    if (!s.validations) s.validations = {};
+    [...getCompEP2(),...getCompEP3()].forEach(c => {
+        if (!s.validations[c.code]) {
+            s.validations[c.code] = { criteres:{}, historique:[], niveauPropose:null, niveauValide:null, dateValidation:null };
+        }
+    });
+    if (!s.exposition) s.exposition = { opportunites:0, observationsRealisees:0, parCompetence:{} };
+    if (!s.journal) s.journal = [];
+    if (!s.ep2) s.ep2 = { obsAtelier:'', obsPfmp1:'', obsPfmp2:'', obsDossier1:'', obsDossier2:'', noteFinale:null, jury:{} };
+    if (s.ep2.obsPfmp !== undefined && s.ep2.obsPfmp1 === undefined) { s.ep2.obsPfmp1 = s.ep2.obsPfmp || ''; s.ep2.obsPfmp2 = ''; delete s.ep2.obsPfmp; }
+    if (s.ep2.obsDossier !== undefined && s.ep2.obsDossier1 === undefined) { s.ep2.obsDossier1 = s.ep2.obsDossier || ''; s.ep2.obsDossier2 = ''; delete s.ep2.obsDossier; }
+    if (!s.ep3) s.ep3 = { situationA:{date:'',evaluateur:'',statut:'non_fait'}, situationB:{date:'',evaluateur:'',statut:'non_fait'}, situationC:{date:'',evaluateur:'',statut:'non_fait'}, obsA:'',obsB:'',obsC:'', noteFinale:null };
+    if (!s.cycle) s.cycle = { cloturee:false, dateCloture:null, historiqueCloture:[] };
+    return s;
+}
+
+// =============================================
+// JOURNAL LOGGING
+// =============================================
+function journalLog(student, action, details={}) {
+    if (!student.journal) student.journal = [];
+    student.journal.push({ ts:now(), evaluateur:getEvaluateur(), action, phase:appData.config.phase, ...details });
+}
+
+// =============================================
+// COMPUTATION ENGINE EP2
+// =============================================
+function computeProposedEP2(s, compCode) {
+    const v = s.validations[compCode];
+    if (!v || !v.criteres) return null;
+    const allLevels = [];
+    Object.values(v.criteres).forEach(c => {
+        if (c.niveau && c.niveau !== 'NE') allLevels.push(c.niveau);
+    });
+    if (allLevels.length === 0) return null;
+    const cEC = allLevels.filter(l => l==='EC').length;
+    const cM = allLevels.filter(l => l==='M').length;
+    const cPM = allLevels.filter(l => l==='PM').length;
+    const t = allLevels.length;
+    if (cEC > 0) return 'EC';
+    if (cPM === t) return 'PM';
+    if (cPM >= t*0.5) return 'PM';
+    if (cM + cPM === t) return 'M';
+    return 'EC';
+}
+
+function computeProposedEP3(s, compCode) {
+    return computeProposedEP2(s, compCode); // Same algorithm
+}
+
+function getFinalLevel(s, compCode) {
+    const v = s.validations[compCode];
+    if (!v) return null;
+    if (v.niveauValide) return v.niveauValide;
+    return v.niveauPropose;
+}
+
+function calcNoteEP2(s) {
+    const pctConvert = { PM:(appData.config.pctPM||100)/100, M:(appData.config.pctM||70)/100, EC:(appData.config.pctEC||35)/100, NE:0 };
+    const details=[]; const alerts=[]; let totalPts=0, totalPoids=0, evaluated=0;
+    getCompEP2().forEach(c => {
+        const poids = appData.config.poids_ep2[c.code] ?? c.poidsDefaut;
+        const level = getFinalLevel(s, c.code);
+        const coef = coefComp(c);
+        if (level && level !== 'NE') {
+            const pts = poids * coef * (pctConvert[level]||0);
+            totalPts += pts; totalPoids += poids*coef; evaluated++;
+            if (c.obligatoire && level === 'EC') alerts.push({type:'danger', text:`⚠️ ${c.code} — ${c.nom} → EC — Compétence obligatoire non maîtrisée`});
+            details.push({code:c.code, nom:c.nom, obligatoire:c.obligatoire, coef, poids, level, pts:pts.toFixed(1)});
+        } else {
+            totalPoids += poids*coef;
+            details.push({code:c.code, nom:c.nom, obligatoire:c.obligatoire, coef, poids, level:level||'NE', pts:'0'});
+            if (!level || level==='NE') {
+                const neType = getNEType(s, c.code);
+                if (c.obligatoire) alerts.push({type:'warning', text:`${c.code} — ${c.nom} : NE ${neType}`});
+            }
+        }
+    });
+    const note = totalPoids > 0 ? (totalPts/totalPoids)*20 : 0;
+    const eligible = getCompEP2().filter(c=>c.obligatoire).every(c => { const l=getFinalLevel(s,c.code); return l && l!=='NE'; });
+    return { note:Math.round(note*2)/2, details, alerts, evaluated, total:getCompEP2().length, eligible, totalPts:Math.round(totalPts*10)/10, totalPoids:Math.round(totalPoids*10)/10 };
+}
+
+function calcNoteEP3(s) {
+    const pctConvert = { PM:(appData.config.pctPM||100)/100, M:(appData.config.pctM||70)/100, EC:(appData.config.pctEC||35)/100, NE:0 };
+    const details=[]; const alerts=[]; let totalPts=0, totalPoids=0, evaluated=0;
+    getCompEP3().forEach(c => {
+        const poids = appData.config.poids_ep3[c.code] ?? c.poidsDefaut;
+        const level = getFinalLevel(s, c.code);
+        const coef = coefComp(c);
+        if (level && level !== 'NE') {
+            const pts = poids * coef * (pctConvert[level]||0);
+            totalPts += pts; totalPoids += poids*coef; evaluated++;
+            details.push({code:c.code, nom:c.nom, obligatoire:c.obligatoire, coef, poids, level, pts:pts.toFixed(1)});
+        } else {
+            totalPoids += poids*coef;
+            details.push({code:c.code, nom:c.nom, obligatoire:c.obligatoire, coef, poids, level:level||'NE', pts:'0'});
+            if (c.obligatoire && (!level || level==='NE')) {
+                const neType = getNEType(s, c.code);
+                alerts.push({type:'warning', text:`${c.code} — ${c.nom} : NE ${neType}`});
+            }
+        }
+    });
+    const note = totalPoids > 0 ? (totalPts/totalPoids)*20 : 0;
+    const eligible = getCompEP3().filter(c=>c.obligatoire).every(c => { const l=getFinalLevel(s,c.code); return l && l!=='NE'; });
+    return { note:Math.round(note*2)/2, details, alerts, evaluated, total:getCompEP3().length, eligible, totalPts:Math.round(totalPts*10)/10, totalPoids:Math.round(totalPoids*10)/10 };
+}
+
+function getNEType(s, compCode) {
+    // Check impossibilities in PFMP
+    if (s.pfmp) {
+        for (const p of s.pfmp) {
+            if (p.impossibilites && p.impossibilites.motifs && p.impossibilites.motifs.length > 0) {
+                return 'structurel';
+            }
+        }
+    }
+    // Check EP3 absence
+    if (s.ep3) {
+        for (const sit of ['situationA','situationB','situationC']) {
+            if (s.ep3[sit]?.statut === 'absent') return 'structurel';
+        }
+    }
+    return 'pedagogique';
+}
+
+// =============================================
+// EXPOSITION
+// =============================================
+function updateExposition(s) {
+    let opp = 0, obs = 0;
+    const parComp = {};
+    [...getCompEP2(),...getCompEP3()].forEach(c => {
+        const v = s.validations[c.code];
+        const critCount = Object.keys(v?.criteres||{}).length;
+        const offert = v?.historique?.length || (critCount > 0 ? 1 : 0);
+        const fait = (v?.niveauPropose && v.niveauPropose !== 'NE') ? 1 : 0;
+        opp += Math.max(offert, fait ? 1 : 0);
+        obs += fait;
+        parComp[c.code] = { offert: Math.max(offert, fait ? 1 : 0), fait };
+    });
+    s.exposition = { opportunites:opp, observationsRealisees:obs, parCompetence:parComp };
+}
+
+// =============================================
+// STORAGE
+// =============================================
+const STORAGE_KEY = 'inerweb_ccf_v11';
+let isDemoMode = false;
+let realDataBackup = null;
+
+function saveData() {
+    if (!isDemoMode) {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(appData)); }
+        catch(e) { if (e.name==='QuotaExceededError') showToast('Stockage plein — exportez en JSON','warning'); }
+    }
+    updateStorageIndicator();
+}
+
+function loadData() {
+    // Try v11 first
+    let saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+        try {
+            const data = JSON.parse(saved);
+            appData = { ...appData, ...data };
+        } catch(e) { console.error('Load error:', e); }
+    } else {
+        // Try v10 migration
+        const v10 = localStorage.getItem('ccf_ep2_v8');
+        if (v10) {
+            try {
+                const data = JSON.parse(v10);
+                migrateV10(data);
+                showToast('✅ Données v10 migrées vers v11 !', 'success');
+            } catch(e) { console.error('Migration error:', e); }
+        }
+    }
+    // Ensure all students are v11 compliant
+    appData.students.forEach(s => ensureStudentV11(s));
+    // Init default weights
+    initDefaultWeights();
+}
+
+function initDefaultWeights() {
+    getCompEP2().forEach(c => { if (appData.config.poids_ep2[c.code]===undefined) appData.config.poids_ep2[c.code]=c.poidsDefaut; });
+    getCompEP3().forEach(c => { if (appData.config.poids_ep3[c.code]===undefined) appData.config.poids_ep3[c.code]=c.poidsDefaut; });
+    if (!appData.config.criteres_ep2 || Object.keys(appData.config.criteres_ep2).length===0) appData.config.criteres_ep2 = JSON.parse(JSON.stringify(CRITERES_EP2));
+    if (!appData.config.criteres_ep3 || Object.keys(appData.config.criteres_ep3).length===0) appData.config.criteres_ep3 = JSON.parse(JSON.stringify(CRITERES_EP3));
+}
+
+// =============================================
+// MIGRATION V10 → V11
+// =============================================
+function migrateV10(data) {
+    appData.version = "11.0";
+    // Config
+    appData.config.etablissement = data.config?.etablissement || '';
+    appData.config.ville = data.config?.ville || '';
+    appData.config.academie = data.config?.academie || '';
+    appData.config.session = data.config?.session || 2026;
+    appData.config.pctPM = data.config?.pctPM || 100;
+    appData.config.pctM = data.config?.pctM || 70;
+    appData.config.pctEC = data.config?.pctEC || 35;
+    if (data.config?.evaluateur) appData.config.evaluateurs[0].nom = data.config.evaluateur;
+    // Weights EP2
+    if (data.config?.poids) {
+        Object.entries(data.config.poids).forEach(([k,v]) => { appData.config.poids_ep2[k] = v; });
+    }
+    // Criteres EP2
+    if (data.config?.criteres) {
+        Object.entries(data.config.criteres).forEach(([code, ctx]) => {
+            appData.config.criteres_ep2[code] = { atelier:ctx.atelier||[], pfmp:ctx.tuteur||ctx.pfmp||[], dossier:ctx.dossier||[] };
+        });
+    }
+    // Students
+    appData.students = (data.students||[]).map(old => {
+        const s = createStudent(old.nom, old.prenom, old.classe, {
+            entreprise:old.entreprise, secteur:old.secteur, tuteur:old.tuteur, tuteurFonction:old.tuteurFonction
+        });
+        // Migrate evaluations → validations
+        if (old.evaluation) {
+            EP2_CONTEXTS.forEach(ctx => {
+                const ctxKey = ctx === 'pfmp' ? 'tuteur' : ctx;
+                const evalCtx = old.evaluation[ctxKey] || old.evaluation[ctx];
+                if (evalCtx?.critLevels) {
+                    Object.entries(evalCtx.critLevels).forEach(([key, level]) => {
+                        // key format: "C3.4_atelier_2" or "C3.4_tuteur_1"
+                        const parts = key.split('_');
+                        const compCode = parts[0];
+                        if (s.validations[compCode]) {
+                            const critKey = `ep2_${ctx}_${parts.slice(1).join('_')}`;
+                            s.validations[compCode].criteres[critKey] = { niveau:level, date:now(), source:ctx, evaluateur:getEvaluateur() };
+                        }
+                    });
+                }
+            });
+            // Validated levels
+            if (old.evaluation.validatedLevels) {
+                Object.entries(old.evaluation.validatedLevels).forEach(([code, level]) => {
+                    if (s.validations[code] && level && level !== 'AUTO') {
+                        s.validations[code].niveauValide = level;
+                    }
+                });
+            }
+            // Journal migration
+            if (old.evaluation.journal) {
+                s.journal = old.evaluation.journal.map(j => ({ ts:j.ts, evaluateur:j.eval||'v10', action:j.action, phase:'certificatif', detail:j.detail||'' }));
+            }
+            // Observations
+            if (old.evaluation.atelier?.obs) s.ep2.obsAtelier = old.evaluation.atelier.obs;
+            if ((old.evaluation.tuteur||old.evaluation.pfmp)?.obs) s.ep2.obsPfmp1 = (old.evaluation.tuteur||old.evaluation.pfmp).obs;
+            if (old.evaluation.dossier?.obs) s.ep2.obsDossier1 = old.evaluation.dossier.obs;
+        }
+        if (old.finalNote !== null && old.finalNote !== undefined) s.ep2.noteFinale = old.finalNote;
+        // Update proposed levels
+        getCompEP2().forEach(c => {
+            s.validations[c.code].niveauPropose = computeProposedEP2(s, c.code);
+        });
+        return s;
+    });
+    appData.currentIndex = data.currentIndex || 0;
+    saveData();
+}
+
+// =============================================
+// UI: MODE SWITCH
+// =============================================
+function switchMode(mode) {
+    if (mode === 'app') {
+        document.body.classList.add('app-mode');
+    } else {
+        document.body.classList.remove('app-mode');
+    }
+}
+
+// =============================================
+// UI: TOAST
+// =============================================
+function showToast(msg, type='info') {
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.textContent = msg;
+    document.getElementById('toastContainer').appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+}
+
+// =============================================
+// UI: MODAL
+// =============================================
+function showModal(title, body, footer='') {
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalBody').innerHTML = body;
+    document.getElementById('modalFooter').innerHTML = footer;
+    document.getElementById('modalOverlay').classList.add('active');
+}
+function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
+
+// =============================================
+// UI: PHASE
+// =============================================
+function setPhase(phase) {
+    appData.config.phase = phase;
+    document.querySelectorAll('.phase-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector(`.phase-btn.${phase}`).classList.add('active');
+    const desc = phase === 'formatif'
+        ? 'Phase formatif : les observations alimentent les propositions de niveaux. Pas encore de validation officielle.'
+        : 'Phase certificatif : les observations sont officielles et tracées. Les niveaux peuvent être validés.';
+    document.getElementById('phaseDesc').textContent = desc;
+    // Update phase badges
+    document.querySelectorAll('.cycle-badge').forEach(b => {
+        b.className = `cycle-badge ${phase}`;
+        b.textContent = phase === 'formatif' ? '📘 Formatif' : '📙 Certificatif';
+    });
+    saveData();
+}
+
+// =============================================
+// UI: STUDENT SELECT HELPERS
+// =============================================
+function populateStudentSelect(selectId) {
+    const sel = document.getElementById(selectId);
+    if (!sel) return;
+    sel.innerHTML = appData.students.map((s,i) => `<option value="${i}">${s.nom} ${s.prenom||''} ${s.classe ? '('+s.classe+')' : ''}</option>`).join('');
+    sel.value = appData.currentIndex;
+}
+
+function setupStudentNav(selectId, prevId, nextId, renderFn) {
+    const sel = document.getElementById(selectId);
+    const prev = document.getElementById(prevId);
+    const next = document.getElementById(nextId);
+    if (sel) sel.onchange = e => { appData.currentIndex = +e.target.value; renderFn(); };
+    if (prev) prev.onclick = () => { if (appData.currentIndex > 0) { appData.currentIndex--; sel.value=appData.currentIndex; renderFn(); } };
+    if (next) next.onclick = () => { if (appData.currentIndex < appData.students.length-1) { appData.currentIndex++; sel.value=appData.currentIndex; renderFn(); } };
+}
+
+// =============================================
+// RENDER: STUDENTS TABLE
+// =============================================
+function renderStudentTable() {
+    const tbody = document.getElementById('studentTableBody');
+    const empty = document.getElementById('emptyStudents');
+    if (appData.students.length === 0) {
+        tbody.innerHTML = '';
+        empty.style.display = '';
+        return;
+    }
+    empty.style.display = 'none';
+    tbody.innerHTML = appData.students.map((s,i) => {
+        const ep2 = calcNoteEP2(s);
+        const ep3 = calcNoteEP3(s);
+        updateExposition(s);
+        const expPct = s.exposition.opportunites > 0 ? Math.round((s.exposition.observationsRealisees/s.exposition.opportunites)*100) : 0;
+        const expClass = expPct >= 80 ? 'good' : expPct >= 50 ? 'medium' : 'low';
+        return `<tr>
+            <td><input type="checkbox" class="student-check" data-index="${i}"></td>
+            <td style="font-weight:700;">${s.nom}</td>
+            <td>${s.prenom||''}</td>
+            <td style="font-size:0.75rem;">${s.classe||''}</td>
+            <td><span class="level-badge ${ep2.note>=10?'m':'ec'}" style="font-size:0.7rem;">${ep2.note}/20</span> <small style="color:var(--gris);">${ep2.evaluated}/${ep2.total}</small></td>
+            <td><span class="level-badge ${ep3.note>=10?'m':'ec'}" style="font-size:0.7rem;">${ep3.note}/20</span> <small style="color:var(--gris);">${ep3.evaluated}/${ep3.total}</small></td>
+            <td><div class="expo-bar"><div class="expo-track"><div class="expo-fill ${expClass}" style="width:${expPct}%"></div></div><span class="expo-label">${expPct}%</span></div></td>
+            <td>
+                <button class="btn btn-xs" style="background:var(--bleu);color:white;" onclick="editStudent(${i})" title="Modifier">✏️</button>
+                <button class="btn btn-xs" style="background:var(--orange);color:white;" onclick="goToBilan(${i})" title="Bilan">📊</button>
+                <button class="btn btn-xs" style="background:var(--danger);color:white;" onclick="deleteStudent(${i})" title="Supprimer">🗑️</button>
+            </td>
+        </tr>`;
+    }).join('');
+
+    // Stats
+    const total = appData.students.length;
+    const ep2OK = appData.students.filter(s => calcNoteEP2(s).note >= 10).length;
+    const ep3OK = appData.students.filter(s => calcNoteEP3(s).note >= 10).length;
+    const eligible = appData.students.filter(s => calcNoteEP2(s).eligible && calcNoteEP3(s).eligible).length;
+    document.getElementById('elevesStats').innerHTML = `
+        <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-label">Élèves</div></div>
+        <div class="stat-card success"><div class="stat-value">${ep2OK}</div><div class="stat-label">EP2 ≥10</div></div>
+        <div class="stat-card violet"><div class="stat-value">${ep3OK}</div><div class="stat-label">EP3 ≥10</div></div>
+        <div class="stat-card orange"><div class="stat-value">${eligible}</div><div class="stat-label">Éligibles</div></div>
+    `;
+}
+
+// =============================================
+// RENDER: EP2 EVALUATION
+// =============================================
+function switchEP2Sub(sub) {
+    appData.currentEP2Sub = sub;
+    document.querySelectorAll('[data-ep2sub]').forEach(b => b.classList.toggle('active', b.dataset.ep2sub===sub));
+    renderEP2();
+}
+
+function renderEP2() {
+    const s = appData.students[appData.currentIndex];
+    if (!s) { document.getElementById('ep2Content').innerHTML = '<div class="empty-state"><div class="icon">👥</div><p>Aucun élève sélectionné</p></div>'; return; }
+    const sub = appData.currentEP2Sub;
+    const container = document.getElementById('ep2Content');
+
+    // Load observations — each sub-tab has its own obs
+    const obsKeyMap = { atelier:'obsAtelier', pfmp1:'obsPfmp1', pfmp2:'obsPfmp2', dossier1:'obsDossier1', dossier2:'obsDossier2' };
+    document.getElementById('obsEP2').value = s.ep2[obsKeyMap[sub]] || '';
+
+    // PFMP info for pfmp1/pfmp2/dossier1/dossier2
+    let pfmpInfo = '';
+    const pfmpIdx = (sub === 'pfmp1' || sub === 'dossier1') ? 0 : (sub === 'pfmp2' || sub === 'dossier2') ? 1 : -1;
+    if (pfmpIdx >= 0) {
+        const p = s.pfmp[pfmpIdx];
+        if (sub.startsWith('pfmp')) {
+            pfmpInfo = `<div class="pfmp-card ${p.entreprise?'active':''}">
+                <h4>🏭 PFMP ${pfmpIdx+1} ${p.entreprise ? '— '+p.entreprise : '— Non renseignée'}</h4>
+                <div class="form-grid" style="margin-top:0.5rem;">
+                    <div class="form-group"><label>Entreprise</label><input value="${p.entreprise||''}" onchange="updatePFMP(${pfmpIdx},'entreprise',this.value)"></div>
+                    <div class="form-group"><label>Secteur</label><input value="${p.secteur||''}" onchange="updatePFMP(${pfmpIdx},'secteur',this.value)"></div>
+                    <div class="form-group"><label>Tuteur</label><input value="${p.tuteur||''}" onchange="updatePFMP(${pfmpIdx},'tuteur',this.value)"></div>
+                    <div class="form-group"><label>Fonction</label><input value="${p.tuteurFonction||''}" onchange="updatePFMP(${pfmpIdx},'tuteurFonction',this.value)"></div>
+                    <div class="form-group"><label>Début</label><input type="date" value="${p.dateDebut||''}" onchange="updatePFMP(${pfmpIdx},'dateDebut',this.value)"></div>
+                    <div class="form-group"><label>Fin</label><input type="date" value="${p.dateFin||''}" onchange="updatePFMP(${pfmpIdx},'dateFin',this.value)"></div>
+                </div>
+                ${p.impossibilites.motifs.length > 0 ? '<div style="margin-top:0.5rem;">'+p.impossibilites.motifs.map(m=>`<span class="impos-chip">⚠️ ${m}</span>`).join('')+'</div>' : ''}
+                <div style="margin-top:0.5rem;"><button class="btn btn-xs" style="background:var(--warning);color:white;" onclick="addImpossibilite(${pfmpIdx})">⚠️ Signaler impossibilité</button></div>
+            </div>`;
+        } else {
+            // Dossier / retour de stage — show PFMP summary
+            pfmpInfo = `<div class="alert alert-info" style="margin-bottom:1rem;">
+                <span class="icon">📊</span>
+                <div class="alert-content">
+                    <h4>Retour de stage ${pfmpIdx+1} — ${p.entreprise||'Entreprise non renseignée'}</h4>
+                    <p>Tuteur : ${p.tuteur||'—'} (${p.tuteurFonction||'—'}) · ${p.dateDebut?dateFR(p.dateDebut)+' → '+dateFR(p.dateFin):'Dates non renseignées'}</p>
+                </div>
+            </div>`;
+        }
+    }
+
+    // Build competence grids
+    const ctxKey = sub.startsWith('pfmp') ? 'pfmp' : sub.startsWith('dossier') ? 'dossier' : 'atelier';
+    let html = pfmpInfo;
+    html += renderCompetenceGrid(s, getCompEP2(), 'ep2', ctxKey, sub);
+
+    // Synthesis
+    let synthHtml = '<div class="synth-grid">';
+    getCompEP2().forEach(c => {
+        const level = s.validations[c.code]?.niveauPropose || '';
+        synthHtml += `<div class="synth-item" data-level="${level}"><div class="synth-code">${c.code}</div><span class="level-badge ${(level||'ne').toLowerCase()}">${level||'—'}</span></div>`;
+    });
+    synthHtml += '</div>';
+    document.getElementById('ep2SynthCard').innerHTML = synthHtml;
+    document.getElementById('ep2SynthCard').style.display = '';
+
+    container.innerHTML = html;
+}
+
+// =============================================
+// RENDER: EP3 EVALUATION
+// =============================================
+function switchEP3Sub(sub) {
+    appData.currentEP3Sub = sub;
+    document.querySelectorAll('[data-ep3sub]').forEach(b => b.classList.toggle('active', b.dataset.ep3sub===sub));
+    renderEP3();
+}
+
+function renderEP3() {
+    const s = appData.students[appData.currentIndex];
+    if (!s) { document.getElementById('ep3Content').innerHTML = '<div class="empty-state"><div class="icon">👥</div><p>Aucun élève sélectionné</p></div>'; return; }
+    const sit = appData.currentEP3Sub;
+    const sitInfo = EP3_SITUATIONS[sit];
+    const container = document.getElementById('ep3Content');
+
+    // Observations
+    const obsKey = 'obs'+sit;
+    document.getElementById('obsEP3').value = s.ep3[obsKey] || '';
+
+    // Evaluator info
+    const evalEl = document.getElementById('ep3Evaluator');
+    if (sit === 'C') {
+        evalEl.textContent = '👤 ' + (appData.config.evaluateurs[0]?.nom || 'Principal');
+    } else {
+        evalEl.textContent = '👥 ' + (appData.config.evaluateurs[1]?.nom || 'Collègue');
+    }
+
+    // Situation info
+    const infoEl = document.getElementById('ep3Info');
+    infoEl.style.display = '';
+    infoEl.innerHTML = `<span class="icon">⚡</span><div class="alert-content"><h4>EP3-${sit} — ${sitInfo.nom} (${sitInfo.duree})</h4><p>Compétences : ${sitInfo.competences.join(', ')}</p></div>`;
+
+    // Get competences for this situation
+    const comps = getCompEP3().filter(c => c.situations.includes(sit));
+    let html = renderCompetenceGrid(s, comps, 'ep3', sit, `ep3${sit}`);
+
+    // Synthesis for EP3
+    let synthHtml = '<div class="synth-grid">';
+    getCompEP3().forEach(c => {
+        const level = s.validations[c.code]?.niveauPropose || '';
+        const inSit = c.situations.includes(sit);
+        synthHtml += `<div class="synth-item" data-level="${level}" style="${inSit?'':'opacity:0.3'}"><div class="synth-code">${c.code}</div><span class="level-badge ${(level||'ne').toLowerCase()}">${level||'—'}</span></div>`;
+    });
+    synthHtml += '</div>';
+    document.getElementById('ep3SynthCard').innerHTML = synthHtml;
+    document.getElementById('ep3SynthCard').style.display = '';
+
+    container.innerHTML = html;
+}
+
+// =============================================
+// RENDER: GENERIC COMPETENCE GRID
+// =============================================
+function renderCompetenceGrid(s, competences, epreuve, ctx, subKey) {
+    let html = '';
+    competences.forEach(c => {
+        const criteres = epreuve === 'ep2' ? (getCriteresEP2(c.code)[ctx] || []) : getCriteresEP3(c.code, ctx);
+        const v = s.validations[c.code];
+        const proposed = v?.niveauPropose || '';
+        const validated = v?.niveauValide;
+        const displayLevel = validated || proposed || '';
+
+        html += `<div class="comp-section" data-level="${displayLevel}">
+            <div class="comp-header" onclick="this.nextElementSibling.classList.toggle('open')">
+                <span class="comp-code">${c.code}</span>
+                <span class="comp-name">${c.full} ${c.obligatoire?'<span style="color:var(--ed-orange);font-weight:900;">✱</span>':''}</span>
+                <div class="comp-badges">
+                    ${proposed ? `<span class="level-badge ${proposed.toLowerCase()}" title="Proposé">${proposed}</span>` : '<span class="level-badge ne">—</span>'}
+                    ${validated ? `<span class="level-badge ${validated.toLowerCase()}" title="Validé" style="border:2px solid var(--orange);">✓${validated}</span>` : ''}
+                </div>
+            </div>
+            <div class="comp-body ${criteres.length>0?'open':''}">`;
+
+        if (criteres.length === 0) {
+            html += `<p style="font-size:0.8rem;color:var(--gris);font-style:italic;">Aucun critère pour ce contexte.</p>`;
+            html += renderGlobalLevelSelector(s, c.code, epreuve, ctx, subKey);
+        } else {
+            criteres.forEach((crit, i) => {
+                const critKey = `${epreuve}_${subKey}_${c.code}_${i}`;
+                const current = v?.criteres[critKey]?.niveau || '';
+                html += `<div class="crit-row">
+                    <span class="crit-label">${crit}</span>
+                    <div class="level-btns">
+                        ${LEVELS.map(l => `<button class="level-btn ${l.toLowerCase()} ${current===l?'active':''}" onclick="setCritLevel('${c.code}','${critKey}','${l}','${epreuve}')">${l}</button>`).join('')}
+                    </div>
+                    <button class="crit-del" onclick="removeCritere('${epreuve}','${c.code}','${ctx}',${i})" title="Supprimer ce critère">✕</button>
+                </div>`;
+            });
+        }
+
+        // Bouton ajouter critère
+        html += `<div class="add-crit-row">
+            <input class="add-crit-input" id="addCrit_${epreuve}_${c.code}_${ctx}" placeholder="Ajouter un critère…" onkeydown="if(event.key==='Enter')addCritere('${epreuve}','${c.code}','${ctx}')">
+            <button class="add-crit-btn" onclick="addCritere('${epreuve}','${c.code}','${ctx}')">+ Ajouter</button>
+        </div>`;
+
+        // Validated level override
+        html += `<div style="margin-top:0.5rem;padding-top:0.5rem;border-top:1px dashed var(--gris-moyen);display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+            <span style="font-size:0.78rem;font-weight:700;color:var(--bleu);">Niveau validé :</span>
+            <select style="padding:0.3rem;border:2px solid var(--gris-moyen);border-radius:6px;font-weight:700;font-size:0.78rem;" onchange="setValidatedLevel('${c.code}',this.value)">
+                <option value="" ${!validated?'selected':''}>AUTO (${proposed||'—'})</option>
+                ${LEVELS.map(l => `<option value="${l}" ${validated===l?'selected':''}>${l}</option>`).join('')}
+            </select>
+        </div>`;
+
+        html += '</div></div>';
+    });
+    return html;
+}
+
+// =============================================
+// ADD / REMOVE CRITÈRES DYNAMIQUES
+// =============================================
+function addCritere(epreuve, compCode, ctx) {
+    const inputId = `addCrit_${epreuve}_${compCode}_${ctx}`;
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const label = input.value.trim();
+    if (!label) { input.focus(); return; }
+
+    if (epreuve === 'ep2') {
+        if (!appData.config.criteres_ep2[compCode]) appData.config.criteres_ep2[compCode] = { atelier:[], pfmp:[], dossier:[] };
+        if (!appData.config.criteres_ep2[compCode][ctx]) appData.config.criteres_ep2[compCode][ctx] = [];
+        appData.config.criteres_ep2[compCode][ctx].push(label);
+    } else {
+        if (!appData.config.criteres_ep3[compCode]) appData.config.criteres_ep3[compCode] = {};
+        if (!appData.config.criteres_ep3[compCode][ctx]) appData.config.criteres_ep3[compCode][ctx] = [];
+        appData.config.criteres_ep3[compCode][ctx].push(label);
+    }
+    saveData();
+    if (epreuve === 'ep2') renderEP2(); else renderEP3();
+    showToast(`Critère ajouté : ${label}`, 'success');
+}
+
+function removeCritere(epreuve, compCode, ctx, index) {
+    if (epreuve === 'ep2') {
+        if (appData.config.criteres_ep2[compCode]?.[ctx]) {
+            appData.config.criteres_ep2[compCode][ctx].splice(index, 1);
+        }
+    } else {
+        if (appData.config.criteres_ep3[compCode]?.[ctx]) {
+            appData.config.criteres_ep3[compCode][ctx].splice(index, 1);
+        }
+    }
+    saveData();
+    if (epreuve === 'ep2') renderEP2(); else renderEP3();
+    showToast('Critère supprimé', 'info');
+}
+
+function renderGlobalLevelSelector(s, compCode, epreuve, ctx, subKey) {
+    const critKey = `${epreuve}_${subKey}_${compCode}_global`;
+    const current = s.validations[compCode]?.criteres[critKey]?.niveau || '';
+    return `<div class="crit-row">
+        <span class="crit-label" style="font-weight:700;">Niveau global</span>
+        <div class="level-btns">
+            ${LEVELS.map(l => `<button class="level-btn ${l.toLowerCase()} ${current===l?'active':''}" onclick="setCritLevel('${compCode}','${critKey}','${l}','${epreuve}')">${l}</button>`).join('')}
+        </div>
+    </div>`;
+}
+
+// =============================================
+// ACTIONS: SET LEVELS
+// =============================================
+function setCritLevel(compCode, critKey, level, epreuve) {
+    const s = appData.students[appData.currentIndex];
+    if (!s) return;
+    const v = s.validations[compCode];
+    if (!v) return;
+
+    // Toggle: click same level = unset
+    if (v.criteres[critKey]?.niveau === level) {
+        delete v.criteres[critKey];
+    } else {
+        v.criteres[critKey] = { niveau:level, date:now(), source:appData.currentEP2Sub||appData.currentEP3Sub, evaluateur:getEvaluateur() };
+    }
+
+    // Push to history
+    v.historique.push({ niveau:level, date:now(), source:critKey, evaluateur:getEvaluateur(), phase:appData.config.phase });
+
+    // Recompute proposed level
+    v.niveauPropose = epreuve === 'ep2' ? computeProposedEP2(s, compCode) : computeProposedEP3(s, compCode);
+
+    // Journal
+    journalLog(s, 'crit', { comp:compCode, crit:critKey, niveau:level });
+
+    saveData();
+    // Re-render current tab
+    if (epreuve === 'ep2') renderEP2(); else renderEP3();
+}
+
+function setValidatedLevel(compCode, level) {
+    const s = appData.students[appData.currentIndex];
+    if (!s || !s.validations[compCode]) return;
+    s.validations[compCode].niveauValide = level || null;
+    if (level) {
+        s.validations[compCode].dateValidation = now();
+        journalLog(s, 'validated', { comp:compCode, niveau:level });
+    }
+    saveData();
+    renderEP2(); renderEP3();
+}
+
+// =============================================
+// ACTIONS: PFMP
+// =============================================
+function updatePFMP(pIdx, field, value) {
+    const s = appData.students[appData.currentIndex];
+    if (!s) return;
+    s.pfmp[pIdx][field] = value;
+    saveData();
+}
+
+function addImpossibilite(pIdx) {
+    const s = appData.students[appData.currentIndex];
+    if (!s) return;
+    const motifOptions = MOTIFS_PFMP.map((m,i) => `<label style="display:flex;align-items:center;gap:0.4rem;padding:0.3rem 0;font-size:0.82rem;"><input type="checkbox" class="impos-check" value="${i}"> ${m}</label>`).join('');
+    showModal('⚠️ Signaler une impossibilité PFMP',
+        `<p style="font-size:0.82rem;color:var(--gris);margin-bottom:0.5rem;">PFMP ${pIdx+1} — ${s.nom} ${s.prenom}</p>
+        <div style="margin-bottom:0.5rem;">${motifOptions}</div>
+        <div class="form-group"><label>Commentaire</label><textarea id="imposComment" rows="2" style="width:100%;padding:0.4rem;border:2px solid var(--gris-moyen);border-radius:8px;font-family:inherit;"></textarea></div>`,
+        `<button class="btn btn-sm" style="background:var(--gris);color:white;" onclick="closeModal()">Annuler</button>
+        <button class="btn btn-sm" style="background:var(--warning);color:white;" onclick="confirmImpossibilite(${pIdx})">Confirmer</button>`
+    );
+}
+
+function confirmImpossibilite(pIdx) {
+    const s = appData.students[appData.currentIndex];
+    const checks = [...document.querySelectorAll('.impos-check:checked')];
+    const motifs = checks.map(c => MOTIFS_PFMP[+c.value]);
+    const comment = document.getElementById('imposComment')?.value || '';
+    s.pfmp[pIdx].impossibilites = { motifs, commentaire:comment };
+    journalLog(s, 'impossibilite', { pfmp:pIdx+1, motifs, comment });
+    saveData(); closeModal(); renderEP2();
+    showToast(`Impossibilité PFMP ${pIdx+1} enregistrée`, 'warning');
+}
+
+// =============================================
+// ACTIONS: STUDENTS CRUD
+// =============================================
+function addManualStudent() {
+    showModal('➕ Ajouter un élève', `
+        <div class="form-grid">
+            <div class="form-group"><label>Nom *</label><input id="aNom"></div>
+            <div class="form-group"><label>Prénom</label><input id="aPrenom"></div>
+            <div class="form-group"><label>Classe</label><input id="aClasse"></div>
+        </div>`,
+        `<button class="btn btn-sm" style="background:var(--gris);color:white;" onclick="closeModal()">Annuler</button>
+        <button class="btn btn-primary btn-sm" onclick="confirmAddStudent()">Ajouter</button>`
+    );
+}
+
+function confirmAddStudent() {
+    const nom = document.getElementById('aNom').value.trim();
+    if (!nom) { showToast('Nom requis','error'); return; }
+    const prenom = document.getElementById('aPrenom').value.trim();
+    const id = generateId(nom, prenom);
+    if (appData.students.find(s => s.id === id)) { showToast('Existe déjà','warning'); return; }
+    appData.students.push(createStudent(nom, prenom, document.getElementById('aClasse').value.trim()));
+    appData.students.sort((a,b) => a.nom.localeCompare(b.nom));
+    saveData(); updateAll(); closeModal();
+    showToast(`${nom} ajouté(e)`, 'success');
+}
+
+function editStudent(i) {
+    const s = appData.students[i];
+    showModal('✏️ Modifier', `
+        <div class="form-grid">
+            <div class="form-group"><label>Nom</label><input id="eNom" value="${s.nom}"></div>
+            <div class="form-group"><label>Prénom</label><input id="ePrenom" value="${s.prenom}"></div>
+            <div class="form-group"><label>Classe</label><input id="eClasse" value="${s.classe||''}"></div>
+        </div>`,
+        `<button class="btn btn-sm" style="background:var(--gris);color:white;" onclick="closeModal()">Annuler</button>
+        <button class="btn btn-primary btn-sm" onclick="saveStudentEdit(${i})">OK</button>`
+    );
+}
+
+function saveStudentEdit(i) {
+    const s = appData.students[i];
+    s.nom = document.getElementById('eNom').value.trim();
+    s.prenom = document.getElementById('ePrenom').value.trim();
+    s.id = generateId(s.nom, s.prenom);
+    s.classe = document.getElementById('eClasse').value;
+    saveData(); updateAll(); closeModal();
+}
+
+function deleteStudent(i) {
+    showModal('🗑️ Supprimer', `<p>Supprimer <strong>${appData.students[i].nom} ${appData.students[i].prenom}</strong> ?</p>`,
+        `<button class="btn btn-sm" style="background:var(--gris);color:white;" onclick="closeModal()">Non</button>
+        <button class="btn btn-sm" style="background:var(--danger);color:white;" onclick="confirmDeleteStudent(${i})">Oui</button>`
+    );
+}
+
+function confirmDeleteStudent(i) {
+    appData.students.splice(i, 1);
+    if (appData.currentIndex >= appData.students.length) appData.currentIndex = Math.max(0, appData.students.length-1);
+    saveData(); updateAll(); closeModal();
+}
+
+function goToBilan(i) {
+    appData.currentIndex = i;
+    document.querySelector('[data-tab="bilan"]').click();
+}
+
+// =============================================
+// IMPORT CSV/XLSX
+// =============================================
+function importFile(file) {
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (ext === 'csv') {
+        Papa.parse(file, { header:true, skipEmptyLines:true, complete: r => processImport(r.data) });
+    } else {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const wb = XLSX.read(e.target.result, { type:'array' });
+            const data = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+            processImport(data);
+        };
+        reader.readAsArrayBuffer(file);
+    }
+}
+
+function processImport(data) {
+    let added = 0;
+    data.forEach(row => {
+        const nom = (row.Nom || row.nom || '').trim();
+        if (!nom) return;
+        const prenom = (row.Prénom || row.Prenom || row.prenom || '').trim();
+        const id = generateId(nom, prenom);
+        if (appData.students.find(s => s.id === id)) return;
+        appData.students.push(createStudent(nom, prenom,
+            row.Classe || row.classe || '',
+            { entreprise:row.Entreprise||row.entreprise||'', secteur:row.Secteur||row.secteur||'', tuteur:row.Tuteur||row.tuteur||'', tuteurFonction:row['Fonction tuteur']||row.tuteurFonction||'' }
+        ));
+        added++;
+    });
+    appData.students.sort((a,b) => a.nom.localeCompare(b.nom));
+    saveData(); updateAll();
+    showToast(`${added} élève(s) importé(s)`, 'success');
+}
+
+// =============================================
+// RENDER: BILAN
+// =============================================
+function renderBilan() {
+    const s = appData.students[appData.currentIndex];
+    const container = document.getElementById('bilanContent');
+    if (!s) { container.innerHTML = '<div class="empty-state"><div class="icon">🏆</div><p>Aucun élève sélectionné</p></div>'; return; }
+
+    const ep2 = calcNoteEP2(s);
+    const ep3 = calcNoteEP3(s);
+    updateExposition(s);
+    const expPct = s.exposition.opportunites > 0 ? Math.round((s.exposition.observationsRealisees/s.exposition.opportunites)*100) : 0;
+
+    let html = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+        <div class="card" style="border-top:4px solid var(--ep2);text-align:center;">
+            <h4 style="color:var(--ep2);margin-bottom:0.5rem;">🔧 EP2 — Réalisation (coeff. 6)</h4>
+            <div style="font-size:2rem;font-weight:900;color:var(--bleu);">${s.ep2.noteFinale !== null ? s.ep2.noteFinale : ep2.note} <span style="font-size:1rem;color:var(--gris);">/ 20</span></div>
+            <div style="font-size:0.75rem;color:var(--gris);">Proposé : ${ep2.note}/20 · ${ep2.evaluated}/${ep2.total} compétences · ${ep2.eligible?'✅ Éligible':'⚠️ Non éligible'}</div>
+            <div class="form-group" style="margin-top:0.5rem;max-width:120px;margin-left:auto;margin-right:auto;">
+                <label>Note validée</label>
+                <input type="number" min="0" max="20" step="0.5" value="${s.ep2.noteFinale!==null?s.ep2.noteFinale:''}" placeholder="${ep2.note}" onchange="setFinalNote('ep2',this.value)" style="text-align:center;font-weight:900;font-size:1.1rem;">
+            </div>
+        </div>
+        <div class="card" style="border-top:4px solid var(--ep3);text-align:center;">
+            <h4 style="color:var(--ep3);margin-bottom:0.5rem;">⚡ EP3 — Entretien & MeS (coeff. 4)</h4>
+            <div style="font-size:2rem;font-weight:900;color:var(--ep3);">${s.ep3.noteFinale !== null ? s.ep3.noteFinale : ep3.note} <span style="font-size:1rem;color:var(--gris);">/ 20</span></div>
+            <div style="font-size:0.75rem;color:var(--gris);">Proposé : ${ep3.note}/20 · ${ep3.evaluated}/${ep3.total} compétences · ${ep3.eligible?'✅ Éligible':'⚠️ Non éligible'}</div>
+            <div class="form-group" style="margin-top:0.5rem;max-width:120px;margin-left:auto;margin-right:auto;">
+                <label>Note validée</label>
+                <input type="number" min="0" max="20" step="0.5" value="${s.ep3.noteFinale!==null?s.ep3.noteFinale:''}" placeholder="${ep3.note}" onchange="setFinalNote('ep3',this.value)" style="text-align:center;font-weight:900;font-size:1.1rem;">
+            </div>
+        </div>
+    </div>`;
+
+    // Exposition
+    html += `<div class="card"><h4 style="margin-bottom:0.5rem;">📊 Indicateur d'exposition</h4>
+        <div class="expo-bar" style="margin-bottom:0.5rem;">
+            <span style="font-size:0.78rem;font-weight:700;min-width:80px;">${s.exposition.observationsRealisees}/${s.exposition.opportunites}</span>
+            <div class="expo-track" style="height:12px;">
+                <div class="expo-fill ${expPct>=80?'good':expPct>=50?'medium':'low'}" style="width:${expPct}%"></div>
+            </div>
+            <span class="expo-label" style="font-size:0.85rem;">${expPct}%</span>
+        </div>
+        <p style="font-size:0.78rem;color:var(--gris);">Cet indicateur prouve que l'enseignant a donné des opportunités à l'élève. Défense inspection.</p>
+    </div>`;
+
+    // Alerts
+    const allAlerts = [...ep2.alerts, ...ep3.alerts];
+    if (allAlerts.length > 0) {
+        html += '<div class="card" style="border-top:4px solid var(--warning);">';
+        allAlerts.forEach(a => {
+            html += `<div class="alert alert-${a.type}" style="margin-bottom:0.5rem;"><div class="alert-content"><p>${a.text}</p></div></div>`;
+        });
+        html += '</div>';
+    }
+
+    // Detailed tables
+    html += renderBilanTable('EP2', ep2.details);
+    html += renderBilanTable('EP3', ep3.details);
+
+    // Journal
+    html += `<div class="card" style="border-top:4px solid var(--info);"><div class="card-header"><h3 class="card-title"><span class="icon">📖</span> Journal élève</h3></div>`;
+    html += `<div style="max-height:200px;overflow-y:auto;">`;
+    (s.journal||[]).slice(-20).reverse().forEach(j => {
+        html += `<div class="journal-entry ${j.phase||''}" ><span class="j-date">${dateFR(j.ts)} ${timeFR(j.ts)}</span> · <span class="j-eval">${j.evaluateur||''}</span> · <span class="j-action">${j.action} ${j.comp||''} ${j.niveau||''}</span></div>`;
+    });
+    html += '</div></div>';
+
+    // Cycle / Cloture
+    html += `<div class="card" style="border-top:4px solid var(--succes);">
+        <div class="card-header"><h3 class="card-title"><span class="icon">🔒</span> Clôture</h3></div>
+        <p style="font-size:0.82rem;color:var(--gris);margin-bottom:0.5rem;">${s.cycle.cloturee ? '✅ Clôturé le '+dateFR(s.cycle.dateCloture) : '🔓 Non clôturé'}</p>
+        <div style="display:flex;gap:0.5rem;">
+            ${!s.cycle.cloturee ? `<button class="btn btn-sm" style="background:var(--succes);color:white;" onclick="cloturerEleve()">🔒 Clôturer</button>` : `<button class="btn btn-sm" style="background:var(--warning);color:white;" onclick="deverrouillerEleve()">🔓 Déverrouiller</button>`}
+        </div>
+    </div>`;
+
+    container.innerHTML = html;
+}
+
+function renderBilanTable(label, details) {
+    let html = `<div class="card"><h4 style="margin-bottom:0.5rem;">${label} — Détail</h4><div class="table-wrap"><table class="bilan-table"><thead><tr><th>Code</th><th>Compétence</th><th>Poids</th><th>Coef</th><th>Niveau</th><th>Points</th></tr></thead><tbody>`;
+    details.forEach(d => {
+        const lvClass = d.level ? d.level.toLowerCase() : 'ne';
+        html += `<tr><td style="font-weight:900;">${d.code}</td><td class="comp-col">${d.nom} ${d.obligatoire?'✱':''}</td><td>${d.poids}</td><td>×${d.coef}</td><td><span class="level-badge ${lvClass}">${d.level||'NE'}</span></td><td style="font-weight:700;">${d.pts}</td></tr>`;
+    });
+    html += '</tbody></table></div></div>';
+    return html;
+}
+
+// =============================================
+// ACTIONS: NOTES & CLOTURE
+// =============================================
+function setFinalNote(epreuve, value) {
+    const s = appData.students[appData.currentIndex];
+    if (!s) return;
+    const val = value ? parseFloat(value) : null;
+    if (epreuve === 'ep2') s.ep2.noteFinale = val;
+    else s.ep3.noteFinale = val;
+    journalLog(s, 'note', { epreuve, note:val });
+    saveData();
+}
+
+function cloturerEleve() {
+    const s = appData.students[appData.currentIndex];
+    if (!s) return;
+    s.cycle.cloturee = true;
+    s.cycle.dateCloture = now();
+    s.cycle.historiqueCloture.push({ action:'cloture', date:now(), auteur:getEvaluateur() });
+    // Set niveauValide for all comps that have a proposed level
+    [...getCompEP2(),...getCompEP3()].forEach(c => {
+        const v = s.validations[c.code];
+        if (v && v.niveauPropose && !v.niveauValide) {
+            v.niveauValide = v.niveauPropose;
+            v.dateValidation = now();
+        }
+    });
+    journalLog(s, 'cloture', {});
+    saveData(); renderBilan();
+    showToast(`${s.nom} — Cycle clôturé`, 'success');
+}
+
+function deverrouillerEleve() {
+    showModal('🔓 Déverrouillage', `
+        <p style="font-size:0.85rem;color:var(--gris);margin-bottom:0.5rem;">Motif obligatoire :</p>
+        <textarea id="deverrMotif" rows="2" style="width:100%;padding:0.5rem;border:2px solid var(--gris-moyen);border-radius:8px;font-family:inherit;" placeholder="Raison du déverrouillage..."></textarea>`,
+        `<button class="btn btn-sm" style="background:var(--gris);color:white;" onclick="closeModal()">Annuler</button>
+        <button class="btn btn-sm" style="background:var(--warning);color:white;" onclick="confirmDeverrouillage()">Déverrouiller</button>`
+    );
+}
+
+function confirmDeverrouillage() {
+    const motif = document.getElementById('deverrMotif')?.value?.trim();
+    if (!motif) { showToast('Motif requis','error'); return; }
+    const s = appData.students[appData.currentIndex];
+    s.cycle.cloturee = false;
+    s.cycle.historiqueCloture.push({ action:'deverrouillage', date:now(), auteur:getEvaluateur(), motif });
+    journalLog(s, 'deverrouillage', { motif });
+    saveData(); closeModal(); renderBilan();
+    showToast(`${s.nom} — Déverrouillé`, 'warning');
+}
+
+// =============================================
+// RENDER: ACTIVITES
+// =============================================
+function renderActivites() {
+    const container = document.getElementById('activitesList');
+    const empty = document.getElementById('emptyActivites');
+    if (appData.activites.length === 0) { container.innerHTML = ''; empty.style.display = ''; return; }
+    empty.style.display = 'none';
+    container.innerHTML = appData.activites.sort((a,b) => (b.date||'').localeCompare(a.date||'')).map((a,i) => {
+        const epColor = a.epreuve.startsWith('EP3') ? 'var(--ep3)' : 'var(--ep2)';
+        return `<div class="card" style="border-left:4px solid ${epColor};">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+                <div>
+                    <strong style="font-size:0.85rem;">${a.titre||'Sans titre'}</strong>
+                    <div style="display:flex;gap:0.3rem;margin-top:0.2rem;flex-wrap:wrap;">
+                        <span class="cycle-badge ${a.phase}">${a.phase==='formatif'?'📘':'📙'} ${a.phase}</span>
+                        <span style="font-size:0.72rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:6px;background:${epColor};color:white;">${a.epreuve}</span>
+                        <span style="font-size:0.72rem;color:var(--gris);">${dateFR(a.date)} · ${a.evaluateur||''}</span>
+                    </div>
+                </div>
+                <div style="display:flex;gap:0.3rem;">
+                    <button class="btn btn-xs" style="background:var(--danger);color:white;" onclick="deleteActivite(${i})">🗑️</button>
+                </div>
+            </div>
+            <div style="margin-top:0.3rem;font-size:0.75rem;color:var(--gris);">
+                Compétences : ${(a.competencesCibles||[]).join(', ')} · ${(a.eleves||[]).length} élève(s)
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function addActivite() {
+    const compOptions = [...getCompEP2(),...getCompEP3()].map(c => `<label style="display:flex;align-items:center;gap:0.3rem;font-size:0.78rem;"><input type="checkbox" class="act-comp" value="${c.code}"> ${c.code} ${c.nom}</label>`).join('');
+    const epOptions = ['EP2','EP3-A','EP3-B','EP3-C'].map(e => `<option value="${e}">${e}</option>`).join('');
+    showModal('➕ Nouvelle activité',
+        `<div class="form-grid">
+            <div class="form-group"><label>Titre</label><input id="actTitre" placeholder="TP Brasage, Mise en service..."></div>
+            <div class="form-group"><label>Date</label><input type="date" id="actDate" value="${new Date().toISOString().split('T')[0]}"></div>
+            <div class="form-group"><label>Épreuve</label><select id="actEpreuve">${epOptions}</select></div>
+        </div>
+        <div style="margin:0.5rem 0;"><strong style="font-size:0.82rem;">Compétences ciblées :</strong><div style="max-height:150px;overflow-y:auto;margin-top:0.3rem;">${compOptions}</div></div>`,
+        `<button class="btn btn-sm" style="background:var(--gris);color:white;" onclick="closeModal()">Annuler</button>
+        <button class="btn btn-primary btn-sm" onclick="confirmAddActivite()">Créer</button>`
+    );
+}
+
+function confirmAddActivite() {
+    const titre = document.getElementById('actTitre').value.trim();
+    const date = document.getElementById('actDate').value;
+    const epreuve = document.getElementById('actEpreuve').value;
+    const comps = [...document.querySelectorAll('.act-comp:checked')].map(c => c.value);
+    appData.activites.push({
+        id: 'act_' + Date.now(),
+        titre, date, epreuve,
+        contexte: epreuve==='EP2'?'atelier':'etablissement',
+        phase: appData.config.phase,
+        competencesCibles: comps,
+        evaluateur: getEvaluateur(),
+        eleves: appData.students.map(s => ({ studentId:s.id, present:true, valide:false, dateValidation:null, observations:'' }))
+    });
+    saveData(); closeModal(); renderActivites();
+    showToast('Activité créée', 'success');
+}
+
+function deleteActivite(i) {
+    appData.activites.splice(i, 1);
+    saveData(); renderActivites();
+}
+
+// =============================================
+// EXPORT
+// =============================================
+function exportExcel() {
+    const rows = appData.students.map(s => {
+        const ep2 = calcNoteEP2(s);
+        const ep3 = calcNoteEP3(s);
+        const row = { Session:appData.config.session, Nom:s.nom, Prénom:s.prenom, Classe:s.classe };
+        row['EP2 Note'] = s.ep2.noteFinale !== null ? s.ep2.noteFinale : ep2.note;
+        row['EP2 Éligible'] = ep2.eligible ? 'Oui' : 'Non';
+        row['EP3 Note'] = s.ep3.noteFinale !== null ? s.ep3.noteFinale : ep3.note;
+        row['EP3 Éligible'] = ep3.eligible ? 'Oui' : 'Non';
+        ep2.details.forEach(d => { row[`EP2 ${d.code}`] = d.level||'NE'; });
+        ep3.details.forEach(d => { row[`EP3 ${d.code}`] = d.level||'NE'; });
+        return row;
+    });
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'CCF EP2+EP3');
+    XLSX.writeFile(wb, `CCF_v11_${appData.config.session}.xlsx`);
+    showToast('Excel exporté', 'success');
+}
+
+function exportBackup() {
+    const blob = new Blob([JSON.stringify(appData, null, 2)], { type:'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `CCF_v11_Backup_${appData.config.session}_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    showToast('Backup JSON téléchargé', 'success');
+}
+
+function exportStudentPDF(idx) {
+    const { jsPDF } = window.jspdf;
+    const s = appData.students[idx];
+    const ep2 = calcNoteEP2(s);
+    const ep3 = calcNoteEP3(s);
+    const cfg = appData.config;
+
+    const pdf = new jsPDF('p','mm','a4');
+    const W=210, M=15;
+    let y = 8;
+
+    // Header
+    pdf.setFillColor(27,58,99);
+    pdf.rect(0,0,W,22,'F');
+    pdf.setTextColor(255,255,255);
+    pdf.setFontSize(9);
+    pdf.text(`ACADÉMIE ${(cfg.academie||'').toUpperCase()} — Session ${cfg.session}`, M, y);
+    y += 5;
+    pdf.setFontSize(12);
+    pdf.text(`${cfg.etablissement||''} — CAP IFCA — EP2 + EP3`, M, y);
+    y += 5;
+    pdf.setFontSize(10);
+    pdf.text(`Fiche CCF : ${s.nom} ${s.prenom||''} — ${s.classe||''}`, M, y);
+    y += 10;
+
+    pdf.setTextColor(0,0,0);
+
+    // EP2
+    pdf.setFontSize(11);
+    pdf.setFont(undefined,'bold');
+    pdf.text(`EP2 — Réalisation d'une installation (coeff. 6)`, M, y);
+    y += 6;
+    pdf.setFontSize(8);
+    pdf.setFont(undefined,'normal');
+    ep2.details.forEach(d => {
+        pdf.text(`${d.code} ${d.nom} ${d.obligatoire?'✱':''} : ${d.level||'NE'} — ${d.pts} pts`, M+2, y);
+        y += 4;
+        if (y > 270) { pdf.addPage(); y = 15; }
+    });
+    y += 3;
+    pdf.setFont(undefined,'bold');
+    pdf.text(`Note EP2 proposée : ${ep2.note}/20 ${ep2.eligible?'(éligible)':'(non éligible)'}`, M, y);
+    if (s.ep2.noteFinale !== null) {
+        y += 4;
+        pdf.setTextColor(255,107,53);
+        pdf.text(`Note EP2 validée : ${s.ep2.noteFinale}/20`, M, y);
+        pdf.setTextColor(0,0,0);
+    }
+    y += 8;
+
+    // EP3
+    pdf.setFontSize(11);
+    pdf.setFont(undefined,'bold');
+    pdf.text(`EP3 — Entretien et mise en service (coeff. 4)`, M, y);
+    y += 6;
+    pdf.setFontSize(8);
+    pdf.setFont(undefined,'normal');
+    ep3.details.forEach(d => {
+        pdf.text(`${d.code} ${d.nom} ${d.obligatoire?'✱':''} : ${d.level||'NE'} — ${d.pts} pts`, M+2, y);
+        y += 4;
+        if (y > 270) { pdf.addPage(); y = 15; }
+    });
+    y += 3;
+    pdf.setFont(undefined,'bold');
+    pdf.text(`Note EP3 proposée : ${ep3.note}/20 ${ep3.eligible?'(éligible)':'(non éligible)'}`, M, y);
+    if (s.ep3.noteFinale !== null) {
+        y += 4;
+        pdf.setTextColor(142,68,173);
+        pdf.text(`Note EP3 validée : ${s.ep3.noteFinale}/20`, M, y);
+        pdf.setTextColor(0,0,0);
+    }
+
+    // Footer
+    const totalPages = pdf.internal.getNumberOfPages();
+    for (let p=1; p<=totalPages; p++) {
+        pdf.setPage(p);
+        pdf.setFontSize(7);
+        pdf.setTextColor(150,150,150);
+        pdf.text(`inerWeb Édu v11 — ${new Date().toLocaleDateString('fr-FR')} — Page ${p}/${totalPages}`, M, 290);
+    }
+
+    pdf.save(`CCF_v11_${s.nom}_${s.prenom||''}.pdf`);
+    showToast(`PDF ${s.nom} exporté`, 'success');
+}
+
+function exportAllPDF() {
+    appData.students.forEach((_, i) => setTimeout(() => exportStudentPDF(i), i*500));
+}
+
+function exportRapportInspection() {
+    const { jsPDF } = window.jspdf;
+    const cfg = appData.config;
+    const pdf = new jsPDF('p','mm','a4');
+    const W=210, M=15;
+
+    // Couverture
+    pdf.setFillColor(27,58,99);
+    pdf.rect(0,0,W,297,'F');
+    pdf.setTextColor(255,255,255);
+    pdf.setFontSize(24);
+    pdf.text('Rapport CCF', W/2, 80, {align:'center'});
+    pdf.setFontSize(14);
+    pdf.text(`${cfg.etablissement||'Établissement'}`, W/2, 100, {align:'center'});
+    pdf.text(`Session ${cfg.session}`, W/2, 112, {align:'center'});
+    pdf.setFontSize(11);
+    pdf.text('EP2 — Réalisation d\'une installation (coeff. 6)', W/2, 135, {align:'center'});
+    pdf.text('EP3 — Entretien et mise en service (coeff. 4)', W/2, 145, {align:'center'});
+    pdf.setFontSize(9);
+    pdf.text(`Évaluateur principal : ${cfg.evaluateurs[0]?.nom||''}`, W/2, 170, {align:'center'});
+    pdf.text(`Collègue EP3 : ${cfg.evaluateurs[1]?.nom||''}`, W/2, 178, {align:'center'});
+    pdf.text(`Généré le ${new Date().toLocaleDateString('fr-FR')} — inerWeb Édu v11`, W/2, 250, {align:'center'});
+
+    // Tableau synthèse
+    pdf.addPage();
+    pdf.setTextColor(0,0,0);
+    pdf.setFontSize(12);
+    pdf.setFont(undefined,'bold');
+    pdf.text('Tableau de synthèse', M, 15);
+    let y = 22;
+    pdf.setFontSize(7);
+    pdf.setFont(undefined,'normal');
+
+    // Headers
+    const cols = ['Nom','Prénom','EP2','EP3','Élig.EP2','Élig.EP3','Expo.'];
+    const colW = [30,25,15,15,18,18,15];
+    let x = M;
+    pdf.setFillColor(27,58,99);
+    pdf.setTextColor(255,255,255);
+    pdf.rect(M, y-3, colW.reduce((a,b)=>a+b,0), 6, 'F');
+    cols.forEach((c,i) => { pdf.text(c, x+1, y); x += colW[i]; });
+    y += 6;
+    pdf.setTextColor(0,0,0);
+
+    appData.students.forEach(s => {
+        const ep2 = calcNoteEP2(s);
+        const ep3 = calcNoteEP3(s);
+        updateExposition(s);
+        const expPct = s.exposition.opportunites>0 ? Math.round((s.exposition.observationsRealisees/s.exposition.opportunites)*100) : 0;
+        x = M;
+        const vals = [s.nom, s.prenom||'', (s.ep2.noteFinale!==null?s.ep2.noteFinale:ep2.note)+'/20', (s.ep3.noteFinale!==null?s.ep3.noteFinale:ep3.note)+'/20', ep2.eligible?'✓':'✗', ep3.eligible?'✓':'✗', expPct+'%'];
+        vals.forEach((v,i) => { pdf.text(String(v), x+1, y); x += colW[i]; });
+        y += 5;
+        if (y > 275) { pdf.addPage(); y = 15; }
+    });
+
+    // Stats
+    y += 8;
+    pdf.setFontSize(10);
+    pdf.setFont(undefined,'bold');
+    pdf.text('Statistiques', M, y);
+    y += 6;
+    pdf.setFontSize(8);
+    pdf.setFont(undefined,'normal');
+    const total = appData.students.length;
+    const eligEP2 = appData.students.filter(s => calcNoteEP2(s).eligible).length;
+    const eligEP3 = appData.students.filter(s => calcNoteEP3(s).eligible).length;
+    pdf.text(`Effectif : ${total} élèves`, M, y); y+=4;
+    pdf.text(`Éligibles EP2 : ${eligEP2}/${total} (${total?Math.round(eligEP2/total*100):0}%)`, M, y); y+=4;
+    pdf.text(`Éligibles EP3 : ${eligEP3}/${total} (${total?Math.round(eligEP3/total*100):0}%)`, M, y); y+=4;
+
+    // NE structurels
+    let neStructurels = [];
+    appData.students.forEach(s => {
+        [...getCompEP2(),...getCompEP3()].forEach(c => {
+            const l = getFinalLevel(s,c.code);
+            if (!l || l==='NE') {
+                const type = getNEType(s,c.code);
+                if (type==='structurel') neStructurels.push(`${s.nom} — ${c.code} : ${s.pfmp.flatMap(p=>p.impossibilites.motifs).join(', ')||'motif EP3'}`);
+            }
+        });
+    });
+    if (neStructurels.length > 0) {
+        y += 6;
+        pdf.setFont(undefined,'bold');
+        pdf.text('NE structurels (impossibilités documentées)', M, y);
+        y += 5;
+        pdf.setFont(undefined,'normal');
+        pdf.setFontSize(7);
+        neStructurels.forEach(ne => { pdf.text(ne, M+2, y); y+=4; if(y>275){pdf.addPage();y=15;} });
+    }
+
+    // Footer all pages
+    const tp = pdf.internal.getNumberOfPages();
+    for (let p=1;p<=tp;p++) {
+        pdf.setPage(p);
+        pdf.setFontSize(6);
+        pdf.setTextColor(150,150,150);
+        pdf.text(`inerWeb Édu v11 — Rapport inspection — ${new Date().toLocaleDateString('fr-FR')} — Page ${p}/${tp}`, M, 292);
+    }
+
+    pdf.save(`Rapport_Inspection_CCF_${cfg.session}.pdf`);
+    showToast('Rapport inspection généré', 'success');
+}
+
+// =============================================
+// FUSION MULTI-EVALUATEURS
+// =============================================
+function fusionImport(file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+        try {
+            const data = JSON.parse(e.target.result);
+            let merged = 0;
+            (data.students||[]).forEach(incoming => {
+                const local = appData.students.find(s => s.id === incoming.id);
+                if (!local) return;
+                // Merge validations: STACK, never overwrite
+                Object.entries(incoming.validations||{}).forEach(([code, iv]) => {
+                    if (!local.validations[code]) local.validations[code] = { criteres:{}, historique:[], niveauPropose:null, niveauValide:null, dateValidation:null };
+                    const lv = local.validations[code];
+                    // Stack criteres
+                    Object.entries(iv.criteres||{}).forEach(([key, val]) => {
+                        if (!lv.criteres[key] || (new Date(val.date) > new Date(lv.criteres[key].date))) {
+                            lv.criteres[key] = val;
+                        }
+                    });
+                    // Stack history
+                    (iv.historique||[]).forEach(h => {
+                        if (!lv.historique.find(lh => lh.ts===h.ts && lh.evaluateur===h.evaluateur)) {
+                            lv.historique.push(h);
+                        }
+                    });
+                    // Recompute proposed
+                    lv.niveauPropose = computeProposedEP2(local, code) || computeProposedEP3(local, code);
+                });
+                // Stack journal
+                (incoming.journal||[]).forEach(j => {
+                    if (!local.journal.find(lj => lj.ts===j.ts && lj.evaluateur===j.evaluateur)) {
+                        local.journal.push(j);
+                    }
+                });
+                local.journal.sort((a,b) => (a.ts||'').localeCompare(b.ts||''));
+                merged++;
+            });
+            saveData(); updateAll();
+            showToast(`✅ Fusion : ${merged} élève(s) mis à jour`, 'success');
+            document.getElementById('fusionLog').innerHTML = `<div class="alert alert-success"><div class="alert-content"><p>Fusion réussie : ${merged} élève(s) • ${new Date().toLocaleTimeString('fr-FR')}</p></div></div>`;
+        } catch(err) {
+            showToast('Fichier invalide','error');
+            console.error(err);
+        }
+    };
+    reader.readAsText(file);
+}
+
+// =============================================
+// RENDER: JOURNAL GLOBAL
+// =============================================
+function renderJournal() {
+    const container = document.getElementById('journalGlobal');
+    if (!container) return;
+    const allEntries = [];
+    appData.students.forEach(s => {
+        (s.journal||[]).forEach(j => allEntries.push({ ...j, student:s.nom+' '+(s.prenom||'') }));
+    });
+    allEntries.sort((a,b) => (b.ts||'').localeCompare(a.ts||''));
+    container.innerHTML = allEntries.slice(0,50).map(j =>
+        `<div class="journal-entry ${j.phase||''}"><span class="j-date">${dateFR(j.ts)} ${timeFR(j.ts)}</span> · <span class="j-eval">${j.evaluateur||''}</span> · <strong>${j.student}</strong> · <span class="j-action">${j.action} ${j.comp||''} ${j.niveau||''}</span></div>`
+    ).join('') || '<p style="font-size:0.82rem;color:var(--gris);">Aucune entrée.</p>';
+}
+
+// =============================================
+// DEMO MODE
+// =============================================
+const DEMO_STUDENTS = [
+    { nom:'DUPONT', prenom:'Lucas', classe:'CAP IFCA 2', entreprise:"Clim'Services SARL", secteur:'Froid commercial', tuteur:'M. DURAND', tuteurFonction:'Chef équipe frigoriste' },
+    { nom:'KADIR', prenom:'Amine', classe:'CAP IFCA 2', entreprise:'Froid Express', secteur:'Froid industriel', tuteur:'Mme BERNARD', tuteurFonction:'Technicienne SAV' },
+    { nom:'THOMAS', prenom:'Sofiane', classe:'CAP IFCA 2', entreprise:'AirConfort Pro', secteur:'Clim tertiaire', tuteur:'M. PETIT', tuteurFonction:'Responsable maintenance' },
+    { nom:'MARTIN', prenom:'Emma', classe:'CAP IFCA 2', entreprise:'GlacePlus', secteur:'Froid commercial', tuteur:'M. MOREAU', tuteurFonction:'Gérant' },
+    { nom:'PETIT', prenom:'Hugo', classe:'CAP IFCA 2', entreprise:'ThermoClim 13', secteur:'Génie climatique', tuteur:'Mme LAURENT', tuteurFonction:'Cheffe chantier' },
+    { nom:'ROBERT', prenom:'Léa', classe:'CAP IFCA 2', entreprise:'FrigoSud', secteur:'Froid industriel', tuteur:'M. GARCIA', tuteurFonction:'Technicien frigoriste' }
+];
+
+function toggleDemoMode() {
+    if (!isDemoMode) {
+        realDataBackup = JSON.stringify(appData);
+        appData.students = DEMO_STUDENTS.map(d => createStudent(d.nom, d.prenom, d.classe, d));
+        appData.currentIndex = 0;
+        if (!appData.config.etablissement) appData.config.etablissement = 'Lycée DÉMO';
+        isDemoMode = true;
+        document.body.classList.add('demo-mode');
+        document.getElementById('btnToggleDemo').textContent = '✅ Désactiver DÉMO';
+        updateAll();
+        showToast('🎭 Mode DÉMO activé', 'info');
+    } else {
+        if (realDataBackup) { Object.assign(appData, JSON.parse(realDataBackup)); realDataBackup = null; }
+        isDemoMode = false;
+        document.body.classList.remove('demo-mode');
+        document.getElementById('btnToggleDemo').textContent = '🎭 Mode DÉMO';
+        updateAll();
+        showToast('✅ DÉMO désactivé', 'success');
+    }
+}
+
+function resetStudentsDialog() {
+    if (appData.students.length === 0) { showToast('Aucun élève','warning'); return; }
+    const list = appData.students.map((s,i) => `<label style="display:flex;align-items:center;gap:0.4rem;padding:0.3rem 0;font-size:0.82rem;"><input type="checkbox" class="reset-check" data-index="${i}"> ${s.nom} ${s.prenom||''}</label>`).join('');
+    showModal('🔄 Réinitialiser les évaluations',
+        `<p style="font-size:0.82rem;color:var(--gris);margin-bottom:0.5rem;">Les noms et infos PFMP sont conservés.</p>${list}`,
+        `<button class="btn btn-sm" style="background:var(--gris);color:white;" onclick="closeModal()">Annuler</button>
+        <button class="btn btn-sm" style="background:var(--warning);color:white;" onclick="confirmReset()">Réinitialiser</button>`
+    );
+}
+
+function confirmReset() {
+    const checks = [...document.querySelectorAll('.reset-check:checked')];
+    checks.forEach(cb => {
+        const s = appData.students[+cb.dataset.index];
+        if (s) {
+            [...getCompEP2(),...getCompEP3()].forEach(c => {
+                s.validations[c.code] = { criteres:{}, historique:[], niveauPropose:null, niveauValide:null, dateValidation:null };
+            });
+            s.ep2.noteFinale = null;
+            s.ep3.noteFinale = null;
+            s.cycle = { cloturee:false, dateCloture:null, historiqueCloture:[] };
+            journalLog(s, 'reset', {});
+        }
+    });
+    saveData(); updateAll(); closeModal();
+    showToast(`${checks.length} élève(s) réinitialisé(s)`, 'success');
+}
+
+function resetReferentiel() {
+    appData.config.referentiel = null;
+    appData.config.refMeta = null;
+    appData.config.poids_ep2 = {};
+    appData.config.poids_ep3 = {};
+    appData.config.criteres_ep2 = JSON.parse(JSON.stringify(CRITERES_EP2));
+    appData.config.criteres_ep3 = JSON.parse(JSON.stringify(CRITERES_EP3));
+    initDefaultWeights();
+    saveData(); updateAll();
+    showToast('Référentiel IFCA par défaut restauré', 'success');
+}
+
+// =============================================
+// UPDATE ALL
+// =============================================
+function updateAll() {
+    renderStudentTable();
+    populateStudentSelect('studentSelectEP2');
+    populateStudentSelect('studentSelectEP3');
+    populateStudentSelect('studentSelectBilan');
+    renderActivites();
+    renderJournal();
+    updateStorageIndicator();
+    updateHeader();
+}
+
+function updateHeader() {
+    const cfg = appData.config;
+    const etab = cfg.etablissement || 'Configuration requise';
+    const ville = cfg.ville ? ` (${cfg.ville})` : '';
+    document.getElementById('headerEtablissement').textContent = `${etab}${ville} — CAP IFCA EP2+EP3 — Session ${cfg.session}`;
+}
+
+function updateStorageIndicator() {
+    const used = new Blob([JSON.stringify(appData)]).size;
+    const usedMB = (used/1024/1024).toFixed(1);
+    const el = document.getElementById('storageText');
+    if (el) el.textContent = `${usedMB} MB`;
+    const fill = document.getElementById('storageFill');
+    if (fill) {
+        const pct = Math.min((used/(5*1024*1024))*100, 100);
+        fill.style.width = `${pct}%`;
+        fill.className = 'storage-fill' + (pct>80?' danger':pct>50?' warning':'');
+    }
+}
+
+// =============================================
+// INIT
+// =============================================
+document.addEventListener('DOMContentLoaded', () => {
+    loadData();
+    initDefaultWeights();
+    updateAll();
+    loadConfigToForm();
+
+    // Tabs
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            const tab = document.getElementById(`tab-${btn.dataset.tab}`);
+            if (tab) tab.classList.add('active');
+            // Render on switch
+            if (btn.dataset.tab === 'ep2') renderEP2();
+            if (btn.dataset.tab === 'ep3') renderEP3();
+            if (btn.dataset.tab === 'bilan') renderBilan();
+            if (btn.dataset.tab === 'activites') renderActivites();
+            if (btn.dataset.tab === 'export') renderJournal();
+        };
+    });
+
+    // Student navigation
+    setupStudentNav('studentSelectEP2','prevEP2','nextEP2', renderEP2);
+    setupStudentNav('studentSelectEP3','prevEP3','nextEP3', renderEP3);
+    setupStudentNav('studentSelectBilan','prevBilan','nextBilan', renderBilan);
+
+    // Config
+    document.getElementById('saveConfig').onclick = saveConfig;
+
+    // Import
+    const zone = document.getElementById('importZone');
+    const input = document.getElementById('fileInput');
+    zone.onclick = () => input.click();
+    zone.ondragover = e => { e.preventDefault(); zone.style.borderColor='var(--orange)'; };
+    zone.ondragleave = () => zone.style.borderColor='';
+    zone.ondrop = e => { e.preventDefault(); zone.style.borderColor=''; if(e.dataTransfer.files[0]) importFile(e.dataTransfer.files[0]); };
+    input.onchange = e => { if(e.target.files[0]) importFile(e.target.files[0]); };
+
+    // Fusion zone
+    const fZone = document.getElementById('fusionZone');
+    const fInput = document.getElementById('fusionInput');
+    fZone.onclick = () => fInput.click();
+    fZone.ondragover = e => { e.preventDefault(); fZone.style.borderColor='var(--violet)'; };
+    fZone.ondragleave = () => fZone.style.borderColor='';
+    fZone.ondrop = e => { e.preventDefault(); fZone.style.borderColor=''; if(e.dataTransfer.files[0]) fusionImport(e.dataTransfer.files[0]); };
+    fInput.onchange = e => { if(e.target.files[0]) fusionImport(e.target.files[0]); };
+
+    // Buttons
+    document.getElementById('btnAddManual').onclick = addManualStudent;
+    document.getElementById('btnToggleDemo').onclick = toggleDemoMode;
+    document.getElementById('btnBackup').onclick = exportBackup;
+    document.getElementById('btnRestore').onclick = () => document.getElementById('restoreInput').click();
+    document.getElementById('restoreInput').onchange = e => { if(e.target.files[0]) restoreBackupFile(e.target.files[0]); };
+    document.getElementById('exportExcel').onclick = exportExcel;
+    document.getElementById('exportAllPdf').onclick = exportAllPDF;
+    document.getElementById('exportRapport').onclick = exportRapportInspection;
+    document.getElementById('exportBackup').onclick = exportBackup;
+    document.getElementById('purgeAll').onclick = () => showModal('🗑️ Purger', '<p>Effacer <strong>TOUTES</strong> les données ?</p>',
+        `<button class="btn btn-sm" style="background:var(--gris);color:white;" onclick="closeModal()">Non</button>
+        <button class="btn btn-sm" style="background:var(--danger);color:white;" onclick="purgeAll()">Oui</button>`
+    );
+
+    // Check all / delete selected
+    const checkAll = document.getElementById('checkAll');
+    const btnDel = document.getElementById('btnDeleteSelected');
+    if (checkAll) checkAll.onchange = () => {
+        document.querySelectorAll('.student-check').forEach(cb => cb.checked = checkAll.checked);
+        btnDel.style.display = checkAll.checked && appData.students.length > 0 ? '' : 'none';
+    };
+    if (btnDel) btnDel.onclick = () => {
+        const indices = [...document.querySelectorAll('.student-check:checked')].map(cb => +cb.dataset.index).sort((a,b)=>b-a);
+        if (indices.length === 0) return;
+        showModal('Supprimer', `<p>Supprimer <strong>${indices.length} élève(s)</strong> ?</p>`,
+            `<button class="btn btn-sm" style="background:var(--gris);color:white;" onclick="closeModal()">Non</button>
+            <button class="btn btn-sm" style="background:var(--danger);color:white;" onclick="deleteSelectedStudents()">Oui</button>`
+        );
+    };
+
+    // Observations autosave EP2 — clés séparées par sous-onglet
+    document.getElementById('obsEP2').onblur = () => {
+        const s = appData.students[appData.currentIndex];
+        if (!s) return;
+        const sub = appData.currentEP2Sub;
+        const obsKeyMap = { atelier:'obsAtelier', pfmp1:'obsPfmp1', pfmp2:'obsPfmp2', dossier1:'obsDossier1', dossier2:'obsDossier2' };
+        s.ep2[obsKeyMap[sub] || 'obsAtelier'] = document.getElementById('obsEP2').value;
+        saveData();
+    };
+    // Observations autosave EP3
+    document.getElementById('obsEP3').onblur = () => {
+        const s = appData.students[appData.currentIndex];
+        if (!s) return;
+        const key = 'obs'+appData.currentEP3Sub;
+        s.ep3[key] = document.getElementById('obsEP3').value;
+        saveData();
+    };
+
+    // Keyboard shortcut Ctrl+S
+    document.addEventListener('keydown', e => {
+        if ((e.ctrlKey||e.metaKey) && e.key==='s') { e.preventDefault(); saveData(); showToast('Sauvegardé','success'); }
+    });
+
+    // Modal close on overlay click
+    document.getElementById('modalOverlay').onclick = e => { if(e.target.id==='modalOverlay') closeModal(); };
+
+    // Phase init
+    setPhase(appData.config.phase || 'formatif');
+});
+
+function loadConfigToForm() {
+    const cfg = appData.config;
+    document.getElementById('configEtablissement').value = cfg.etablissement || '';
+    document.getElementById('configVille').value = cfg.ville || '';
+    document.getElementById('configAcademie').value = cfg.academie || '';
+    document.getElementById('configSession').value = cfg.session || 2026;
+    document.getElementById('configEvaluateur').value = cfg.evaluateurs[0]?.nom || '';
+    document.getElementById('configCollegue').value = cfg.evaluateurs[1]?.nom || '';
+    document.getElementById('cfgPctPM').value = cfg.pctPM || 100;
+    document.getElementById('cfgPctM').value = cfg.pctM || 70;
+    document.getElementById('cfgPctEC').value = cfg.pctEC || 35;
+}
+
+function saveConfig() {
+    const cfg = appData.config;
+    cfg.etablissement = document.getElementById('configEtablissement').value.trim();
+    cfg.ville = document.getElementById('configVille').value.trim();
+    cfg.academie = document.getElementById('configAcademie').value.trim();
+    cfg.session = parseInt(document.getElementById('configSession').value) || 2026;
+    cfg.evaluateurs[0].nom = document.getElementById('configEvaluateur').value.trim();
+    cfg.evaluateurs[1].nom = document.getElementById('configCollegue').value.trim();
+    cfg.pctPM = parseInt(document.getElementById('cfgPctPM').value) || 100;
+    cfg.pctM = parseInt(document.getElementById('cfgPctM').value) || 70;
+    cfg.pctEC = parseInt(document.getElementById('cfgPctEC').value) || 35;
+    saveData(); updateHeader();
+    showToast('Configuration enregistrée', 'success');
+}
+
+function deleteSelectedStudents() {
+    const indices = [...document.querySelectorAll('.student-check:checked')].map(cb => +cb.dataset.index).sort((a,b)=>b-a);
+    indices.forEach(i => appData.students.splice(i, 1));
+    appData.currentIndex = Math.min(appData.currentIndex, Math.max(0, appData.students.length-1));
+    saveData(); updateAll(); closeModal();
+    document.getElementById('checkAll').checked = false;
+    document.getElementById('btnDeleteSelected').style.display = 'none';
+    showToast(`${indices.length} élève(s) supprimé(s)`, 'success');
+}
+
+function purgeAll() {
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+}
+
+function restoreBackupFile(file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+        try {
+            const data = JSON.parse(e.target.result);
+            // Detect v10
+            if (data.config && !data.version) {
+                migrateV10(data);
+                loadConfigToForm(); updateAll();
+                showToast('Backup v10 migré vers v11', 'success');
+                return;
+            }
+            appData = { ...appData, ...data };
+            appData.students.forEach(s => ensureStudentV11(s));
+            initDefaultWeights();
+            saveData(); loadConfigToForm(); updateAll();
+            showToast('Backup restauré', 'success');
+        } catch(err) { showToast('Fichier invalide','error'); }
+    };
+    reader.readAsText(file);
+}
+
+</script>
+</body>
+</html>
