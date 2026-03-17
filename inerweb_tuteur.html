@@ -1408,10 +1408,10 @@ else if(_p.get('role')==='eleve'){
   toast('Mode aperçu (vue prof)','ok');
 } else if(_p.get('eleve')){
   const d=safeParse(localStorage.getItem('inerweb-tt-fe-tuteur-data'),{});
-  if(d.entreprise?.nom&&d.tuteurs?.[0]?.nom){
-    entreprise=d.entreprise;tuteurs=d.tuteurs;
-    chargerEleve(_p.get('eleve'),_p.get('tuteur')||_p.get('token')||'');
-  }
+  if(d.entreprise?.nom){entreprise=d.entreprise;}
+  if(d.tuteurs?.[0]?.nom){tuteurs=d.tuteurs;}
+  // Charger l'élève dans tous les cas (même première visite sans localStorage)
+  chargerEleve(_p.get('eleve'),_p.get('tuteur')||_p.get('token')||'');
 }
 async function savePrefContact(){
   var prefs=[];
