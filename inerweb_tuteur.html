@@ -1240,10 +1240,11 @@ async function envoyerConfirme(){
 /* ═══ PERSISTANCE LOCALE ═══ */
 function sauvegarderLocal(){
   localStorage.setItem('inerweb-tt-fe-tuteur-data',JSON.stringify({entreprise,tuteurs}));
-  // Sauvegarder les locks par élève
+  // Sauvegarder les locks et évaluations par élève
   if(eleveCode){
     localStorage.setItem('inerweb-tt-fe-tuteur-locks-'+eleveCode,JSON.stringify(compLocks));
     localStorage.setItem('inerweb-tt-fe-tuteur-eval-'+eleveCode,JSON.stringify(evalData));
+    localStorage.setItem('inerweb-tt-fe-tuteur-behav-'+eleveCode,JSON.stringify(behavData));
   }
 }
 function chargerLocal(){
@@ -1273,6 +1274,8 @@ function chargerLocksEleve(code){
   compLocks=safeParse(localStorage.getItem('inerweb-tt-fe-tuteur-locks-'+code),{});
   const savedEval=safeParse(localStorage.getItem('inerweb-tt-fe-tuteur-eval-'+code),{});
   if(Object.keys(savedEval).length)evalData=savedEval;
+  const savedBehav=safeParse(localStorage.getItem('inerweb-tt-fe-tuteur-behav-'+code),{});
+  if(Object.keys(savedBehav).length)behavData=savedBehav;
 }
 
 /* ═══ UTILITAIRES ═══ */
