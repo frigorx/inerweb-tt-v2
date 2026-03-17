@@ -3555,7 +3555,7 @@ function lancerDLQR(){
 /* ═══ [H] BILAN ═══ */
 /* calcNote → js/prog/prog-data.js (copie locale conservée) */
 function calcNote(code,ep){
-  const comps=ep==='E31'?COMP_E31:ep==='E33'?COMP_E33:COMP_E32;
+  const comps=ep==='EP2'?COMP_EP2:ep==='EP3'?COMP_EP3:ep==='E31'?COMP_E31:ep==='E33'?COMP_E33:COMP_E32;
   const validees=notes[code]?.[ep]?.validees||{};
   let tot=0,max=0;
   const det=comps.map(c=>{
