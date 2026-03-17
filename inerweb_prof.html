@@ -1647,16 +1647,16 @@ function startAutoBackup(){
 }
 /* saveLocalData → js/core/utils.js (copie locale conservée) */
 async function saveLocalData(){
-  const data={id:'main',students,validations,notes,pfmpData,appCfg,customCriteria,compLocks,sharedDocs,lastSave:new Date().toISOString()};
+  const data={id:'main',students,validations,notes,pfmpData,appCfg,customCriteria,compLocks,sharedDocs,rapportData,lastSave:new Date().toISOString()};
   if(db){await saveIDB('data',data);}
-  try{localStorage.setItem(SK,JSON.stringify({students,validations,notes,pfmpData,appCfg,customCriteria,compLocks,sharedDocs}));}catch{}
+  try{localStorage.setItem(SK,JSON.stringify({students,validations,notes,pfmpData,appCfg,customCriteria,compLocks,sharedDocs,rapportData}));}catch{}
   updateStor();
 }
 async function loadLocalData(){
-  if(db){const d=await loadIDB('data','main');if(d){students=d.students||[];validations=d.validations||{};notes=d.notes||{};pfmpData=d.pfmpData||{};appCfg=d.appCfg||{};customCriteria=d.customCriteria||{};compLocks=d.compLocks||{};sharedDocs=d.sharedDocs||[];window.students=students;window.validations=validations;window.appCfg=appCfg;return true;}}
+  if(db){const d=await loadIDB('data','main');if(d){students=d.students||[];validations=d.validations||{};notes=d.notes||{};pfmpData=d.pfmpData||{};appCfg=d.appCfg||{};customCriteria=d.customCriteria||{};compLocks=d.compLocks||{};sharedDocs=d.sharedDocs||[];rapportData=d.rapportData||{};window.students=students;window.validations=validations;window.appCfg=appCfg;return true;}}
   const d=localStorage.getItem(SK);if(!d)return false;
   let p;try{p=JSON.parse(d);}catch{console.warn('[loadLocalData] JSON corrompu');return false;}
-  students=p.students||[];validations=p.validations||{};notes=p.notes||{};pfmpData=p.pfmpData||{};appCfg=p.appCfg||{};customCriteria=p.customCriteria||{};compLocks=p.compLocks||{};sharedDocs=p.sharedDocs||[];
+  students=p.students||[];validations=p.validations||{};notes=p.notes||{};pfmpData=p.pfmpData||{};appCfg=p.appCfg||{};customCriteria=p.customCriteria||{};compLocks=p.compLocks||{};sharedDocs=p.sharedDocs||[];rapportData=p.rapportData||{};
   window.students=students;window.validations=validations;window.appCfg=appCfg;
   return true;
 }
