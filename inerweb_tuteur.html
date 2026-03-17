@@ -934,7 +934,7 @@ async function chargerEleve(code,token){
       // Pré-remplir evalData avec les données existantes
       d.evalTuteur.forEach(ev=>{
         if(ev.competence&&ev.niveau!=null){
-          evalData[ev.competence]=ev.niveau;
+          evalData[ev.competence]={niveau:ev.niveau,taches:ev.taches||{},obs:ev.obs||''};
         }
       });
     }
