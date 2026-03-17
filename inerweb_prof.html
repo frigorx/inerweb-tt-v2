@@ -1891,7 +1891,8 @@ async function syncAll(){
     toast('✓ Synchronisé — '+students.length+' élève(s)','ok');
   }catch(e){
     console.warn('[syncAll]',e.message||e);
-    setSyncState('ok');
+    setSyncState('error');
+    toast('Erreur de synchronisation','err');
     if(students.length)saveLocal();
     updateAll();
   }
