@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8"><script>
+(function(){if(sessionStorage.getItem('iw_purged'))return;if('serviceWorker' in navigator){caches.keys().then(function(k){k.forEach(function(c){caches.delete(c)})});navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(sw){sw.unregister()})});}sessionStorage.setItem('iw_purged','1');setTimeout(function(){location.reload(true)},500);})();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<title>inerWeb TT — Tuteur</title>
+<title>INERWEB PROG+ — Tuteur</title>
+<script src="js/core/inerweb.config.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -220,9 +223,31 @@ video{width:100%;border-radius:var(--r);background:#000;display:block;}
 /* Conseil box */
 .leg-conseil{background:#fff;border:2px solid var(--gris3);border-radius:var(--r2);padding:.55rem .75rem;font-size:.73rem;line-height:1.5;color:var(--texte);margin-bottom:.4rem;display:flex;align-items:flex-start;gap:.5rem;}
 .leg-conseil-ico{font-size:1rem;flex-shrink:0;margin-top:1px;}
+
+/* ═══ BARRE DE PROGRESSION ═══ */
+.progress-bar-wrap{background:var(--gris3);border-radius:20px;height:22px;overflow:hidden;margin-bottom:.75rem;position:relative;}
+.progress-bar-fill{height:100%;border-radius:20px;transition:width .4s ease;background:linear-gradient(90deg,var(--teal),var(--vert));}
+.progress-bar-txt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:900;color:var(--texte);}
+
+/* ═══ TARGETS TACTILES ═══ */
+.nb{min-height:44px!important;min-width:44px!important;}
+.tb{min-height:44px!important;min-width:44px!important;}
+
+/* ═══ MODALE CONFIRMATION ═══ */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9500;align-items:center;justify-content:center;}
+.modal-ov.open{display:flex;}
+.modal-box{background:#fff;border-radius:var(--r);padding:1.5rem;max-width:380px;width:90%;box-shadow:0 8px 40px rgba(0,0,0,.25);text-align:center;}
+.modal-box h3{font-size:1.05rem;font-weight:900;color:var(--bleu);margin-bottom:.75rem;}
+.modal-box p{font-size:.85rem;color:var(--gris);margin-bottom:1.25rem;line-height:1.5;}
+.modal-btns{display:flex;gap:.5rem;}
+.modal-btns .btn{flex:1;}
+:focus-visible{outline:3px solid var(--orange);outline-offset:2px;}
+.skip-link{position:absolute;top:-40px;left:0;background:var(--bleu);color:#fff;padding:8px 16px;z-index:10000;font-size:14px;transition:top .2s;}
+.skip-link:focus{top:0;}
 </style>
 </head>
 <body>
+<a href="#main-content" class="skip-link">Aller au contenu principal</a>
 
 <header class="app-header">
   <div class="hdr-logo">
@@ -236,11 +261,12 @@ video{width:100%;border-radius:var(--r);background:#000;display:block;}
     </svg>
     <div class="hdr-txt"><p style="margin:0;font-size:.7rem;opacity:.8">Espace tuteur</p></div>
   </div>
-  <span class="hdr-badge">CAP IFCA</span>
+  <span class="hdr-badge" id="hdrBadge">Filière Énergétique</span>
 </header>
 
 <!-- ═══ PAGE 0 : BIENVENUE ═══ -->
-<div class="page active" id="page-bienvenue">
+<div class="page active" id="page-bienvenue" role="main">
+  <div id="main-content"></div>
   <div class="page-inner">
 
     <div class="hero">
@@ -261,7 +287,7 @@ video{width:100%;border-radius:var(--r);background:#000;display:block;}
         </svg>
       </div>
       <h2>Bienvenue, tuteur de stage !</h2>
-      <p>Merci d'accueillir un stagiaire en formation<br><strong>CAP Installation Froid et Climatisation</strong><br>au sein de votre entreprise.</p>
+      <p>Merci d'accueillir un stagiaire en formation<br><strong>Filière Énergétique</strong> (CAP IFCA, Bac Pro MFER ou 2nde TNE)<br>au sein de votre entreprise.</p>
     </div>
 
     <div class="card">
@@ -271,13 +297,13 @@ video{width:100%;border-radius:var(--r);background:#000;display:block;}
       </div>
       <div class="info-box ib-orange">
         <div class="ib-title">📋 Les PFMP comptent dans l'examen</div>
-        Les <strong>Périodes de Formation en Milieu Professionnel</strong> font partie intégrante de l'évaluation du CAP. Les compétences observées en entreprise — notamment en PFMP 2 — <strong>influencent directement la note finale</strong> et la réussite de l'examen.
+        Les <strong>Périodes de Formation en Milieu Professionnel</strong> sont évaluées mais <strong>ne comptent pas directement pour l'examen</strong>. Cependant, les compétences observées en entreprise alimentent le dossier CCF et contribuent à la formation de votre stagiaire.
       </div>
       <div class="info-box ib-vert">
         <div class="ib-title">✅ Simple et rapide</div>
         Pas besoin de créer un compte. Scannez le badge de votre stagiaire, évaluez ce que vous observez, et c'est transmis à l'enseignant automatiquement.
       </div>
-      <button class="btn btn-teal" onclick="goPage('entreprise')" style="margin-top:.5rem">Commencer → Présenter l'entreprise 🏢</button>
+      <button class="btn btn-teal" data-page="entreprise" style="margin-top:.5rem">Commencer → Présenter l'entreprise 🏢</button>
     </div>
 
   </div>
@@ -318,7 +344,7 @@ video{width:100%;border-radius:var(--r);background:#000;display:block;}
       </div>
 
       <button class="btn btn-teal" style="margin-top:.75rem" onclick="goToTuteurs()">Suivant → Tuteur(s) de stage 👤</button>
-      <button class="btn btn-ghost" style="margin-top:.5rem" onclick="goPage('bienvenue')">← Retour</button>
+      <button class="btn btn-ghost" data-page="bienvenue" style="margin-top:.5rem">← Retour</button>
     </div>
   </div>
 </div>
@@ -339,7 +365,7 @@ video{width:100%;border-radius:var(--r);background:#000;display:block;}
       <div id="tuteurList"></div>
       <button class="btn-add" onclick="addTuteur()">＋ Ajouter un tuteur</button>
       <button class="btn btn-teal" style="margin-top:.75rem" onclick="goToScan()">Suivant → Scanner le stagiaire 📱</button>
-      <button class="btn btn-ghost" style="margin-top:.5rem" onclick="goPage('entreprise')">← Retour</button>
+      <button class="btn btn-ghost" data-page="entreprise" style="margin-top:.5rem">← Retour</button>
     </div>
   </div>
 </div>
@@ -378,7 +404,7 @@ video{width:100%;border-radius:var(--r);background:#000;display:block;}
         <button class="btn btn-ghost" onclick="chargerEleveManuel()">Charger le stagiaire</button>
       </div>
     </div>
-    <button class="btn btn-ghost" onclick="goPage('tuteurs')">← Retour</button>
+    <button class="btn btn-ghost" data-page="tuteurs">← Retour</button>
   </div>
 </div>
 
@@ -394,11 +420,32 @@ video{width:100%;border-radius:var(--r);background:#000;display:block;}
 
     <div id="stagiaireInfo"></div>
 
+    <!-- Préférences de contact tuteur -->
+    <div class="card" id="prefContactCard" style="border-top:3px solid var(--teal);margin-bottom:.75rem">
+      <div style="font-size:.85rem;font-weight:800;color:var(--teal);margin-bottom:.5rem">📞 Vos préférences de contact</div>
+      <p style="font-size:.72rem;color:var(--gris);margin-bottom:.5rem">Comment souhaitez-vous être contacté par l'enseignant ?</p>
+      <div style="display:flex;flex-wrap:wrap;gap:.5rem">
+        <label style="display:flex;align-items:center;gap:.3rem;padding:.5rem .75rem;background:var(--gris2);border-radius:var(--r2);cursor:pointer;font-size:.82rem;font-weight:700;min-height:44px">
+          <input type="checkbox" id="prefTel" value="tel" onchange="savePrefContact()"> 📞 Téléphone
+        </label>
+        <label style="display:flex;align-items:center;gap:.3rem;padding:.5rem .75rem;background:var(--gris2);border-radius:var(--r2);cursor:pointer;font-size:.82rem;font-weight:700;min-height:44px">
+          <input type="checkbox" id="prefSMS" value="sms" onchange="savePrefContact()"> 💬 SMS
+        </label>
+        <label style="display:flex;align-items:center;gap:.3rem;padding:.5rem .75rem;background:var(--gris2);border-radius:var(--r2);cursor:pointer;font-size:.82rem;font-weight:700;min-height:44px">
+          <input type="checkbox" id="prefWA" value="whatsapp" onchange="savePrefContact()"> 📱 WhatsApp
+        </label>
+        <label style="display:flex;align-items:center;gap:.3rem;padding:.5rem .75rem;background:var(--gris2);border-radius:var(--r2);cursor:pointer;font-size:.82rem;font-weight:700;min-height:44px">
+          <input type="checkbox" id="prefEmail" value="email" onchange="savePrefContact()"> 📧 Email
+        </label>
+      </div>
+      <div id="prefContactStatus" style="font-size:.72rem;color:var(--vert);margin-top:.4rem;display:none"></div>
+    </div>
+
     <!-- Sélecteur PFMP -->
     <div class="card" style="padding:.75rem 1rem">
       <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
         <div style="font-size:.8rem;font-weight:800;color:var(--bleu)">Période :</div>
-        <select id="selPfmp" onchange="renderEval()" style="padding:.4rem .6rem;border:2px solid var(--gris3);border-radius:var(--r2);font-weight:700;font-size:.82rem;">
+        <select id="selPfmp" data-filter="eval" style="padding:.4rem .6rem;border:2px solid var(--gris3);border-radius:var(--r2);font-weight:700;font-size:.82rem;">
           <option value="pfmp1">PFMP 1</option>
           <option value="pfmp2">PFMP 2</option>
         </select>
@@ -493,7 +540,7 @@ video{width:100%;border-radius:var(--r);background:#000;display:block;}
       </div>
     </div>
 
-    <!-- Compétences EP2 -->
+    <!-- Compétences E31 -->
     <div id="evalContenu"></div>
 
     <!-- Comportement professionnel -->
@@ -509,7 +556,7 @@ video{width:100%;border-radius:var(--r);background:#000;display:block;}
     </div>
 
     <button class="btn btn-vert" onclick="envoyer()" style="margin-bottom:.5rem">📤 Envoyer l'évaluation à l'enseignant</button>
-    <button class="btn btn-ghost" onclick="goPage('scan')" style="margin-bottom:1rem">📱 Évaluer un autre stagiaire</button>
+    <button class="btn btn-ghost" data-page="scan" style="margin-bottom:1rem">📱 Évaluer un autre stagiaire</button>
 
     <!-- Documents partagés -->
     <div class="card" id="tuteurDocsCard" style="border-top:3px solid var(--teal);display:none">
@@ -520,34 +567,160 @@ video{width:100%;border-radius:var(--r);background:#000;display:block;}
   </div>
 </div>
 
-<div class="toast-c" id="toastC"></div>
+<div class="toast-c" id="toastC" aria-live="polite"></div>
 <div class="spin-ov" id="spinOv"><div class="spinner"></div></div>
 
-<script>
-/* ═══ RÉFÉRENTIEL EP2 PFMP (CAP IFCA) ═══ */
-const COMP_EP2=[
-  {code:"C1.2",nom:"Communiquer",   full:"Communiquer avec les différents acteurs",                 obl:false},
-  {code:"C3.1",nom:"Organisation",  full:"Organiser le poste de travail",                           obl:true},
-  {code:"C3.2",nom:"Réseaux",       full:"Identifier sur site les réseaux d'alimentation",          obl:true},
-  {code:"C3.3",nom:"Implantation",  full:"Implanter, manutentionner, fixer les supportages",        obl:true},
-  {code:"C3.4",nom:"Raccordement",  full:"Façonner, raccorder, assembler, isoler les circuits",     obl:true},
-  {code:"C3.6",nom:"Câblage",       full:"Câbler, repérer, connecter les liaisons électriques",     obl:true},
-  {code:"C3.7",nom:"Contrôles",     full:"Contrôler la mise en œuvre des équipements",              obl:true},
-  {code:"C3.8",nom:"Déchets",       full:"Trier, valoriser les déchets",                            obl:true},
-  {code:"C3.9",nom:"Étanchéité",    full:"Vérifier l'étanchéité avant mise en service",             obl:true},
-];
+<!-- ═══ MODALE CONFIRMATION ENVOI ═══ -->
+<div class="modal-ov" id="modalConfirm" aria-expanded="false">
+  <div class="modal-box">
+    <h3>📤 Confirmer l'envoi</h3>
+    <p id="modalMsg">Êtes-vous sûr de vouloir envoyer les évaluations ?</p>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="fermerModale()">Annuler</button>
+      <button class="btn btn-vert" onclick="confirmerEnvoi()">Confirmer</button>
+    </div>
+  </div>
+</div>
 
-const TACHES={
-  "C1.2":["Identifier les différents acteurs du chantier","Communiquer avec les autres corps de métier","Utiliser un vocabulaire technique adapté"],
-  "C3.1":["Zone de travail sécurisée (EPI portés)","Outillage adapté à la tâche","Zone rangée et propre en fin d'intervention"],
-  "C3.2":["Réseaux fluides repérés et étiquetés","Sens de circulation des fluides identifiés","Réseaux électriques repérés"],
-  "C3.3":["Tracés d'implantation conformes aux plans","Implantation des équipements conforme","Gestes de manutention adaptés et sûrs"],
-  "C3.4":["Raccordements frigorifiques conformes","Cintrage des tubes sans écrasement","Isolation thermique continue et conforme","Raccords étanches (brasage ou flare/dudgeon)"],
-  "C3.6":["Conducteurs correctement identifiés","Câblage puissance réalisé et repéré","Câblage commande réalisé et repéré","Câbles rangés et protégés"],
-  "C3.7":["Vérifications fluidiques réalisées","Vérifications électriques réalisées","Mise en service validée et conforme"],
-  "C3.8":["Déchets triés et stockés réglementairement","Documents de traçabilité transmis"],
-  "C3.9":["Épreuve de pression au gaz inerte réalisée","Étanchéité frigorifique confirmée","Étanchéité hydraulique confirmée (si applicable)"],
+<script src="js/core/events.js"></script>
+<script src="js/shared/levels-registry.js"></script>
+<script src="js/shared/classes-registry.js"></script>
+<script src="js/shared/student-registry.js"></script>
+<script src="js/eval/eval-engine.js"></script>
+<script src="js/eval/eval-projections.js"></script>
+<script src="js/core.js"></script>
+<script>
+/* ═══ ARCHITECTURE MULTI-FILIÈRE TUTEUR ═══ */
+
+/* --- CAP IFCA : compétences PFMP (EP3 pratique) --- */
+/* --- CAP IFCA — EP2 : Réalisation d'une installation (CCF, coeff 4) --- */
+const COMP_CAP_EP2=[
+  {code:"C1.2",nom:"Communiquer",       full:"Communiquer avec les différents acteurs",                      obl:false, ep:'EP2'},
+  {code:"C3.1",nom:"Organisation",      full:"Organiser le poste de travail",                                obl:true,  ep:'EP2'},
+  {code:"C3.2",nom:"Identifier réseaux",full:"Identifier sur site les réseaux d'alimentation",               obl:true,  ep:'EP2'},
+  {code:"C3.3",nom:"Implanter, fixer",  full:"Implanter, manutentionner, fixer les supportages",             obl:true,  ep:'EP2'},
+  {code:"C3.4",nom:"Façonner, raccorder",full:"Façonner, raccorder, assembler, isoler les circuits",         obl:true,  ep:'EP2'},
+  {code:"C3.5",nom:"Soudure/PER",       full:"Soudage acier et raccorder le PER",                            obl:false, ep:'EP2'},
+  {code:"C3.6",nom:"Câbler, connecter", full:"Câbler, repérer, connecter les liaisons électriques",          obl:true,  ep:'EP2'},
+  {code:"C3.7",nom:"Contrôles",         full:"Contrôler la mise en œuvre des équipements",                   obl:true,  ep:'EP2'},
+  {code:"C3.8",nom:"Tri déchets",       full:"Trier, valoriser les déchets",                                 obl:true,  ep:'EP2'},
+  {code:"C3.9",nom:"Étanchéité",        full:"Vérifier l'étanchéité avant mise en service",                  obl:true,  ep:'EP2'},
+];
+const TACHES_CAP_EP2={
+  "C1.2":["Qualité de restitution orale","Vocabulaire technique adapté"],
+  "C3.1":["Zone sécurisée","Outillage adapté","Zone rangée et propre"],
+  "C3.2":["Réseaux repérés","Sens de circulation identifiés"],
+  "C3.3":["Implantation conforme","Supports correctement posés"],
+  "C3.4":["Brasage fort étanche","Dudgeon/Flare conformes","Cintrage correct","Isolation continue"],
+  "C3.5":["Appareil réglé","Alignement/pointage","Métal d'apport adapté","Sertissage PER"],
+  "C3.6":["Conducteurs identifiés","Câblage puissance","Câblage commande","Câbles rangés et repérés"],
+  "C3.7":["Vérif. fluidique","Vérif. électrique"],
+  "C3.8":["Déchets stockés réglementairement"],
+  "C3.9":["Épreuve pression gaz","Étanchéité frigorifique"],
 };
+/* --- CAP IFCA — EP3 : Mise en service et maintenance (CCF, coeff 4) --- */
+const COMP_CAP_EP3=[
+  {code:"C4.1",nom:"Tirer au vide",   full:"Tirer au vide le circuit frigorifique",              obl:true,  ep:'EP3'},
+  {code:"C4.2",nom:"Manipuler fluide",full:"Manipuler le fluide frigorigène et les huiles",       obl:true,  ep:'EP3'},
+  {code:"C4.3",nom:"Étanchéité",      full:"Contrôler l'étanchéité d'un circuit",                obl:true,  ep:'EP3'},
+  {code:"C4.4",nom:"Identifier panne",full:"Identifier la panne",                                obl:false, ep:'EP3'},
+  {code:"C4.5",nom:"Mesurer",         full:"Mesurer et comparer des grandeurs",                  obl:true,  ep:'EP3'},
+  {code:"C4.6",nom:"Régler",          full:"Régler les organes de régulation",                   obl:true,  ep:'EP3'},
+  {code:"C4.7",nom:"Raccorder",       full:"Raccorder les équipements de charge et mesure",       obl:true,  ep:'EP3'},
+  {code:"C5.1",nom:"Remplacer",       full:"Remplacer un composant",                             obl:true,  ep:'EP3'},
+  {code:"C1.1",nom:"Compléter docs",  full:"Compléter et transmettre des documents",             obl:true,  ep:'EP3'},
+];
+const TACHES_CAP_EP3={
+  "C4.1":["Groupe de tirage connecté correctement","Vide atteint (< 200 µm Hg)","Durée de pompage respectée"],
+  "C4.2":["EPI mis en place","Récupération fluide réalisée","Charge en phase liquide correcte"],
+  "C4.3":["Test d'étanchéité réalisé","Absence de fuite confirmée","Méthode conforme"],
+  "C4.4":["Symptômes identifiés","Composant défectueux localisé","Cause racine déterminée"],
+  "C4.5":["Appareils de mesure connectés","Mesures relevées et consignées","Valeurs comparées aux données fabricant"],
+  "C4.6":["Paramètres de régulation vérifiés","Réglages conformes"],
+  "C4.7":["Manomètres connectés correctement","Absence de fuite aux raccords","Déconnexion sans perte de fluide"],
+  "C5.1":["Composant remplacé correctement","Test de fonctionnement réalisé","Remise en service conforme"],
+  "C1.1":["Documents complétés correctement","Informations transmises","Vocabulaire technique adapté"],
+};
+/* Alias combinés pour rétro-compatibilité */
+const COMP_CAP=COMP_CAP_EP2.concat(COMP_CAP_EP3);
+const TACHES_CAP=Object.assign({},TACHES_CAP_EP2,TACHES_CAP_EP3);
+
+/* --- Bac Pro MFER : compétences E31 (réalisation & mise en service) --- */
+const COMP_MFER=[
+  {code:"C3.1",nom:"Organiser poste",    full:"Organiser le poste de travail et la zone d'intervention",  obl:true},
+  {code:"C3.2",nom:"Implanter",          full:"Implanter les équipements et supportages",                 obl:true},
+  {code:"C3.3",nom:"Façonner tubes",     full:"Façonner les réseaux de tubes (cuivre, acier, PER)",       obl:true},
+  {code:"C3.4",nom:"Raccorder fluides",  full:"Raccorder les circuits fluidiques",                        obl:true},
+  {code:"C3.5",nom:"Raccorder élec.",    full:"Raccorder les circuits électriques",                       obl:true},
+  {code:"C4.1",nom:"Tirer au vide",      full:"Tirer au vide le circuit frigorifique",                    obl:true},
+  {code:"C4.2",nom:"Charger fluide",     full:"Charger en fluide frigorigène",                            obl:true},
+  {code:"C4.3",nom:"Étanchéité",         full:"Contrôler l'étanchéité du circuit",                        obl:true},
+  {code:"C4.4",nom:"Mise en service",    full:"Mettre en service l'installation",                         obl:true},
+  {code:"C5.1",nom:"Diagnostiquer",      full:"Diagnostiquer un dysfonctionnement",                       obl:false},
+  {code:"C5.2",nom:"Remplacer",          full:"Remplacer un composant défectueux",                        obl:false},
+  {code:"C1.2",nom:"Communiquer",        full:"Rédiger les comptes rendus d'intervention",                obl:true},
+];
+const TACHES_MFER={
+  "C3.1":["Zone de travail sécurisée (EPI portés)","Outillage adapté à la tâche","Zone rangée et propre en fin d'intervention"],
+  "C3.2":["Implantation conforme au plan","Supports correctement fixés","Niveaux et aplombs respectés"],
+  "C3.3":["Cintrage correct sans écrasement","Coupes d'équerre et ébavurées","Tubes non détériorés"],
+  "C3.4":["Brasage fort étanche","Dudgeon/Flare conformes","Raccords serrés au couple","Isolation thermique continue"],
+  "C3.5":["Conducteurs correctement identifiés","Câblage puissance conforme","Câblage commande conforme","Câbles rangés et repérés"],
+  "C4.1":["Groupe de tirage connecté correctement","Vide atteint (< 270 Pa)","Durée de pompage respectée"],
+  "C4.2":["EPI mis en place","Récupération fluide réalisée","Charge conforme à la plaque"],
+  "C4.3":["Test azote réalisé","Détecteur électronique utilisé","Absence de fuite confirmée"],
+  "C4.4":["Procédure de mise en service suivie","Paramètres vérifiés","Fonctionnement nominal atteint"],
+  "C5.1":["Symptômes identifiés","Mesures pertinentes réalisées","Composant défectueux localisé"],
+  "C5.2":["Composant remplacé correctement","Test de fonctionnement réalisé","Remise en service conforme"],
+  "C1.2":["Compte rendu complet","Vocabulaire technique adapté","Communication professionnelle"],
+};
+
+/* --- 2nde TNE : modules de découverte (pas d'EP, stage d'observation) --- */
+const COMP_TNE=[
+  {code:"CT.1",nom:"Découvrir métiers",  full:"Découvrir les métiers du froid et de l'énergie",           obl:true},
+  {code:"CT.2",nom:"Sécurité",          full:"Appliquer les règles de sécurité de base",                obl:true},
+  {code:"CT.3",nom:"Outillage",         full:"Identifier et utiliser l'outillage courant",              obl:true},
+  {code:"CT.4",nom:"Mesures de base",   full:"Réaliser des mesures simples (tension, pression, température)",obl:true},
+  {code:"CT.5",nom:"Lecture de plans",  full:"Lire un plan ou schéma simple",                           obl:true},
+  {code:"CT.6",nom:"Travail en équipe", full:"Travailler en équipe et communiquer",                     obl:true},
+  {code:"CT.7",nom:"Gestes de base",    full:"Réaliser des gestes techniques élémentaires",             obl:true},
+  {code:"CT.8",nom:"Comportement pro",  full:"Adopter un comportement professionnel",                    obl:true},
+];
+const TACHES_TNE={
+  "CT.1":["Nommer les principaux métiers du secteur","Décrire une activité observée en entreprise","Identifier les formations correspondantes"],
+  "CT.2":["Porter les EPI adaptés","Identifier les risques sur le poste","Appliquer les consignes de sécurité"],
+  "CT.3":["Reconnaître les outils courants","Utiliser un outil correctement","Ranger le poste après usage"],
+  "CT.4":["Utiliser un multimètre (tension)","Lire un manomètre (pression)","Relever une température"],
+  "CT.5":["Identifier les symboles de base","Localiser un composant sur un plan","Suivre un circuit simple"],
+  "CT.6":["Communiquer avec l'équipe","Participer activement","Rendre compte oralement"],
+  "CT.7":["Couper un tube correctement","Réaliser un cintrage simple","Raccorder un accessoire"],
+  "CT.8":["Être ponctuel","Respecter les consignes","Avoir une attitude professionnelle"],
+};
+
+/* --- Détection filière et accès dynamique --- */
+const FILIERES_TUTEUR={
+  'CAP_IFCA': {nom:'CAP IFCA', abrege:'CAP IFCA', epreuve:'EP2 — Réalisation', comps:COMP_CAP_EP2, taches:TACHES_CAP_EP2},
+  'BAC_MFER': {nom:'Bac Pro MFER', abrege:'Bac Pro MFER', epreuve:'E31', comps:COMP_MFER, taches:TACHES_MFER},
+  'TNE':      {nom:'2nde TNE', abrege:'2nde TNE', epreuve:'Modules', comps:COMP_TNE, taches:TACHES_TNE},
+};
+
+function getFiliereTuteur(classe){
+  const cl=(classe||'').toLowerCase();
+  if(cl.includes('cap')||cl.includes('ifca')) return 'CAP_IFCA';
+  if(cl.includes('mfer')||cl.includes('bac')||cl.includes('1ère')||cl.includes('term')) return 'BAC_MFER';
+  if(cl.includes('tne')||cl.includes('2nde')) return 'TNE';
+  return 'BAC_MFER'; // fallback
+}
+function getActiveComps(){
+  const fil=getFiliereTuteur(eleveData?.classe);
+  return FILIERES_TUTEUR[fil]||FILIERES_TUTEUR['BAC_MFER'];
+}
+function updateBadge(){
+  const b=document.getElementById('hdrBadge');
+  if(!b||!eleveData) return;
+  const f=getActiveComps();
+  b.textContent=f.abrege+' — '+f.epreuve;
+}
 
 const COMPORTEMENTS=[
   {ico:"⏰",key:"ponctualite",txt:"Ponctualité & assiduité",
@@ -576,7 +749,13 @@ let telsCount=1,emailsCount=1,tuteursCount=1;
 
 // ⚠️ SÉCURITÉ : Le tuteur n'utilise PAS la clé prof
 // Il s'authentifie avec son propre token_tuteur
-const API_URL='https://script.google.com/macros/s/AKfycbzlTtAjTpQF6piZe2pOh8gwal1sV0c-EJJzcvU5Kvly_U02apW4yN4Q8iUSL-SRDhG4/exec';
+const API_URL=(window.iwConfig?window.iwConfig.getApiUrl():'');
+
+/* esc() → fourni par core.js */
+/** JSON.parse protégé — retourne fallback en cas d'erreur */
+function safeParse(str,fallback){
+  try{return JSON.parse(str);}catch(e){console.warn('[tuteur] JSON.parse échoué :',e.message);return fallback;}
+}
 
 /* ═══ NAVIGATION ═══ */
 function goPage(id){
@@ -599,7 +778,7 @@ function renderTuteurDocs(){
     return `<div style="display:flex;align-items:center;gap:.6rem;padding:.5rem .6rem;background:var(--gris2);border-radius:8px;margin-bottom:.35rem;cursor:pointer" onclick="telechargerDocTuteur(${i})">
       <span style="font-size:1.3rem">${ico}</span>
       <div style="flex:1;min-width:0">
-        <div style="font-size:.82rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.nom}</div>
+        <div style="font-size:.82rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(d.nom)}</div>
         <div style="font-size:.68rem;color:var(--gris)">${d.categorie==='convention'?'📋 Convention':d.categorie==='rapport-type'?'📝 Rapport type':'📎 Document'}${sz?' · '+sz:''}</div>
       </div>
       <span style="font-size:1rem;color:var(--teal)">⬇️</span>
@@ -616,12 +795,12 @@ function telechargerDocTuteur(idx){
 /* ═══ MULTI-CHAMPS TÉLÉPHONES / EMAILS ═══ */
 function addTel(val=''){
   const d=document.createElement('div');d.className='multi-field';d.id='tel-'+telsCount;
-  d.innerHTML=`<input type="tel" placeholder="06 00 00 00 00" value="${val}" inputmode="tel"><button class="btn-del" onclick="this.parentElement.remove()">✕</button>`;
+  d.innerHTML=`<input type="tel" placeholder="06 00 00 00 00" value="${esc(val)}" inputmode="tel" aria-label="Téléphone"><button class="btn-del" onclick="this.parentElement.remove()" aria-label="Supprimer">✕</button>`;
   document.getElementById('telList').appendChild(d);telsCount++;
 }
 function addEmail(val=''){
   const d=document.createElement('div');d.className='multi-field';d.id='em-'+emailsCount;
-  d.innerHTML=`<input type="email" placeholder="contact@entreprise.fr" value="${val}"><button class="btn-del" onclick="this.parentElement.remove()">✕</button>`;
+  d.innerHTML=`<input type="email" placeholder="contact@entreprise.fr" value="${esc(val)}" aria-label="Email"><button class="btn-del" onclick="this.parentElement.remove()" aria-label="Supprimer">✕</button>`;
   document.getElementById('emailList').appendChild(d);emailsCount++;
 }
 
@@ -635,9 +814,9 @@ function addTuteur(t={}){
       <span>👤 Tuteur ${n}</span>
       ${n>1?`<button class="btn-del btn-sm" onclick="document.getElementById('${id}').remove()" style="width:auto;padding:.2rem .6rem;font-size:.7rem">Supprimer</button>`:''}
     </div>
-    <div class="fr"><label>Prénom et nom</label><input id="tnom-${n}" placeholder="ex : Jean Martin" value="${t.nom||''}"></div>
-    <div class="fr"><label>Téléphone</label><input id="ttel-${n}" type="tel" placeholder="06 00 00 00 00" value="${t.tel||''}"></div>
-    <div class="fr" style="margin-bottom:0"><label>Email</label><input id="temail-${n}" type="email" placeholder="jean.martin@entreprise.fr" value="${t.email||''}"></div>`;
+    <div class="fr"><label>Prénom et nom</label><input id="tnom-${n}" placeholder="ex : Jean Martin" value="${esc(t.nom)}"></div>
+    <div class="fr"><label>Téléphone</label><input id="ttel-${n}" type="tel" placeholder="06 00 00 00 00" value="${esc(t.tel)}"></div>
+    <div class="fr" style="margin-bottom:0"><label>Email</label><input id="temail-${n}" type="email" placeholder="jean.martin@entreprise.fr" value="${esc(t.email)}"></div>`;
   document.getElementById('tuteurList').appendChild(d);tuteursCount++;
 }
 
@@ -732,7 +911,8 @@ async function chargerEleve(code,token){
   showSpinner();
   try{
     // ⚠️ SÉCURITÉ : On utilise verifyTuteurToken, PAS la clé prof
-    const p=new URLSearchParams({action:'verifyTuteurToken',eleve:code,tuteur:token});
+    const apiKey=(window.iwApi&&window.iwApi.getKey)?window.iwApi.getKey():(window.INERWEB_CONFIG?window.INERWEB_CONFIG.API_KEY:'');
+    const p=new URLSearchParams({action:'verifyTuteurToken',eleve:code,tuteur:token,key:apiKey});
     const r=await fetch(`${API_URL}?${p}`,{redirect:'follow'});
     const d=await r.json();
     if(!d.success){
@@ -744,18 +924,32 @@ async function chargerEleve(code,token){
     eleveCode=code;
     tuteurToken=token;
     eleveData=d.eleve;
+    // Sauvegarder la classe pour le mode hors-ligne
+    if(eleveData&&eleveData.classe)localStorage.setItem('lastClasse_'+code,eleveData.classe);
     // Charger évaluations tuteur existantes si présentes
     if(d.evalTuteur&&d.evalTuteur.length){
-      // TODO: pré-remplir evalData avec les données existantes
+      // Pré-remplir evalData avec les données existantes
+      d.evalTuteur.forEach(ev=>{
+        if(ev.competence&&ev.niveau!=null){
+          evalData[ev.competence]=ev.niveau;
+        }
+      });
     }
+    // Charger aussi depuis localStorage si disponible
+    try{
+      const saved=JSON.parse(localStorage.getItem('evalData_'+code));
+      if(saved&&typeof saved==='object'){
+        Object.keys(saved).forEach(k=>{if(!(k in evalData))evalData[k]=saved[k];});
+      }
+    }catch(e){}
   }catch(e){
     // Mode hors-ligne — on permet la saisie locale
     eleveCode=code;
     tuteurToken=token;
-    eleveData={code,nom:'Stagiaire',prenom:code,classe:'CAP IFCA'};
+    eleveData={code,nom:'Stagiaire',prenom:code,classe:localStorage.getItem('lastClasse_'+code)||''};
     toast('Hors-ligne — données seront envoyées plus tard','warn');
   }
-  evalData={};behavData={};
+  behavData={};
   // Charger les locks et évaluations sauvegardées pour cet élève
   chargerLocksEleve(code);
   hideSpinner();
@@ -772,22 +966,23 @@ function renderStagiaireInfo(){
   const ini=((s.nom||'?')[0]+(s.prenom||'')[0]||'').toUpperCase();
   document.getElementById('stagiaireInfo').innerHTML=`
     <div class="stagiaire-card">
-      <div class="stag-av">${ini}</div>
+      <div class="stag-av">${esc(ini)}</div>
       <div>
-        <div class="stag-nom">${s.nom||''} ${s.prenom||''}</div>
-        <div class="stag-meta">${s.classe||'CAP IFCA'}</div>
-        <div class="stag-meta" style="margin-top:.2rem">Tuteur : ${tuteurs[0]?.nom||'—'} · ${entreprise.nom||'Entreprise'}</div>
+        <div class="stag-nom">${esc(s.nom)} ${esc(s.prenom)}</div>
+        <div class="stag-meta">${esc(s.classe||'Classe inconnue')}</div>
+        <div class="stag-meta" style="margin-top:.2rem">Tuteur : ${esc(tuteurs[0]?.nom||'—')} · ${esc(entreprise.nom||'Entreprise')}</div>
       </div>
     </div>`;
+  updateBadge();
 }
 
-/* ═══ RENDU ÉVALUATION EP2 ═══ */
+/* ═══ RENDU ÉVALUATION (dynamique multi-filière) ═══ */
 const sid=c=>c.replace(/\./g,'_'); // C3.1 → C3_1 (IDs sans points)
 
 function renderEval(){
   const c=document.getElementById('evalContenu');
   c.innerHTML='';
-  
+
   // Légende en haut
   const legendHtml=`<div class="card" style="margin-bottom:.75rem">
     <div class="card-title">📋 Légende des niveaux</div>
@@ -800,14 +995,47 @@ function renderEval(){
     </div>
   </div>`;
   c.innerHTML=legendHtml;
+
+  // Barre de progression (% critères validés M ou PM)
+  const actifProg=getActiveComps();
+  const totalComp=actifProg.comps.length;
+  let valides=0;
+  actifProg.comps.forEach(comp=>{
+    const niv=(evalData[comp.code]&&evalData[comp.code].niveau)||'NE';
+    if(niv==='M'||niv==='PM')valides++;
+  });
+  const pct=totalComp?Math.round(valides/totalComp*100):0;
+  const barEl=document.createElement('div');
+  barEl.className='progress-bar-wrap';
+  barEl.innerHTML=`<div class="progress-bar-fill" style="width:${pct}%"></div><div class="progress-bar-txt">${valides}/${totalComp} validés (${pct}%)</div>`;
+  c.appendChild(barEl);
   
-  COMP_EP2.forEach(comp=>{
+  const actif=getActiveComps();
+  const compsActives=actif.comps;
+  const tachesActives=actif.taches;
+
+  // Titre section avec nom filière
+  const titreFiliere=document.createElement('div');
+  titreFiliere.style.cssText='text-align:center;font-size:.78rem;font-weight:800;color:var(--teal);margin-bottom:.5rem;padding:.4rem;background:var(--teal2);border-radius:8px;';
+  titreFiliere.textContent='📋 '+actif.nom+' — Épreuve '+actif.epreuve;
+  c.appendChild(titreFiliere);
+
+  var lastEp='';
+  compsActives.forEach(comp=>{
+    // Séparateur visuel entre épreuves (EP2/EP3, E31/E32, etc.)
+    if(comp.ep&&comp.ep!==lastEp){
+      lastEp=comp.ep;
+      var sepEl=document.createElement('div');
+      sepEl.style.cssText='text-align:center;font-size:.82rem;font-weight:900;color:#fff;padding:.5rem;border-radius:8px;margin:.75rem 0 .5rem;background:'+(comp.ep==='EP2'||comp.ep==='E31'?'var(--bleu2)':comp.ep==='EP3'||comp.ep==='E32'?'var(--violet)':'var(--teal)');
+      sepEl.textContent=comp.ep==='EP2'?'🔧 EP2 — Réalisation d\'une installation':comp.ep==='EP3'?'🔍 EP3 — Mise en service et maintenance':comp.ep;
+      c.appendChild(sepEl);
+    }
     const id=sid(comp.code);
     if(!evalData[comp.code])evalData[comp.code]={niveau:'NE',taches:{}};
     const niv=evalData[comp.code].niveau||'NE';
     const isLocked=compLocks[comp.code]||false;
     const hasValue=niv&&niv!=='NE';
-    const taches=TACHES[comp.code]||[];
+    const taches=tachesActives[comp.code]||[];
     const tachesHtml=taches.map((t,i)=>{
       const st=evalData[comp.code].taches[i];
       const onclick=isLocked?'':("cycleTache('"+comp.code+"',"+i+",this)");
@@ -843,7 +1071,7 @@ function renderEval(){
         ${taches.length?`<div class="taches-titre">Tâches observées :</div>${tachesHtml}`:''}
         <div class="fr" style="margin-top:.5rem;margin-bottom:0">
           <label>Observation (optionnel)</label>
-          <textarea class="obs-area" id="obs-${id}" placeholder="Remarque sur cette compétence..." style="min-height:60px" ${isLocked?'disabled':''} oninput="evalData['${comp.code}'].obs=this.value">${evalData[comp.code].obs||''}</textarea>
+          <textarea class="obs-area" id="obs-${id}" placeholder="Remarque sur cette compétence..." style="min-height:60px" ${isLocked?'disabled':''} oninput="evalData['${comp.code}'].obs=this.value">${esc(evalData[comp.code].obs||'')}</textarea>
         </div>
       </div>`;
     c.appendChild(el);
@@ -870,7 +1098,7 @@ function setNiv(code,niv,btn){
     compLocks[code]=true;
     sauvegarderLocal();
     renderEval();
-    toast('🔒 Compétence verrouillée','info');
+    toast('🔒 Compétence verrouillée','inf');
   }
 }
 
@@ -932,13 +1160,31 @@ function setBehav(key,niveau){
   }
 }
 
+/* ═══ MODALE CONFIRMATION ═══ */
+function ouvrirModale(msg,onConfirm){
+  document.getElementById('modalMsg').textContent=msg||'Êtes-vous sûr de vouloir envoyer les évaluations ?';
+  var mc=document.getElementById('modalConfirm');mc.classList.add('open');mc.setAttribute('aria-expanded','true');
+  window._modalOnConfirm=onConfirm||null;
+}
+function fermerModale(){
+  var mc=document.getElementById('modalConfirm');mc.classList.remove('open');mc.setAttribute('aria-expanded','false');
+  window._modalOnConfirm=null;
+}
+function confirmerEnvoi(){
+  fermerModale();
+  if(window._modalOnConfirm)window._modalOnConfirm();
+}
+
 /* ═══ ENVOI ═══ */
-async function envoyer(){
+function envoyer(){
   if(!tuteurToken){
     toast('Session expirée — rescannez le QR','err');
     return;
   }
-  
+  ouvrirModale('Êtes-vous sûr de vouloir envoyer les évaluations ?',envoyerConfirme);
+}
+
+async function envoyerConfirme(){
   const obs=document.getElementById('obsGlobal').value.trim();
   const pfmp=document.getElementById('selPfmp').value;
   const phase=document.getElementById('selPhase').value;
@@ -960,44 +1206,48 @@ async function envoyer(){
 
   showSpinner();
   try{
-    // ⚠️ SÉCURITÉ : On utilise le token TUTEUR, pas la clé prof
-    const p=new URLSearchParams({
-      action:'saveEvalTuteur',
-      eleve:eleveCode,
-      tuteur:tuteurToken,
-      data:JSON.stringify(payload)
+    // ⚠️ SÉCURITÉ : POST — token dans le body, pas dans l'URL
+    const url=new URL(API_URL);
+    url.searchParams.set('action','saveEvalTuteur');
+    const _apiKey=(window.iwApi&&window.iwApi.getKey)?window.iwApi.getKey():(window.INERWEB_CONFIG?window.INERWEB_CONFIG.API_KEY:'');
+    const r=await fetch(url.toString(),{
+      method:'POST',
+      redirect:'follow',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({apiKey:_apiKey,eleve:eleveCode,tuteur:tuteurToken,data:JSON.stringify(payload)})
     });
-    const r=await fetch(`${API_URL}?${p}`,{redirect:'follow'});
     const d=await r.json();
     if(d.error){
       throw new Error(d.error);
     }
     hideSpinner();
-    toast('Évaluation envoyée ✓ (en attente validation prof)','ok');
+    toast('Évaluation envoyée — en attente validation prof','ok');
     setTimeout(()=>{
-      if(confirm('Évaluer un autre stagiaire ?'))goPage('scan');
+      ouvrirModale('Évaluer un autre stagiaire ?',()=>goPage('scan'));
     },1500);
   }catch(e){
     hideSpinner();
-    // Sauvegarder en local pour envoi ultérieur
-    const pending=JSON.parse(localStorage.getItem('inerweb-tuteur-pending')||'[]');
-    pending.push({eleve:eleveCode,tuteur:tuteurToken,payload});
-    localStorage.setItem('inerweb-tuteur-pending',JSON.stringify(pending));
+    // Sauvegarder en local pour envoi ultérieur (anti-doublon par élève)
+    const pending=safeParse(localStorage.getItem('inerweb-tt-fe-tuteur-pending'),[]);
+    const existIdx=pending.findIndex(function(p){return p.eleve===eleveCode;});
+    if(existIdx>=0){pending[existIdx]={eleve:eleveCode,tuteur:tuteurToken,payload};}
+    else{pending.push({eleve:eleveCode,tuteur:tuteurToken,payload});}
+    localStorage.setItem('inerweb-tt-fe-tuteur-pending',JSON.stringify(pending));
     toast('Sauvegardé hors-ligne — envoi au prochain réseau','warn');
   }
 }
 
 /* ═══ PERSISTANCE LOCALE ═══ */
 function sauvegarderLocal(){
-  localStorage.setItem('inerweb-tuteur-data',JSON.stringify({entreprise,tuteurs}));
+  localStorage.setItem('inerweb-tt-fe-tuteur-data',JSON.stringify({entreprise,tuteurs}));
   // Sauvegarder les locks par élève
   if(eleveCode){
-    localStorage.setItem('inerweb-tuteur-locks-'+eleveCode,JSON.stringify(compLocks));
-    localStorage.setItem('inerweb-tuteur-eval-'+eleveCode,JSON.stringify(evalData));
+    localStorage.setItem('inerweb-tt-fe-tuteur-locks-'+eleveCode,JSON.stringify(compLocks));
+    localStorage.setItem('inerweb-tt-fe-tuteur-eval-'+eleveCode,JSON.stringify(evalData));
   }
 }
 function chargerLocal(){
-  const d=JSON.parse(localStorage.getItem('inerweb-tuteur-data')||'{}');
+  const d=safeParse(localStorage.getItem('inerweb-tt-fe-tuteur-data'),{});
   if(d.entreprise){
     entreprise=d.entreprise;
     document.getElementById('entNom').value=entreprise.nom||'';
@@ -1020,8 +1270,8 @@ function chargerLocal(){
   }
 }
 function chargerLocksEleve(code){
-  compLocks=JSON.parse(localStorage.getItem('inerweb-tuteur-locks-'+code)||'{}');
-  const savedEval=JSON.parse(localStorage.getItem('inerweb-tuteur-eval-'+code)||'{}');
+  compLocks=safeParse(localStorage.getItem('inerweb-tt-fe-tuteur-locks-'+code),{});
+  const savedEval=safeParse(localStorage.getItem('inerweb-tt-fe-tuteur-eval-'+code),{});
   if(Object.keys(savedEval).length)evalData=savedEval;
 }
 
@@ -1042,16 +1292,99 @@ function toggleLegende(){
   arr.classList.toggle('open');
 }
 
+/* ═══ MODE DÉMO TUTEUR ═══ */
+function loadTuteurDemo(){
+  // Données fictives entreprise
+  entreprise={nom:'Climafroid SARL',adresse:'45 avenue de la Réfrigération',cp:'13008',ville:'Marseille',dirigeant:'Marie Dupont',tels:['04 91 00 00 00','06 12 34 56 78'],emails:['contact@climafroid.fr']};
+  tuteurs=[{nom:'Jean Martin',tel:'06 98 76 54 32',email:'j.martin@climafroid.fr'}];
+  // Remplir les champs entreprise
+  document.getElementById('entNom').value=entreprise.nom;
+  document.getElementById('entAdresse').value=entreprise.adresse;
+  document.getElementById('entCP').value=entreprise.cp;
+  document.getElementById('entVille').value=entreprise.ville;
+  document.getElementById('entDirigeant').value=entreprise.dirigeant;
+  // Données fictives élève
+  eleveCode='ELV-001';
+  tuteurToken='[DEMO]';
+  eleveData={code:'ELV-001',nom:'DUPONT',prenom:'Martin',classe:'CAP IFCA 1',entreprise_nom:'Climafroid SARL',tuteur_nom:'Jean Martin'};
+  evalData={};behavData={};
+  // Pré-remplir quelques évaluations CAP IFCA pour montrer l'interface
+  evalData['C4.1']={niveau:'M',taches:{0:true,1:true,2:true}};
+  evalData['C4.3']={niveau:'EC',taches:{0:true,1:false,2:false}};
+  evalData['C4.5']={niveau:'NA',taches:{0:false,1:false,2:false}};
+  behavData={ponctualite:3,tenue:2,relations:3,initiative:1,consignes:2,progression:2};
+  // Afficher
+  renderStagiaireInfo();renderEval();renderBehav();renderTuteurDocs();
+  goPage('eval');
+  toast('Mode démo — données fictives chargées','ok');
+  // Bandeau démo
+  const banner=document.createElement('div');
+  banner.style.cssText='position:fixed;top:58px;left:50%;transform:translateX(-50%);background:#f39c12;color:#333;font-weight:900;font-size:.65rem;padding:.15rem 1rem;border-radius:0 0 6px 6px;z-index:300;letter-spacing:1px;';
+  banner.textContent='MODE DÉMO';
+  document.body.appendChild(banner);
+}
+
+/* ═══ RETRY PENDING — Renvoi automatique des évaluations en attente ═══ */
+async function retryPending(){
+  var pending=safeParse(localStorage.getItem('inerweb-tt-fe-tuteur-pending'),[]);
+  if(!pending.length) return;
+  var restant=[];
+  for(var i=0;i<pending.length;i++){
+    try{
+      var p=pending[i];
+      var url=new URL(API_URL);
+      url.searchParams.set('action','saveEvalTuteur');
+      var _k=(window.iwApi&&window.iwApi.getKey)?window.iwApi.getKey():(window.INERWEB_CONFIG?window.INERWEB_CONFIG.API_KEY:'');
+      var r=await fetch(url.toString(),{
+        method:'POST',
+        redirect:'follow',
+        headers:{'Content-Type':'text/plain'},
+        body:JSON.stringify({apiKey:_k,eleve:p.eleve,tuteur:p.tuteur,data:JSON.stringify(p.payload)})
+      });
+      var d=await r.json();
+      if(d.error) throw new Error(d.error);
+      toast('Évaluation en attente envoyée pour '+p.eleve,'ok');
+    }catch(e){
+      restant.push(pending[i]);
+    }
+  }
+  localStorage.setItem('inerweb-tt-fe-tuteur-pending',JSON.stringify(restant));
+  if(restant.length) toast(restant.length+' évaluation(s) en attente de connexion','warn');
+}
+
+// Retry automatique au retour en ligne
+window.addEventListener('online',function(){ retryPending(); });
+
+/* ═══ EVENT LISTENERS DELEGUES (Phase 11) ═══ */
+// Navigation par pages — délégation sur le body
+document.body.addEventListener('click',function(e){
+  var btn=e.target.closest('[data-page]');
+  if(btn)goPage(btn.dataset.page);
+});
+// Filtres select — délégation sur le body
+document.body.addEventListener('change',function(e){
+  var sel=e.target.closest('[data-filter]');
+  if(!sel)return;
+  if(sel.dataset.filter==='eval')renderEval();
+});
+
 /* ═══ INIT ═══ */
 // Ajouter champs par défaut
 addTel();addEmail();addTuteur();
 // Charger données sauvegardées
 chargerLocal();
+// Retry des évaluations en attente au chargement
+if(navigator.onLine) retryPending();
 // Deep-link
 const _p=new URLSearchParams(window.location.search);
+
+// MODE DÉMO : charger directement les données fictives
+if(_p.get('demo')==='1'){
+  loadTuteurDemo();
+}
 // Sécurité : vérifier que ce n'est pas un QR élève scanné par erreur
-if(_p.get('role')==='eleve'){
-  document.getElementById('setupScreen').innerHTML=`
+else if(_p.get('role')==='eleve'){
+  document.getElementById('page-bienvenue').querySelector('.page-inner').innerHTML=`
     <div style="text-align:center;padding:3rem 1.5rem;max-width:400px;margin:0 auto">
       <div style="font-size:3rem;margin-bottom:.5rem">🚫</div>
       <h2 style="color:#c0390f;margin-bottom:.5rem">Mauvais QR code !</h2>
@@ -1059,23 +1392,45 @@ if(_p.get('role')==='eleve'){
       <p style="font-size:.75rem;color:#999">En cas de doute, contactez l'enseignant référent.</p>
     </div>`;
 } else if(_p.get('preview')==='1'&&_p.get('eleve')){
-  // Mode preview prof : afficher la page tuteur sans vérification API
+  // Mode preview prof : charger directement en page évaluation
   eleveCode=_p.get('eleve');
   tuteurToken=_p.get('tuteur')||'PREVIEW';
-  document.getElementById('setupScreen').style.display='none';
-  document.getElementById('mainApp').style.display='flex';
-  document.getElementById('eleveNom').textContent='Aperçu prof';
-  // Charger documents partagés depuis sessionStorage
-  try{const pd=JSON.parse(sessionStorage.getItem('inerwebPreviewTuteur')||'{}');tuteurSharedDocs=pd.sharedDocs||[];}catch{}
-  renderTuteurDocs();
+  eleveData={code:eleveCode,nom:'Aperçu',prenom:'prof',classe:_p.get('classe')||''};
+  try{const pd=safeParse(sessionStorage.getItem('inerwebPreviewTuteur'),{});tuteurSharedDocs=pd.sharedDocs||[];}catch(e){}
+  renderStagiaireInfo();renderEval();renderBehav();renderTuteurDocs();
+  goPage('eval');
   toast('Mode aperçu (vue prof)','ok');
 } else if(_p.get('eleve')){
-  const d=JSON.parse(localStorage.getItem('inerweb-tuteur-data')||'{}');
+  const d=safeParse(localStorage.getItem('inerweb-tt-fe-tuteur-data'),{});
   if(d.entreprise?.nom&&d.tuteurs?.[0]?.nom){
     entreprise=d.entreprise;tuteurs=d.tuteurs;
     chargerEleve(_p.get('eleve'),_p.get('tuteur')||_p.get('token')||'');
   }
 }
+async function savePrefContact(){
+  var prefs=[];
+  if(document.getElementById('prefTel').checked)prefs.push('tel');
+  if(document.getElementById('prefSMS').checked)prefs.push('sms');
+  if(document.getElementById('prefWA').checked)prefs.push('whatsapp');
+  if(document.getElementById('prefEmail').checked)prefs.push('email');
+  var prefStr=prefs.join(',');
+  var st=document.getElementById('prefContactStatus');
+  st.style.display='block';st.textContent='Enregistrement...';st.style.color='var(--gris)';
+  try{
+    if(!eleveCode||!tuteurToken){st.textContent='Chargez un stagiaire d\'abord';st.style.color='var(--orange)';return;}
+    var apiKey=(window.iwApi&&window.iwApi.getKey)?window.iwApi.getKey():(window.INERWEB_CONFIG?window.INERWEB_CONFIG.API_KEY:'');
+    var p=new URLSearchParams({action:'savePrefContactTuteur',eleve:eleveCode,tuteur:tuteurToken,key:apiKey,preference:prefStr});
+    await fetch(API_URL+'?'+p,{redirect:'follow'});
+    st.textContent='✅ Préférences enregistrées';st.style.color='var(--vert)';
+  }catch(e){
+    st.textContent='⚠️ Sauvegardé localement (sync en attente)';st.style.color='var(--orange)';
+  }
+  setTimeout(function(){st.style.display='none';},3000);
+}
 </script>
+<!-- Bouton aide flottant -->
+<a href="aide.html#tuteur" target="_blank" rel="noopener noreferrer" title="Guide d'utilisation — Tuteur" style="position:fixed;bottom:1.5rem;right:1.5rem;width:52px;height:52px;background:#ff6b35;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:900;text-decoration:none;box-shadow:0 4px 20px rgba(255,107,53,.4);z-index:9999;transition:transform .2s,box-shadow .2s;font-family:'Nunito',sans-serif;" onmouseover="this.style.transform='scale(1.1)';this.style.boxShadow='0 6px 28px rgba(255,107,53,.5)'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 20px rgba(255,107,53,.4)'">?</a>
+
+<script src="js/demo-guide.js" defer></script>
 </body>
 </html>

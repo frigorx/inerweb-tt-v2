@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><script>
+(function(){if(sessionStorage.getItem('iw_purged'))return;if('serviceWorker' in navigator){caches.keys().then(function(k){k.forEach(function(c){caches.delete(c)})});navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(sw){sw.unregister()})});}sessionStorage.setItem('iw_purged','1');setTimeout(function(){location.reload(true)},500);})();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Guide d'installation pas-à-pas INERWEB PROG+ — Pour débutants complets">
+<title>INERWEB PROG+ — Guide d'installation</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bleu:#1b3a63;--bleu2:#2d5a8c;--bleu3:#e8f0f8;
+  --orange:#ff6b35;--vert:#27ae60;--vert2:#d4f4e2;
+  --teal:#16a085;--teal2:#d0f0ea;
+  --violet:#8e44ad;--violet2:#f3e5f5;
+  --gris:#6c757d;--gris2:#f0f2f5;--gris3:#dee2e6;
+  --texte:#1a2332;
+  --r:16px;--r2:10px;
+  --ombre:0 8px 32px rgba(27,58,99,.18);
+  --t:all .3s cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;scroll-padding-top:5.5rem;}
+body{font-family:'Nunito',sans-serif;color:var(--texte);background:var(--gris2);line-height:1.7;min-height:100vh;}
+
+/* ── Header fixe ── */
+.header{
+  position:sticky;top:0;z-index:100;
+  background:linear-gradient(135deg,var(--bleu),var(--bleu2));
+  color:#fff;padding:.85rem 1.5rem;
+  box-shadow:0 2px 16px rgba(0,0,0,.25);
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;
+}
+.header h1{font-size:1.15rem;font-weight:900;white-space:nowrap;}
+.back-link{
+  color:#fff;text-decoration:none;font-size:.85rem;font-weight:700;
+  display:flex;align-items:center;gap:.4rem;opacity:.85;
+  padding:.35rem .75rem;border-radius:20px;background:rgba(255,255,255,.15);transition:var(--t);
+}
+.back-link:hover{opacity:1;background:rgba(255,255,255,.3);}
+
+/* ── Conteneur ── */
+.container{max-width:820px;margin:0 auto;padding:1.5rem 1rem 3rem;}
+
+/* ── Barre de progression ── */
+.stepper{
+  display:flex;justify-content:center;gap:.35rem;flex-wrap:wrap;
+  background:#fff;border-radius:var(--r);padding:1rem 1.25rem;
+  box-shadow:var(--ombre);margin-bottom:1.75rem;
+}
+.stepper-btn{
+  border:none;cursor:pointer;font-family:inherit;font-weight:800;font-size:.75rem;
+  padding:.5rem .85rem;border-radius:20px;transition:var(--t);
+  background:var(--gris2);color:var(--gris);display:flex;align-items:center;gap:.35rem;
+}
+.stepper-btn:hover{background:var(--bleu3);color:var(--bleu);}
+.stepper-btn.active{background:var(--bleu);color:#fff;}
+.stepper-btn .num{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:22px;height:22px;border-radius:50%;font-size:.7rem;font-weight:900;
+  background:rgba(0,0,0,.1);
+}
+.stepper-btn.active .num{background:rgba(255,255,255,.25);}
+
+/* ── Carte étape ── */
+.step-card{
+  background:#fff;border-radius:var(--r);padding:2rem 2rem 1.75rem;
+  box-shadow:var(--ombre);margin-bottom:1.5rem;
+  border-left:5px solid var(--bleu2);
+  animation:fadeIn .4s ease-out;
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.step-badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:52px;height:52px;border-radius:50%;color:#fff;font-size:1.4rem;font-weight:900;
+  margin-bottom:.75rem;flex-shrink:0;
+}
+.step-card h2{font-size:1.25rem;font-weight:900;margin-bottom:.75rem;color:var(--bleu);}
+.step-card p{font-size:.92rem;margin-bottom:.75rem;color:#444;}
+.step-card .illustration{
+  display:flex;justify-content:center;margin:1.25rem 0;
+}
+.step-card .illustration svg{max-width:100%;height:auto;}
+
+/* ── Astuce ── */
+.tip{
+  display:flex;align-items:flex-start;gap:.75rem;
+  background:var(--vert2);border-radius:var(--r2);padding:1rem 1.15rem;
+  margin-top:1rem;font-size:.85rem;border:1px solid rgba(39,174,96,.2);
+}
+.tip-icon{font-size:1.3rem;flex-shrink:0;line-height:1;}
+.tip strong{color:var(--vert);}
+
+/* ── Couleurs par étape ── */
+.step-card:nth-of-type(1){border-left-color:var(--bleu2);}
+.step-card:nth-of-type(2){border-left-color:var(--orange);}
+.step-card:nth-of-type(3){border-left-color:var(--vert);}
+.step-card:nth-of-type(4){border-left-color:var(--teal);}
+.step-card:nth-of-type(5){border-left-color:var(--violet);}
+.step-card:nth-of-type(6){border-left-color:#e67e22;}
+.bg-bleu{background:var(--bleu2);} .bg-orange{background:var(--orange);}
+.bg-vert{background:var(--vert);} .bg-teal{background:var(--teal);}
+.bg-violet{background:var(--violet);} .bg-jaune{background:#e67e22;}
+
+/* ── FAQ ── */
+.faq-section{margin-top:2rem;}
+.faq-section h2{font-size:1.2rem;font-weight:900;color:var(--bleu);margin-bottom:1rem;text-align:center;}
+.faq-item{
+  background:#fff;border-radius:var(--r2);margin-bottom:.6rem;
+  box-shadow:0 2px 12px rgba(27,58,99,.08);overflow:hidden;
+}
+.faq-q{
+  padding:1rem 1.25rem;font-weight:700;font-size:.92rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:space-between;gap:.75rem;
+  transition:var(--t);border:none;background:none;width:100%;text-align:left;
+  font-family:inherit;color:var(--texte);
+}
+.faq-q:hover{background:var(--bleu3);}
+.faq-q .chevron{transition:transform .3s;font-size:.8rem;color:var(--gris);}
+.faq-q.open .chevron{transform:rotate(180deg);}
+.faq-a{
+  max-height:0;overflow:hidden;transition:max-height .35s ease, padding .35s ease;
+  font-size:.88rem;color:#555;line-height:1.65;padding:0 1.25rem;
+}
+.faq-a.open{max-height:300px;padding:0 1.25rem 1rem;}
+
+/* ── CTA ── */
+.cta-box{
+  text-align:center;margin:2.5rem 0 1.5rem;
+}
+.cta-btn{
+  display:inline-block;padding:.9rem 2.5rem;border-radius:30px;
+  background:linear-gradient(135deg,var(--orange),#e85d2a);
+  color:#fff;font-weight:800;font-size:1rem;text-decoration:none;
+  box-shadow:0 6px 24px rgba(255,107,53,.35);transition:var(--t);
+}
+.cta-btn:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(255,107,53,.45);}
+.cta-sub{font-size:.82rem;color:var(--gris);margin-top:.6rem;}
+
+/* ── Footer ── */
+.footer{
+  text-align:center;padding:1.5rem 1rem;margin-top:1rem;
+  border-top:2px solid var(--gris3);font-size:.75rem;color:var(--gris);
+}
+.footer a{color:var(--bleu2);text-decoration:none;font-weight:700;}
+.footer a:hover{text-decoration:underline;}
+
+/* ── Fichier structure ── */
+.file-tree{
+  background:var(--bleu);color:#aed6ff;font-family:'Courier New',monospace;
+  font-size:.82rem;border-radius:var(--r2);padding:1rem 1.25rem;margin:.75rem 0;
+  line-height:1.8;
+}
+.file-tree .folder{color:#ffcc5c;font-weight:700;}
+.file-tree .file{color:#a8e6cf;}
+
+/* ── Responsive ── */
+@media(max-width:600px){
+  .header{padding:.65rem 1rem;}
+  .header h1{font-size:.95rem;}
+  .step-card{padding:1.25rem;}
+  .stepper-btn span:not(.num){display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- ── Header fixe ── -->
+<header class="header">
+  <a href="index.html" class="back-link">&#9664; Accueil</a>
+  <h1>Guide d'installation</h1>
+</header>
+
+<div class="container">
+
+<!-- ── Barre de progression ── -->
+<nav class="stepper" id="stepper">
+  <button class="stepper-btn active" data-step="1"><span class="num">1</span><span>ZIP</span></button>
+  <button class="stepper-btn" data-step="2"><span class="num">2</span><span>Extraire</span></button>
+  <button class="stepper-btn" data-step="3"><span class="num">3</span><span>Ouvrir</span></button>
+  <button class="stepper-btn" data-step="4"><span class="num">4</span><span>Configurer</span></button>
+  <button class="stepper-btn" data-step="5"><span class="num">5</span><span>Classes</span></button>
+  <button class="stepper-btn" data-step="6"><span class="num">6</span><span>QR codes</span></button>
+</nav>
+
+<!-- ══════════════ ÉTAPE 1 ══════════════ -->
+<section class="step-card" id="step-1">
+  <div class="step-badge bg-bleu">1</div>
+  <h2>Obtenir le fichier ZIP</h2>
+  <p>Un fichier <strong>ZIP</strong> est comme une valise qui contient tous les fichiers du logiciel, compressés en un seul document. Vous le recevez soit par e-mail de votre administrateur, soit en le téléchargeant depuis la page GitHub du projet.</p>
+  <div class="illustration">
+    <svg width="200" height="120" viewBox="0 0 200 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="40" y="20" width="120" height="85" rx="10" fill="#e8f0f8" stroke="#2d5a8c" stroke-width="2.5"/>
+      <rect x="70" y="8" width="60" height="24" rx="6" fill="#2d5a8c"/>
+      <text x="100" y="24" text-anchor="middle" fill="#fff" font-family="Nunito" font-weight="800" font-size="11">.ZIP</text>
+      <path d="M88 55 L100 70 L112 55" stroke="#ff6b35" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      <line x1="100" y1="42" x2="100" y2="68" stroke="#ff6b35" stroke-width="3" stroke-linecap="round"/>
+      <rect x="82" y="78" width="36" height="16" rx="4" fill="#27ae60"/>
+      <text x="100" y="90" text-anchor="middle" fill="#fff" font-family="Nunito" font-weight="700" font-size="8">Fichier OK</text>
+    </svg>
+  </div>
+  <p>Une fois le fichier ZIP sur votre ordinateur (souvent dans le dossier <strong>Téléchargements</strong>), passez à l'étape suivante.</p>
+  <div class="tip">
+    <span class="tip-icon">&#128161;</span>
+    <div><strong>Astuce :</strong> Si vous ne trouvez pas le fichier, ouvrez votre dossier Téléchargements en appuyant sur les touches <strong>Windows + E</strong> puis en cliquant sur "Téléchargements" dans le menu de gauche.</div>
+  </div>
+</section>
+
+<!-- ══════════════ ÉTAPE 2 ══════════════ -->
+<section class="step-card" id="step-2">
+  <div class="step-badge bg-orange">2</div>
+  <h2>Extraire le fichier ZIP</h2>
+  <p>Il faut maintenant "ouvrir la valise" pour sortir tous les fichiers. Faites un <strong>clic droit</strong> sur le fichier ZIP, puis choisissez <strong>"Extraire tout..."</strong> dans le menu qui apparaît. Cliquez ensuite sur <strong>"Extraire"</strong>.</p>
+  <div class="illustration">
+    <svg width="220" height="110" viewBox="0 0 220 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="15" width="70" height="55" rx="8" fill="#ff6b35" opacity=".15" stroke="#ff6b35" stroke-width="2"/>
+      <text x="45" y="48" text-anchor="middle" fill="#ff6b35" font-family="Nunito" font-weight="800" font-size="10">.ZIP</text>
+      <path d="M95 42 L125 42" stroke="#2d5a8c" stroke-width="2.5" stroke-dasharray="5 3" marker-end="url(#arrow)"/>
+      <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#2d5a8c"/></marker></defs>
+      <rect x="130" y="5" width="80" height="100" rx="8" fill="#e8f0f8" stroke="#2d5a8c" stroke-width="2"/>
+      <text x="170" y="22" text-anchor="middle" fill="#1b3a63" font-family="Nunito" font-weight="800" font-size="9">Dossier</text>
+      <rect x="140" y="30" width="60" height="12" rx="3" fill="#d4f4e2"/><text x="170" y="39" text-anchor="middle" fill="#27ae60" font-size="7" font-family="Nunito" font-weight="700">index.html</text>
+      <rect x="140" y="46" width="60" height="12" rx="3" fill="#d0f0ea"/><text x="170" y="55" text-anchor="middle" fill="#16a085" font-size="7" font-family="Nunito" font-weight="700">inerweb_prof.html</text>
+      <rect x="140" y="62" width="60" height="12" rx="3" fill="#f3e5f5"/><text x="170" y="71" text-anchor="middle" fill="#8e44ad" font-size="7" font-family="Nunito" font-weight="700">inerweb_admin.html</text>
+      <rect x="140" y="78" width="60" height="12" rx="3" fill="#fff3e0"/><text x="170" y="87" text-anchor="middle" fill="#e67e22" font-size="7" font-family="Nunito" font-weight="700">aide.html</text>
+    </svg>
+  </div>
+  <p>Vous devriez voir un dossier contenant plusieurs fichiers :</p>
+  <div class="file-tree">
+    <span class="folder">inerweb-tt-fe/</span><br>
+    &nbsp;&nbsp;&#9500;&#9472; <span class="file">index.html</span> &larr; Page d'accueil<br>
+    &nbsp;&nbsp;&#9500;&#9472; <span class="file">inerweb_prof.html</span> &larr; Espace professeur<br>
+    &nbsp;&nbsp;&#9500;&#9472; <span class="file">inerweb_admin.html</span> &larr; Administration<br>
+    &nbsp;&nbsp;&#9500;&#9472; <span class="file">aide.html</span> &larr; Guide complet<br>
+    &nbsp;&nbsp;&#9492;&#9472; <span class="file">...</span> (autres fichiers)
+  </div>
+  <div class="tip">
+    <span class="tip-icon">&#128161;</span>
+    <div><strong>Astuce :</strong> Ne déplacez pas les fichiers individuellement hors du dossier. Ils doivent rester <strong>ensemble</strong> pour fonctionner correctement.</div>
+  </div>
+</section>
+
+<!-- ══════════════ ÉTAPE 3 ══════════════ -->
+<section class="step-card" id="step-3">
+  <div class="step-badge bg-vert">3</div>
+  <h2>Ouvrir la page d'accueil</h2>
+  <p>Dans le dossier extrait, <strong>double-cliquez</strong> sur le fichier <strong>index.html</strong>. Votre navigateur internet (Chrome, Firefox, Edge...) s'ouvrira automatiquement et affichera la page d'accueil du logiciel.</p>
+  <div class="illustration">
+    <svg width="220" height="120" viewBox="0 0 220 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="20" y="10" width="180" height="100" rx="10" fill="#fff" stroke="#2d5a8c" stroke-width="2.5"/>
+      <rect x="20" y="10" width="180" height="22" rx="10" fill="#2d5a8c"/>
+      <rect x="24" y="14" width="172" height="14" rx="6" fill="#1b3a63"/>
+      <circle cx="34" cy="21" r="4" fill="#e74c3c"/><circle cx="46" cy="21" r="4" fill="#f39c12"/><circle cx="58" cy="21" r="4" fill="#27ae60"/>
+      <rect x="70" y="17" width="100" height="8" rx="4" fill="rgba(255,255,255,.2)"/>
+      <text x="110" y="55" text-anchor="middle" fill="#1b3a63" font-family="Nunito" font-weight="900" font-size="12">INERWEB PROG+</text>
+      <text x="110" y="72" text-anchor="middle" fill="#6c757d" font-family="Nunito" font-weight="600" font-size="8">Plateforme pedagogique</text>
+      <rect x="75" y="82" width="70" height="18" rx="9" fill="#ff6b35"/>
+      <text x="110" y="94" text-anchor="middle" fill="#fff" font-family="Nunito" font-weight="700" font-size="8">Commencer</text>
+    </svg>
+  </div>
+  <p>Si la page s'affiche correctement avec le logo et les boutons, tout fonctionne. Aucune installation supplémentaire n'est nécessaire.</p>
+  <div class="tip">
+    <span class="tip-icon">&#128161;</span>
+    <div><strong>Astuce :</strong> Pour un accès rapide, faites un clic droit sur <strong>index.html</strong> puis "Envoyer vers > Bureau (créer un raccourci)". Vous aurez une icône directement sur votre bureau.</div>
+  </div>
+</section>
+
+<!-- ══════════════ ÉTAPE 4 ══════════════ -->
+<section class="step-card" id="step-4">
+  <div class="step-badge bg-teal">4</div>
+  <h2>Configurer la connexion au serveur</h2>
+  <p>Pour que vos données soient enregistrées, il faut connecter le logiciel au serveur. Ouvrez <strong>inerweb_prof.html</strong>, puis cliquez sur l'onglet <strong>Paramètres</strong> (icône engrenage).</p>
+  <div class="illustration">
+    <svg width="200" height="110" viewBox="0 0 200 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="20" y="10" width="160" height="90" rx="10" fill="#fff" stroke="#16a085" stroke-width="2.5"/>
+      <rect x="20" y="10" width="160" height="20" rx="10" fill="#16a085"/>
+      <text x="100" y="24" text-anchor="middle" fill="#fff" font-family="Nunito" font-weight="800" font-size="9">Parametres</text>
+      <rect x="35" y="40" width="130" height="16" rx="5" fill="#e8f0f8" stroke="#dee2e6" stroke-width="1"/>
+      <text x="42" y="51" fill="#6c757d" font-family="Nunito" font-size="7">URL du serveur API...</text>
+      <rect x="35" y="64" width="130" height="16" rx="5" fill="#e8f0f8" stroke="#dee2e6" stroke-width="1"/>
+      <text x="42" y="75" fill="#6c757d" font-family="Nunito" font-size="7">Cle API enseignant...</text>
+      <rect x="65" y="86" width="70" height="14" rx="7" fill="#16a085"/>
+      <text x="100" y="96" text-anchor="middle" fill="#fff" font-family="Nunito" font-weight="700" font-size="7">Enregistrer</text>
+    </svg>
+  </div>
+  <p>Vous devez remplir deux champs (fournis par votre administrateur) :</p>
+  <p><strong>1.</strong> L'<strong>URL du serveur API</strong> : c'est l'adresse du serveur qui stocke les données.<br>
+     <strong>2.</strong> La <strong>clé API enseignant</strong> : c'est votre mot de passe de connexion au serveur.</p>
+  <p>Collez ces informations dans les champs correspondants, puis cliquez sur <strong>Enregistrer</strong>.</p>
+  <div class="tip">
+    <span class="tip-icon">&#128161;</span>
+    <div><strong>Astuce :</strong> Si vous n'avez pas encore ces informations, contactez la personne qui vous a transmis le fichier ZIP. En attendant, vous pouvez utiliser le <strong>mode démo</strong> pour découvrir le logiciel.</div>
+  </div>
+</section>
+
+<!-- ══════════════ ÉTAPE 5 ══════════════ -->
+<section class="step-card" id="step-5">
+  <div class="step-badge bg-violet">5</div>
+  <h2>Créer vos classes et ajouter les élèves</h2>
+  <p>Dans l'espace professeur, allez dans l'onglet <strong>Classes</strong>. Vous pouvez créer une classe en lui donnant un nom (par exemple "2nde TNE A") puis ajouter les élèves de deux façons :</p>
+  <div class="illustration">
+    <svg width="200" height="110" viewBox="0 0 200 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="15" y="10" width="80" height="90" rx="8" fill="#fff" stroke="#8e44ad" stroke-width="2"/>
+      <text x="55" y="28" text-anchor="middle" fill="#8e44ad" font-family="Nunito" font-weight="800" font-size="9">Manuel</text>
+      <rect x="25" y="36" width="60" height="10" rx="3" fill="#f3e5f5"/><text x="55" y="44" text-anchor="middle" fill="#8e44ad" font-size="6" font-family="Nunito">DUPONT Marie</text>
+      <rect x="25" y="50" width="60" height="10" rx="3" fill="#f3e5f5"/><text x="55" y="58" text-anchor="middle" fill="#8e44ad" font-size="6" font-family="Nunito">MARTIN Lucas</text>
+      <rect x="25" y="64" width="60" height="10" rx="3" fill="#f3e5f5"/><text x="55" y="72" text-anchor="middle" fill="#8e44ad" font-size="6" font-family="Nunito">+ Ajouter</text>
+      <text x="110" y="58" text-anchor="middle" fill="#6c757d" font-family="Nunito" font-weight="800" font-size="12">ou</text>
+      <rect x="125" y="10" width="65" height="90" rx="8" fill="#fff" stroke="#8e44ad" stroke-width="2"/>
+      <text x="157" y="28" text-anchor="middle" fill="#8e44ad" font-family="Nunito" font-weight="800" font-size="9">CSV</text>
+      <rect x="135" y="38" width="45" height="40" rx="4" fill="#f3e5f5"/>
+      <text x="157" y="55" text-anchor="middle" fill="#8e44ad" font-size="7" font-family="Nunito" font-weight="700">NOM;</text>
+      <text x="157" y="65" text-anchor="middle" fill="#8e44ad" font-size="7" font-family="Nunito" font-weight="700">PRENOM</text>
+      <rect x="137" y="84" width="41" height="12" rx="6" fill="#8e44ad"/>
+      <text x="157" y="93" text-anchor="middle" fill="#fff" font-family="Nunito" font-weight="700" font-size="6">Importer</text>
+    </svg>
+  </div>
+  <p><strong>Manuellement</strong> : cliquez sur "Ajouter un élève" et tapez le nom et le prénom.<br>
+     <strong>Par fichier CSV</strong> : préparez un fichier texte avec une ligne par élève au format <strong>NOM;PRENOM</strong>, puis importez-le.</p>
+  <div class="tip">
+    <span class="tip-icon">&#128161;</span>
+    <div><strong>Astuce :</strong> Un fichier CSV peut être créé facilement avec Excel ou LibreOffice Calc. Mettez les noms en colonne A et les prénoms en colonne B, puis enregistrez au format CSV (séparateur point-virgule).</div>
+  </div>
+</section>
+
+<!-- ══════════════ ÉTAPE 6 ══════════════ -->
+<section class="step-card" id="step-6">
+  <div class="step-badge bg-jaune">6</div>
+  <h2>Générer et distribuer les QR codes</h2>
+  <p>Chaque élève et chaque tuteur recevra un <strong>QR code unique</strong> pour accéder à son espace. Dans l'onglet <strong>QR Codes</strong>, sélectionnez une classe et cliquez sur <strong>"Générer"</strong>. Vous obtiendrez une page imprimable avec tous les QR codes.</p>
+  <div class="illustration">
+    <svg width="200" height="110" viewBox="0 0 200 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="35" y="10" width="50" height="50" rx="6" fill="#fff" stroke="#e67e22" stroke-width="2.5"/>
+      <rect x="42" y="17" width="8" height="8" rx="1" fill="#1a2332"/><rect x="53" y="17" width="8" height="8" rx="1" fill="#1a2332"/><rect x="64" y="17" width="8" height="8" rx="1" fill="#1a2332"/>
+      <rect x="42" y="28" width="8" height="8" rx="1" fill="#1a2332"/><rect x="55" y="30" width="5" height="5" rx="1" fill="#1a2332"/><rect x="64" y="28" width="8" height="8" rx="1" fill="#1a2332"/>
+      <rect x="42" y="39" width="8" height="8" rx="1" fill="#1a2332"/><rect x="53" y="39" width="8" height="8" rx="1" fill="#1a2332"/><rect x="64" y="39" width="8" height="8" rx="1" fill="#1a2332"/>
+      <text x="60" y="72" text-anchor="middle" fill="#e67e22" font-family="Nunito" font-weight="800" font-size="8">DUPONT M.</text>
+      <path d="M100 35 L125 35" stroke="#2d5a8c" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#arrow2)"/>
+      <defs><marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#2d5a8c"/></marker></defs>
+      <rect x="130" y="8" width="55" height="75" rx="6" fill="#fff" stroke="#dee2e6" stroke-width="1.5"/>
+      <text x="157" y="24" text-anchor="middle" fill="#1a2332" font-family="Nunito" font-weight="800" font-size="7">Feuille A4</text>
+      <rect x="136" y="30" width="18" height="18" rx="2" fill="#e8f0f8"/><rect x="158" y="30" width="18" height="18" rx="2" fill="#e8f0f8"/>
+      <rect x="136" y="52" width="18" height="18" rx="2" fill="#e8f0f8"/><rect x="158" y="52" width="18" height="18" rx="2" fill="#e8f0f8"/>
+      <rect x="130" y="88" width="55" height="14" rx="7" fill="#27ae60"/>
+      <text x="157" y="98" text-anchor="middle" fill="#fff" font-family="Nunito" font-weight="700" font-size="7">Imprimer</text>
+    </svg>
+  </div>
+  <p><strong>Imprimez</strong> la feuille et découpez les QR codes. Distribuez-en un à chaque élève. Ils n'auront qu'à le scanner avec leur téléphone pour accéder à leur espace personnel.</p>
+  <div class="tip">
+    <span class="tip-icon">&#128161;</span>
+    <div><strong>Astuce :</strong> Plastifiez les QR codes ou collez-les dans les carnets de suivi. Un QR code abîmé ne fonctionnera plus. Vous pouvez toujours en régénérer un depuis l'interface.</div>
+  </div>
+</section>
+
+<!-- ══════════════ FAQ ══════════════ -->
+<section class="faq-section">
+  <h2>Questions fréquentes</h2>
+
+  <div class="faq-item">
+    <button class="faq-q" aria-expanded="false">Le fichier ne s'ouvre pas quand je double-clique<span class="chevron">&#9660;</span></button>
+    <div class="faq-a">Vérifiez que vous cliquez bien sur <strong>index.html</strong> et non sur le fichier ZIP lui-même. Si le fichier s'ouvre dans un éditeur de texte (Bloc-notes), faites un clic droit dessus, choisissez "Ouvrir avec" puis sélectionnez votre navigateur (Chrome, Firefox ou Edge).</div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-q" aria-expanded="false">Je n'ai pas reçu l'URL API ni la clé<span class="chevron">&#9660;</span></button>
+    <div class="faq-a">Ces informations sont fournies par l'administrateur qui a mis en place le serveur. Contactez la personne responsable dans votre établissement. En attendant, vous pouvez explorer le logiciel en <strong>mode démo</strong> (toutes les fonctionnalités sont accessibles, mais les données ne sont pas sauvegardées).</div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-q" aria-expanded="false">Comment mettre à jour quand une nouvelle version sort ?<span class="chevron">&#9660;</span></button>
+    <div class="faq-a">Téléchargez le nouveau fichier ZIP et extrayez-le. Vos données sont stockées sur le serveur, elles ne sont pas perdues. Il suffit de remplacer l'ancien dossier par le nouveau et de reconfigurer la connexion (étape 4). Vos classes et élèves seront toujours présents.</div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-q" aria-expanded="false">Est-ce que cela fonctionne sur téléphone ou tablette ?<span class="chevron">&#9660;</span></button>
+    <div class="faq-a">L'interface élève et tuteur est entièrement adaptée aux écrans de téléphones et tablettes. L'interface professeur fonctionne aussi sur tablette, mais un ordinateur est recommandé pour plus de confort lors de la saisie et la configuration.</div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-q" aria-expanded="false">Mes données sont-elles sécurisées ?<span class="chevron">&#9660;</span></button>
+    <div class="faq-a">Les données transitent de manière chiffrée entre votre navigateur et le serveur. Chaque utilisateur dispose d'une clé unique. Aucune donnée personnelle sensible n'est collectée : uniquement les noms, prénoms et les évaluations de compétences. L'administrateur peut consulter le journal d'accès à tout moment.</div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-q" aria-expanded="false">Comment tester sans configurer le serveur ?<span class="chevron">&#9660;</span></button>
+    <div class="faq-a">Cliquez sur le bouton <strong>"Mode démo"</strong> sur la page d'accueil, ou utilisez le lien ci-dessous. Le mode démo vous permet d'explorer toutes les fonctionnalités avec des données fictives, sans aucune configuration requise.</div>
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<div class="cta-box">
+  <a href="first-setup.html" class="cta-btn">🚀 Lancer l'assistant de configuration</a>
+  <p class="cta-sub">Configurez tout en 5 minutes : connexion, élèves, tokens et QR codes</p>
+</div>
+<div class="cta-box" style="margin-top:.75rem;">
+  <a href="demo.html" class="cta-btn" style="background:var(--teal);">Tester sans installer</a>
+  <p class="cta-sub">Découvrez le logiciel avec des données fictives, sans configuration</p>
+</div>
+
+<!-- ── Retour ── -->
+<div style="text-align:center;margin-bottom:1rem;">
+  <a href="index.html" class="back-link" style="display:inline-flex;color:var(--bleu2);background:var(--bleu3);padding:.5rem 1.25rem;border-radius:20px;font-size:.85rem;">&#9664; Retour à l'accueil</a>
+</div>
+
+<!-- ── Footer ── -->
+<footer class="footer">
+  Développé par F. Henninot — Campus Equatio, Marseille<br>
+  &copy; 2024-2026 &middot; Licence éducative &middot;
+  <a href="aide.html">Guide complet</a> &middot;
+  <a href="https://github.com/frigorx/inerweb-tt-fe" target="_blank" rel="noopener noreferrer">GitHub</a>
+</footer>
+
+</div><!-- /.container -->
+
+<!-- ══════════════ JavaScript ══════════════ -->
+<script>
+(function(){
+  /* ── Navigation par étapes ── */
+  var btns = document.querySelectorAll('.stepper-btn');
+  var cards = document.querySelectorAll('.step-card');
+
+  btns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var step = this.getAttribute('data-step');
+      btns.forEach(function(b){ b.classList.remove('active'); });
+      this.classList.add('active');
+      var target = document.getElementById('step-' + step);
+      if(target) target.scrollIntoView({ behavior:'smooth', block:'start' });
+    }.bind(btn));
+  });
+
+  /* Mise à jour du stepper au défilement */
+  var observer = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        var id = e.target.id;
+        var num = id.replace('step-','');
+        btns.forEach(function(b){
+          b.classList.toggle('active', b.getAttribute('data-step') === num);
+        });
+      }
+    });
+  }, { rootMargin:'-40% 0px -55% 0px' });
+
+  cards.forEach(function(c){ observer.observe(c); });
+
+  /* ── FAQ accordéon ── */
+  document.querySelectorAll('.faq-q').forEach(function(q){
+    q.addEventListener('click', function(){
+      var answer = this.nextElementSibling;
+      var isOpen = answer.classList.contains('open');
+      /* Fermer toutes les autres */
+      document.querySelectorAll('.faq-a.open').forEach(function(a){ a.classList.remove('open'); });
+      document.querySelectorAll('.faq-q.open').forEach(function(b){ b.classList.remove('open'); b.setAttribute('aria-expanded','false'); });
+      if(!isOpen){
+        answer.classList.add('open');
+        this.classList.add('open');
+        this.setAttribute('aria-expanded','true');
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>

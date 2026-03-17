@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8"><script>
+(function(){if(sessionStorage.getItem('iw_purged'))return;if('serviceWorker' in navigator){caches.keys().then(function(k){k.forEach(function(c){caches.delete(c)})});navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(sw){sw.unregister()})});}sessionStorage.setItem('iw_purged','1');setTimeout(function(){location.reload(true)},500);})();
+</script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INERWEB — La plateforme CCF qui simplifie votre métier</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bleu: #1b3a63;
+            --bleu2: #2d5a8c;
+            --bleu3: #e8f0f8;
+            --orange: #ff6b35;
+            --vert: #27ae60;
+            --vert2: #d4f4e2;
+            --teal: #16a085;
+            --teal2: #d0f0ea;
+            --violet: #8e44ad;
+            --violet2: #f3e5f5;
+            --gris: #6c757d;
+            --gris2: #f0f2f5;
+            --gris3: #dee2e6;
+            --texte: #1a2332;
+            --r: 16px;
+            --ombre: 0 8px 32px rgba(27,58,99,.18);
+            --t: all .3s cubic-bezier(.4,0,.2,1);
+        }
+
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            color: var(--texte);
+            line-height: 1.6;
+            overflow-x: hidden;
+            background: #fff;
+        }
+
+        /* ===== UTILITAIRES ANIMATION ===== */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity .7s ease, transform .7s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .slide-up {
+            opacity: 0;
+            transform: translateY(60px);
+            transition: opacity .6s ease, transform .6s ease;
+        }
+
+        .slide-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ===== SECTION 1 — HERO ===== */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: linear-gradient(135deg, var(--bleu) 0%, var(--bleu2) 40%, var(--teal) 100%);
+            color: #fff;
+            position: relative;
+            padding: 2rem;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 30% 20%, rgba(255,255,255,.08) 0%, transparent 60%),
+                        radial-gradient(ellipse at 70% 80%, rgba(22,160,133,.15) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .hero-snowflake {
+            font-size: 5rem;
+            animation: flocon 4s ease-in-out infinite;
+            margin-bottom: 1.5rem;
+            filter: drop-shadow(0 0 20px rgba(255,255,255,.4));
+        }
+
+        @keyframes flocon {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(15deg) scale(1.05); }
+            50% { transform: rotate(0deg) scale(1.1); }
+            75% { transform: rotate(-15deg) scale(1.05); }
+        }
+
+        .hero-title {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 900;
+            letter-spacing: 6px;
+            text-shadow: 0 4px 20px rgba(0,0,0,.3);
+            margin-bottom: .5rem;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+            font-weight: 600;
+            opacity: .95;
+            margin-bottom: .8rem;
+            max-width: 700px;
+        }
+
+        .hero-tags {
+            font-size: clamp(.9rem, 1.8vw, 1.1rem);
+            font-weight: 400;
+            opacity: .8;
+            margin-bottom: 2.5rem;
+            letter-spacing: 1px;
+        }
+
+        .hero-btns {
+            display: flex;
+            gap: 1.2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .9rem 2.2rem;
+            border-radius: 50px;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
+            font-size: 1.05rem;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: var(--t);
+        }
+
+        .btn-primary {
+            background: var(--orange);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(255,107,53,.4);
+        }
+
+        .btn-primary:hover {
+            background: #e55a28;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(255,107,53,.5);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,.15);
+            color: #fff;
+            border: 2px solid rgba(255,255,255,.4);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,.25);
+            transform: translateY(-2px);
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: rebond 2s ease-in-out infinite;
+            font-size: 2rem;
+            opacity: .7;
+            cursor: pointer;
+            text-decoration: none;
+            color: #fff;
+        }
+
+        @keyframes rebond {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(12px); }
+        }
+
+        /* ===== SECTION 2 — CHIFFRES CLÉS ===== */
+        .section {
+            padding: 5rem 2rem;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: clamp(1.8rem, 4vw, 2.6rem);
+            font-weight: 800;
+            color: var(--bleu);
+            margin-bottom: .6rem;
+        }
+
+        .section-desc {
+            text-align: center;
+            font-size: 1.1rem;
+            color: var(--gris);
+            margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .chiffres {
+            background: var(--gris2);
+        }
+
+        .chiffres-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .chiffre-card {
+            background: #fff;
+            border-radius: var(--r);
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+            box-shadow: var(--ombre);
+            transition: var(--t);
+        }
+
+        .chiffre-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 40px rgba(27,58,99,.22);
+        }
+
+        .chiffre-nombre {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--orange);
+            line-height: 1;
+        }
+
+        .chiffre-nombre .plus {
+            font-size: 2rem;
+        }
+
+        .chiffre-label {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--bleu);
+            margin-top: .5rem;
+        }
+
+        .chiffre-detail {
+            font-size: .9rem;
+            color: var(--gris);
+            margin-top: .3rem;
+        }
+
+        /* ===== SECTION 3 — FONCTIONNALITÉS ===== */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: #fff;
+            border-radius: var(--r);
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(27,58,99,.1);
+            border: 1px solid var(--gris3);
+            transition: var(--t);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--ombre);
+            border-color: var(--bleu3);
+        }
+
+        .feature-icon {
+            font-size: 2.4rem;
+            margin-bottom: .8rem;
+        }
+
+        .feature-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--bleu);
+            margin-bottom: .4rem;
+        }
+
+        .feature-desc {
+            font-size: .95rem;
+            color: var(--gris);
+            line-height: 1.5;
+        }
+
+        /* ===== SECTION 4 — AVANT / APRÈS ===== */
+        .comparison {
+            background: var(--gris2);
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 700px) {
+            .comparison-grid { grid-template-columns: 1fr; }
+        }
+
+        .comparison-col {
+            border-radius: var(--r);
+            padding: 2.5rem 2rem;
+            box-shadow: var(--ombre);
+        }
+
+        .col-avant {
+            background: linear-gradient(135deg, #fff5f5, #ffe8e8);
+            border: 2px solid #f5c6c6;
+        }
+
+        .col-apres {
+            background: linear-gradient(135deg, #f0fdf4, var(--vert2));
+            border: 2px solid #a3e4b8;
+        }
+
+        .comparison-heading {
+            font-size: 1.4rem;
+            font-weight: 900;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .col-avant .comparison-heading { color: #c0392b; }
+        .col-apres .comparison-heading { color: var(--vert); }
+
+        .comparison-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: .8rem;
+        }
+
+        .comparison-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: .6rem;
+            font-size: .95rem;
+            line-height: 1.4;
+        }
+
+        .comparison-list .mark {
+            flex-shrink: 0;
+            font-size: 1.2rem;
+            margin-top: 1px;
+        }
+
+        .col-avant .mark { color: #c0392b; }
+        .col-apres .mark { color: var(--vert); }
+
+        /* ===== SECTION 5 — COMMENT ÇA MARCHE ===== */
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .step-card {
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--bleu), var(--teal));
+            color: #fff;
+            font-size: 1.5rem;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.2rem;
+            box-shadow: 0 4px 16px rgba(27,58,99,.3);
+        }
+
+        .step-icon {
+            font-size: 2.5rem;
+            margin-bottom: .8rem;
+        }
+
+        .step-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--bleu);
+            margin-bottom: .4rem;
+        }
+
+        .step-desc {
+            font-size: .95rem;
+            color: var(--gris);
+        }
+
+        /* ===== SECTION 6 — TÉMOIGNAGES ===== */
+        .temoignages {
+            background: var(--bleu3);
+        }
+
+        .carousel-wrapper {
+            max-width: 700px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .carousel-track {
+            display: flex;
+            transition: transform .5s cubic-bezier(.4,0,.2,1);
+        }
+
+        .carousel-slide {
+            min-width: 100%;
+            padding: 2.5rem;
+            text-align: center;
+        }
+
+        .temoignage-texte {
+            font-size: 1.15rem;
+            font-style: italic;
+            color: var(--texte);
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .temoignage-texte::before {
+            content: '\201C';
+            font-size: 4rem;
+            color: var(--bleu2);
+            opacity: .2;
+            position: absolute;
+            top: -1.5rem;
+            left: -0.5rem;
+            font-family: Georgia, serif;
+        }
+
+        .temoignage-auteur {
+            font-weight: 800;
+            color: var(--bleu);
+            font-size: 1rem;
+        }
+
+        .temoignage-role {
+            font-size: .9rem;
+            color: var(--gris);
+        }
+
+        .carousel-dots {
+            display: flex;
+            justify-content: center;
+            gap: .6rem;
+            margin-top: 1rem;
+        }
+
+        .carousel-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--gris3);
+            border: none;
+            cursor: pointer;
+            transition: var(--t);
+        }
+
+        .carousel-dot.active {
+            background: var(--bleu2);
+            transform: scale(1.2);
+        }
+
+        /* ===== SECTION 7 — CTA FINAL ===== */
+        .cta-final {
+            background: linear-gradient(135deg, var(--bleu) 0%, var(--teal) 100%);
+            color: #fff;
+            text-align: center;
+            padding: 5rem 2rem;
+        }
+
+        .cta-final-title {
+            font-size: clamp(1.6rem, 4vw, 2.4rem);
+            font-weight: 900;
+            margin-bottom: 1.5rem;
+        }
+
+        .cta-final .hero-btns {
+            justify-content: center;
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            background: var(--texte);
+            color: rgba(255,255,255,.7);
+            text-align: center;
+            padding: 2.5rem 2rem;
+            font-size: .9rem;
+        }
+
+        .footer a {
+            color: rgba(255,255,255,.9);
+            text-decoration: none;
+            transition: var(--t);
+        }
+
+        .footer a:hover {
+            color: var(--orange);
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-credit {
+            margin-bottom: .5rem;
+            font-weight: 600;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 600px) {
+            .hero-title { letter-spacing: 3px; }
+            .section { padding: 3.5rem 1.2rem; }
+            .chiffre-card { padding: 1.8rem 1rem; }
+            .chiffre-nombre { font-size: 2.4rem; }
+            .feature-card { padding: 1.5rem; }
+            .comparison-col { padding: 1.8rem 1.2rem; }
+            .carousel-slide { padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== SECTION 1 — HERO ===== -->
+    <section class="hero" id="hero">
+        <div class="hero-snowflake">&#10052;</div>
+        <h1 class="hero-title">INERWEB</h1>
+        <p class="hero-subtitle">La plateforme CCF qui simplifie votre métier</p>
+        <p class="hero-tags">Suivi des compétences &middot; Évaluations CCF &middot; Bilans PDF &middot; QR codes</p>
+        <div class="hero-btns">
+            <a href="demo.html" class="btn btn-primary">&#9654; Essayer la démo</a>
+            <a href="installation.html" class="btn btn-secondary">&#128229; Installer</a>
+        </div>
+        <a href="#chiffres" class="scroll-indicator" aria-label="Défiler vers le bas">&#9660;</a>
+    </section>
+
+    <!-- ===== SECTION 2 — CHIFFRES CLÉS ===== -->
+    <section class="section chiffres" id="chiffres">
+        <h2 class="section-title fade-in">Chiffres clés</h2>
+        <p class="section-desc fade-in">Un outil pensé pour la réalité du terrain</p>
+        <div class="chiffres-grid">
+            <div class="chiffre-card fade-in">
+                <div class="chiffre-nombre"><span class="counter" data-target="3">0</span></div>
+                <div class="chiffre-label">Filières</div>
+                <div class="chiffre-detail">CAP IFCA, Bac Pro MFER, 2nde TNE</div>
+            </div>
+            <div class="chiffre-card fade-in">
+                <div class="chiffre-nombre"><span class="counter" data-target="40">0</span><span class="plus">+</span></div>
+                <div class="chiffre-label">TP</div>
+                <div class="chiffre-detail">Dans la bibliothèque</div>
+            </div>
+            <div class="chiffre-card fade-in">
+                <div class="chiffre-nombre"><span class="counter" data-target="5">0</span></div>
+                <div class="chiffre-label">Épreuves CCF</div>
+                <div class="chiffre-detail">EP2 / EP3 / E31 / E32 / E33</div>
+            </div>
+            <div class="chiffre-card fade-in">
+                <div class="chiffre-nombre"><span class="counter" data-target="4">0</span></div>
+                <div class="chiffre-label">Rôles</div>
+                <div class="chiffre-detail">Prof, Élève, Tuteur, Admin</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== SECTION 3 — FONCTIONNALITÉS ===== -->
+    <section class="section" id="fonctionnalites">
+        <h2 class="section-title fade-in">Fonctionnalités</h2>
+        <p class="section-desc fade-in">Tout ce dont vous avez besoin, réuni en une seule application</p>
+        <div class="features-grid">
+            <div class="feature-card slide-up">
+                <div class="feature-icon">&#128202;</div>
+                <div class="feature-title">Tableau de bord</div>
+                <div class="feature-desc">Vue d'ensemble temps réel de vos classes, avec indicateurs de progression et alertes automatiques.</div>
+            </div>
+            <div class="feature-card slide-up">
+                <div class="feature-icon">&#9989;</div>
+                <div class="feature-title">Évaluations CCF</div>
+                <div class="feature-desc">Grilles EP2/EP3 et E31-E33 complètes, conformes aux référentiels officiels.</div>
+            </div>
+            <div class="feature-card slide-up">
+                <div class="feature-icon">&#128241;</div>
+                <div class="feature-title">QR Codes</div>
+                <div class="feature-desc">Accès élèves et tuteurs par simple scan. Aucun compte à créer.</div>
+            </div>
+            <div class="feature-card slide-up">
+                <div class="feature-icon">&#128200;</div>
+                <div class="feature-title">Radar compétences</div>
+                <div class="feature-desc">Visualisation graphique de la progression de chaque élève sur toutes les compétences.</div>
+            </div>
+            <div class="feature-card slide-up">
+                <div class="feature-icon">&#128196;</div>
+                <div class="feature-title">Export PDF</div>
+                <div class="feature-desc">Bilans, fiches TP, grilles d'évaluation générés en un clic, prêts pour le jury.</div>
+            </div>
+            <div class="feature-card slide-up">
+                <div class="feature-icon">&#127970;</div>
+                <div class="feature-title">Suivi PFMP</div>
+                <div class="feature-desc">Journal de stage numérique avec photos, commentaires tuteur et bilans périodiques.</div>
+            </div>
+            <div class="feature-card slide-up">
+                <div class="feature-icon">&#129302;</div>
+                <div class="feature-title">IA Gemini</div>
+                <div class="feature-desc">Enrichissement automatique des TP, suggestions pédagogiques et génération de contenus.</div>
+            </div>
+            <div class="feature-card slide-up">
+                <div class="feature-icon">&#128260;</div>
+                <div class="feature-title">Synchronisation</div>
+                <div class="feature-desc">Données sauvegardées en temps réel sur Google Sheets. Zéro perte, zéro souci.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== SECTION 4 — AVANT / APRÈS ===== -->
+    <section class="section comparison" id="comparaison">
+        <h2 class="section-title fade-in">Avant / Après</h2>
+        <p class="section-desc fade-in">La différence est flagrante</p>
+        <div class="comparison-grid">
+            <div class="comparison-col col-avant slide-up">
+                <div class="comparison-heading">&#128683; AVANT</div>
+                <ul class="comparison-list">
+                    <li><span class="mark">&#10060;</span> Cahier papier pour chaque élève</li>
+                    <li><span class="mark">&#10060;</span> Tableur Excel illisible et fragile</li>
+                    <li><span class="mark">&#10060;</span> Aucun suivi en temps réel</li>
+                    <li><span class="mark">&#10060;</span> Perte de données régulière</li>
+                    <li><span class="mark">&#10060;</span> Grilles papier pour le jury</li>
+                    <li><span class="mark">&#10060;</span> Pas de visibilité pour le tuteur</li>
+                </ul>
+            </div>
+            <div class="comparison-col col-apres slide-up">
+                <div class="comparison-heading">&#128640; APRÈS</div>
+                <ul class="comparison-list">
+                    <li><span class="mark">&#9989;</span> Tout numérique, centralisé</li>
+                    <li><span class="mark">&#9989;</span> Interface claire et intuitive</li>
+                    <li><span class="mark">&#9989;</span> Synchronisation temps réel</li>
+                    <li><span class="mark">&#9989;</span> Export PDF automatique</li>
+                    <li><span class="mark">&#9989;</span> Radar visuel des compétences</li>
+                    <li><span class="mark">&#9989;</span> QR code tuteur instantané</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== SECTION 5 — COMMENT ÇA MARCHE ===== -->
+    <section class="section" id="etapes">
+        <h2 class="section-title fade-in">Comment ça marche</h2>
+        <p class="section-desc fade-in">Opérationnel en 3 étapes simples</p>
+        <div class="steps-grid">
+            <div class="step-card fade-in">
+                <div class="step-number">1</div>
+                <div class="step-icon">&#128230;</div>
+                <div class="step-title">Télécharger</div>
+                <div class="step-desc">Récupérez le fichier ZIP depuis GitHub et décompressez-le sur votre poste.</div>
+            </div>
+            <div class="step-card fade-in">
+                <div class="step-number">2</div>
+                <div class="step-icon">&#9881;</div>
+                <div class="step-title">Configurer</div>
+                <div class="step-desc">Collez votre URL API Google Sheets dans le fichier de configuration.</div>
+            </div>
+            <div class="step-card fade-in">
+                <div class="step-number">3</div>
+                <div class="step-icon">&#9989;</div>
+                <div class="step-title">Évaluer</div>
+                <div class="step-desc">Commencez à évaluer vos élèves et générez vos bilans immédiatement.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== SECTION 6 — TÉMOIGNAGES ===== -->
+    <section class="section temoignages" id="temoignages">
+        <h2 class="section-title fade-in">Ils l'utilisent au quotidien</h2>
+        <p class="section-desc fade-in">Retours d'enseignants et de professionnels</p>
+        <div class="carousel-wrapper fade-in" id="carousel">
+            <div class="carousel-track" id="carouselTrack">
+                <div class="carousel-slide">
+                    <div class="temoignage-texte">Depuis que j'utilise inerWeb, je gagne au moins 2 heures par semaine sur la gestion administrative. Les grilles CCF sont prêtes en un clic et le jury a tout sous les yeux.</div>
+                    <div class="temoignage-auteur">M. Dupont</div>
+                    <div class="temoignage-role">PLP Génie Climatique — Lycée professionnel</div>
+                </div>
+                <div class="carousel-slide">
+                    <div class="temoignage-texte">Le QR code que le professeur m'a transmis me permet de suivre mon apprenti sans avoir besoin de créer un compte. C'est simple, rapide et très bien pensé.</div>
+                    <div class="temoignage-auteur">Mme Bernard</div>
+                    <div class="temoignage-role">Tutrice entreprise — Société Climafroid</div>
+                </div>
+                <div class="carousel-slide">
+                    <div class="temoignage-texte">En tant que chef de travaux, j'ai enfin une visibilité complète sur la progression de chaque élève. Les radars de compétences sont un vrai plus pour les conseils de classe.</div>
+                    <div class="temoignage-auteur">M. Martin</div>
+                    <div class="temoignage-role">Chef de travaux — Campus des métiers</div>
+                </div>
+            </div>
+            <div class="carousel-dots" id="carouselDots">
+                <button class="carousel-dot active" data-index="0" aria-label="Témoignage 1"></button>
+                <button class="carousel-dot" data-index="1" aria-label="Témoignage 2"></button>
+                <button class="carousel-dot" data-index="2" aria-label="Témoignage 3"></button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== SECTION 7 — CTA FINAL ===== -->
+    <section class="cta-final" id="cta">
+        <h2 class="cta-final-title fade-in">Prêt à simplifier votre quotidien ?</h2>
+        <div class="hero-btns fade-in">
+            <a href="installation.html" class="btn btn-primary">&#128640; Commencer maintenant</a>
+            <a href="demo.html" class="btn btn-secondary">&#9654; Tester la démo</a>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer">
+        <div class="footer-credit">Développé par F. Henninot — Campus Equatio, Marseille</div>
+        <div class="footer-links">
+            <a href="https://github.com/frigorx/inerweb-tt-fe" target="_blank">GitHub</a>
+            <a href="installation.html">Guide d'installation</a>
+            <a href="demo.html">Mode démo</a>
+        </div>
+    </footer>
+
+    <script src="js/vitrine.js"></script>
+</body>
+</html>

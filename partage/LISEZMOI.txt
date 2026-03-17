@@ -1,0 +1,16 @@
+═══════════════════════════════════════════════════════════
+  DOSSIER DE PARTAGE — InerWeb Classroom
+═══════════════════════════════════════════════════════════
+
+Glissez-déposez ici les fichiers à partager avec vos élèves :
+- PDF, Word, Excel, PowerPoint
+- Images (PNG, JPG, GIF)
+- Vidéos (MP4, WebM)
+- Pages HTML (TP interactifs, QCM)
+- Tout autre fichier
+
+Les élèves verront ces fichiers sur leur tablette après
+avoir scanné le QR code.
+
+Conseil : Créez des sous-dossiers pour organiser par classe
+ou par thème.

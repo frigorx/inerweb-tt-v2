@@ -1,6 +1,6 @@
 /**
  * eval-tuteur.js — Évaluation par le tuteur de stage en entreprise
- * Module Fusion — CAP Installateur en Froid et Conditionnement d'Air (CCF/PFMP)
+ * Module Fusion — Bac Pro MFER (CCF/PFMP)
  *
  * Utilise la DÉLÉGATION D'ÉVÉNEMENTS (pas de onclick inline)
  * pour compatibilité maximale mobile/tablette.

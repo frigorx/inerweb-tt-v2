@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><script>
+(function(){if(sessionStorage.getItem('iw_purged'))return;if('serviceWorker' in navigator){caches.keys().then(function(k){k.forEach(function(c){caches.delete(c)})});navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(sw){sw.unregister()})});}sessionStorage.setItem('iw_purged','1');setTimeout(function(){location.reload(true)},500);})();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta name="description" content="Mode Démonstration et Formation — INERWEB PROG+ Filière Énergétique">
+<title>INERWEB PROG+ — Mode Démonstration & Formation</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ── Variables & reset ── */
+:root {
+  --bleu:#1b3a63; --bleu2:#2d5a8c; --bleu3:#e8f0f8;
+  --orange:#ff6b35; --vert:#27ae60; --vert2:#d4f4e2;
+  --teal:#16a085; --teal2:#d0f0ea;
+  --violet:#8e44ad; --violet2:#f3e5f5;
+  --gris:#6c757d; --gris2:#f0f2f5; --gris3:#dee2e6;
+  --texte:#1a2332;
+  --r:16px; --r2:10px;
+  --ombre:0 8px 32px rgba(27,58,99,.18);
+  --t:all .3s cubic-bezier(.4,0,.2,1);
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  font-family:'Nunito',sans-serif;
+  color:var(--texte);
+  background:linear-gradient(135deg, var(--bleu) 0%, var(--bleu2) 50%, var(--teal) 100%);
+  min-height:100dvh;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  padding:2rem 1.5rem;
+}
+
+/* ── Carte portail (plus large pour le contenu démo) ── */
+.portal {
+  background:#fff;
+  border-radius:24px;
+  padding:2.5rem;
+  max-width:820px;
+  width:100%;
+  box-shadow:0 24px 80px rgba(0,0,0,.25);
+  text-align:center;
+  animation:fadeInUp .5s ease-out;
+}
+
+/* ── Logo ── */
+.logo {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:.75rem;
+  margin-bottom:.5rem;
+}
+.logo-ico { font-size:3rem; }
+.logo-txt h1 {
+  font-size:1.8rem;
+  font-weight:900;
+  color:var(--bleu);
+  line-height:1;
+}
+.logo-txt p {
+  font-size:.85rem;
+  color:var(--gris);
+  font-weight:600;
+}
+
+/* ── Badge version ── */
+.version-badge {
+  display:inline-block;
+  background:var(--orange);
+  color:#fff;
+  font-size:.7rem;
+  font-weight:800;
+  padding:.25rem .7rem;
+  border-radius:20px;
+  margin-bottom:.5rem;
+}
+.formation-badge {
+  display:inline-block;
+  background:var(--bleu);
+  color:#fff;
+  font-size:.7rem;
+  font-weight:800;
+  padding:.25rem .7rem;
+  border-radius:20px;
+  margin-bottom:1.2rem;
+  margin-left:.5rem;
+}
+
+/* ── Titre démo ── */
+.demo-title {
+  font-size:1.4rem;
+  font-weight:900;
+  color:var(--bleu);
+  margin-bottom:.5rem;
+}
+.subtitle {
+  font-size:.88rem;
+  color:var(--gris);
+  margin-bottom:2rem;
+  line-height:1.5;
+}
+
+/* ── Grille des 4 cartes de rôle ── */
+.roles-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:1rem;
+  margin-bottom:2.5rem;
+}
+
+.role-card {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:.75rem;
+  padding:1.5rem 1rem;
+  border-radius:var(--r);
+  text-decoration:none;
+  color:var(--texte);
+  transition:var(--t);
+  border:2px solid transparent;
+  text-align:center;
+}
+.role-card:hover {
+  transform:translateY(-4px);
+  box-shadow:var(--ombre);
+}
+.role-card:active {
+  transform:scale(.97);
+}
+
+.role-prof {
+  background:var(--bleu3);
+  border-color:var(--bleu2);
+}
+.role-prof:hover { background:#d0e4f6; }
+.role-prof .role-ico { background:var(--bleu); }
+
+.role-tuteur {
+  background:var(--teal2);
+  border-color:var(--teal);
+}
+.role-tuteur:hover { background:#b8e8e0; }
+.role-tuteur .role-ico { background:var(--teal); }
+
+.role-eleve {
+  background:var(--violet2);
+  border-color:var(--violet);
+}
+.role-eleve:hover { background:#e8d0f0; }
+.role-eleve .role-ico { background:var(--violet); }
+
+.role-admin {
+  background:#fff3ed;
+  border-color:var(--orange);
+}
+.role-admin:hover { background:#ffe8d8; }
+.role-admin .role-ico { background:var(--orange); }
+
+.role-ico {
+  width:60px;
+  height:60px;
+  border-radius:16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:2rem;
+  flex-shrink:0;
+}
+
+.role-info h2 {
+  font-size:1.05rem;
+  font-weight:800;
+  margin-bottom:.25rem;
+}
+.role-info p {
+  font-size:.75rem;
+  color:var(--gris);
+  font-weight:600;
+  line-height:1.4;
+}
+.role-info .demo-tag {
+  display:inline-block;
+  font-size:.65rem;
+  font-weight:800;
+  color:#fff;
+  padding:.15rem .5rem;
+  border-radius:10px;
+  margin-top:.4rem;
+}
+.role-prof .demo-tag { background:var(--bleu2); }
+.role-tuteur .demo-tag { background:var(--teal); }
+.role-eleve .demo-tag { background:var(--violet); }
+.role-admin .demo-tag { background:var(--orange); }
+
+/* ── Section programme de formation ── */
+.section-title {
+  font-size:1.15rem;
+  font-weight:900;
+  color:var(--bleu);
+  margin-bottom:.3rem;
+}
+.section-subtitle {
+  font-size:.8rem;
+  color:var(--gris);
+  margin-bottom:1.5rem;
+  font-weight:600;
+}
+
+.programme {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:.8rem;
+  margin-bottom:2rem;
+  text-align:left;
+}
+
+.etape {
+  display:flex;
+  align-items:flex-start;
+  gap:.7rem;
+  padding:1rem;
+  border-radius:var(--r2);
+  background:var(--gris2);
+  border:1.5px solid var(--gris3);
+  transition:var(--t);
+}
+.etape:hover {
+  background:#e8ecf2;
+  border-color:var(--bleu2);
+}
+
+.etape-num {
+  width:36px;
+  height:36px;
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:.8rem;
+  font-weight:900;
+  color:#fff;
+  flex-shrink:0;
+}
+.etape-ico {
+  font-size:1rem;
+  margin-bottom:0;
+}
+
+.etape-info h3 {
+  font-size:.82rem;
+  font-weight:800;
+  color:var(--texte);
+  margin-bottom:.15rem;
+  line-height:1.3;
+}
+.etape-info p {
+  font-size:.7rem;
+  color:var(--gris);
+  line-height:1.4;
+  font-weight:600;
+}
+.etape-info .etape-role {
+  display:inline-block;
+  font-size:.6rem;
+  font-weight:800;
+  padding:.1rem .4rem;
+  border-radius:6px;
+  margin-top:.25rem;
+}
+
+/* Couleurs étapes par rôle */
+.etape-prof .etape-num { background:var(--bleu); }
+.etape-prof .etape-role { background:var(--bleu3); color:var(--bleu); }
+.etape-tuteur .etape-num { background:var(--teal); }
+.etape-tuteur .etape-role { background:var(--teal2); color:var(--teal); }
+.etape-eleve .etape-num { background:var(--violet); }
+.etape-eleve .etape-role { background:var(--violet2); color:var(--violet); }
+.etape-admin .etape-num { background:var(--orange); }
+.etape-admin .etape-role { background:#fff3ed; color:var(--orange); }
+
+/* ── Lien retour ── */
+.back-link {
+  display:inline-flex;
+  align-items:center;
+  gap:.4rem;
+  font-size:.85rem;
+  font-weight:700;
+  color:var(--bleu2);
+  text-decoration:none;
+  padding:.6rem 1.2rem;
+  border-radius:var(--r2);
+  background:var(--bleu3);
+  transition:var(--t);
+  margin-bottom:1.5rem;
+}
+.back-link:hover {
+  background:var(--bleu);
+  color:#fff;
+}
+
+/* ── Séparateur ── */
+.sep {
+  border:none;
+  height:2px;
+  background:var(--gris3);
+  margin:1.5rem 0;
+}
+
+/* ── Footer & crédits ── */
+.credits {
+  margin-top:1rem;
+  font-size:.7rem;
+  color:var(--gris);
+}
+.credits a {
+  color:var(--bleu2);
+  text-decoration:none;
+}
+
+/* ── Animation d'entrée ── */
+@keyframes fadeInUp {
+  from { opacity:0; transform:translateY(20px); }
+  to { opacity:1; transform:translateY(0); }
+}
+.role-card:nth-child(1) { animation:fadeInUp .5s ease-out .1s both; }
+.role-card:nth-child(2) { animation:fadeInUp .5s ease-out .15s both; }
+.role-card:nth-child(3) { animation:fadeInUp .5s ease-out .2s both; }
+.role-card:nth-child(4) { animation:fadeInUp .5s ease-out .25s both; }
+
+.etape:nth-child(1) { animation:fadeInUp .4s ease-out .3s both; }
+.etape:nth-child(2) { animation:fadeInUp .4s ease-out .35s both; }
+.etape:nth-child(3) { animation:fadeInUp .4s ease-out .4s both; }
+.etape:nth-child(4) { animation:fadeInUp .4s ease-out .45s both; }
+.etape:nth-child(5) { animation:fadeInUp .4s ease-out .5s both; }
+.etape:nth-child(6) { animation:fadeInUp .4s ease-out .55s both; }
+.etape:nth-child(7) { animation:fadeInUp .4s ease-out .6s both; }
+.etape:nth-child(8) { animation:fadeInUp .4s ease-out .65s both; }
+
+/* ── Responsive ── */
+@media (max-width:640px) {
+  .portal { padding:1.5rem; }
+  .roles-grid { grid-template-columns:1fr; }
+  .programme { grid-template-columns:1fr; }
+  .logo-txt h1 { font-size:1.5rem; }
+  .demo-title { font-size:1.2rem; }
+  .role-card { flex-direction:row; padding:1rem; text-align:left; }
+  .role-ico { width:48px; height:48px; font-size:1.5rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ PORTAIL DÉMONSTRATION ═══ -->
+<div class="portal">
+
+  <!-- Logo & identité -->
+  <div class="logo">
+    <span class="logo-ico" aria-hidden="true">&#10052;&#65039;</span>
+    <div class="logo-txt">
+      <h1>INERWEB PROG+</h1>
+      <p>Filière Énergétique</p>
+    </div>
+  </div>
+
+  <span class="version-badge">Formation — INERWEB PROG+ v5.0</span>
+
+  <h2 class="demo-title">Mode Démonstration & Formation</h2>
+
+  <p class="subtitle">
+    Explorez librement toutes les fonctionnalités d'INERWEB PROG+ sans connexion au serveur.<br>
+    Choisissez un profil ci-dessous pour découvrir l'interface en conditions réelles avec des données fictives.
+  </p>
+
+  <!-- ═══ 4 Cartes de rôle ═══ -->
+  <div class="roles-grid">
+
+    <a href="inerweb_prof.html?demo=1" class="role-card role-prof">
+      <div class="role-ico" aria-hidden="true">&#128104;&#8205;&#127979;</div>
+      <div class="role-info">
+        <h2>Professeur</h2>
+        <p>Tableau de bord complet, gestion des classes, évaluations CCF, bilans et exports PDF</p>
+        <span class="demo-tag">Accéder à la démo</span>
+      </div>
+    </a>
+
+    <a href="inerweb_tuteur.html?demo=1" class="role-card role-tuteur">
+      <div class="role-ico" aria-hidden="true">&#127970;</div>
+      <div class="role-info">
+        <h2>Tuteur entreprise</h2>
+        <p>Évaluation PFMP, grilles de compétences terrain, observations et comportement</p>
+        <span class="demo-tag">Accéder à la démo</span>
+      </div>
+    </a>
+
+    <a href="inerweb_eleve.html?demo=1" class="role-card role-eleve">
+      <div class="role-ico" aria-hidden="true">&#127891;</div>
+      <div class="role-info">
+        <h2>Élève</h2>
+        <p>Journal de stage, suivi personnel des compétences, progression et autoévaluation</p>
+        <span class="demo-tag">Accéder à la démo</span>
+      </div>
+    </a>
+
+    <a href="inerweb_admin.html?demo=1" class="role-card role-admin">
+      <div class="role-ico" aria-hidden="true">&#128272;</div>
+      <div class="role-info">
+        <h2>Administrateur</h2>
+        <p>Configuration système, gestion des utilisateurs, sauvegardes et paramètres globaux</p>
+        <span class="demo-tag">Accéder à la démo</span>
+      </div>
+    </a>
+
+  </div>
+
+  <hr class="sep">
+
+  <!-- ═══ Programme de formation ═══ -->
+  <h2 class="section-title">Programme de formation</h2>
+  <p class="section-subtitle">8 étapes pour maîtriser INERWEB PROG+ de A à Z</p>
+
+  <div class="programme">
+
+    <!-- Étape 1 -->
+    <div class="etape etape-prof">
+      <div class="etape-num">
+        <span class="etape-ico">&#128202;</span>
+      </div>
+      <div class="etape-info">
+        <h3>Étape 1 — Découvrir le tableau de bord</h3>
+        <p>Vue d'ensemble des classes, indicateurs de progression, alertes et statistiques en temps réel</p>
+        <span class="etape-role">Professeur</span>
+      </div>
+    </div>
+
+    <!-- Étape 2 -->
+    <div class="etape etape-prof">
+      <div class="etape-num">
+        <span class="etape-ico">&#128101;</span>
+      </div>
+      <div class="etape-info">
+        <h3>Étape 2 — Gérer les élèves</h3>
+        <p>Ajout manuel, import CSV, génération de QR codes, affectation aux classes et groupes</p>
+        <span class="etape-role">Professeur</span>
+      </div>
+    </div>
+
+    <!-- Étape 3 -->
+    <div class="etape etape-prof">
+      <div class="etape-num">
+        <span class="etape-ico">&#9989;</span>
+      </div>
+      <div class="etape-info">
+        <h3>Étape 3 — Évaluer les compétences</h3>
+        <p>Grilles EP2/EP3 (CAP) et E31/E32/E33 (Bac Pro) — saisie, modification, validation</p>
+        <span class="etape-role">Professeur</span>
+      </div>
+    </div>
+
+    <!-- Étape 4 -->
+    <div class="etape etape-prof">
+      <div class="etape-num">
+        <span class="etape-ico">&#128197;</span>
+      </div>
+      <div class="etape-info">
+        <h3>Étape 4 — Suivre les stages PFMP</h3>
+        <p>Planification des périodes, affectation entreprises/tuteurs, suivi des conventions</p>
+        <span class="etape-role">Professeur</span>
+      </div>
+    </div>
+
+    <!-- Étape 5 -->
+    <div class="etape etape-prof">
+      <div class="etape-num">
+        <span class="etape-ico">&#128196;</span>
+      </div>
+      <div class="etape-info">
+        <h3>Étape 5 — Générer bilans et exports</h3>
+        <p>Bilans individuels et collectifs, exports PDF, récapitulatifs pour les jurys CCF</p>
+        <span class="etape-role">Professeur</span>
+      </div>
+    </div>
+
+    <!-- Étape 6 -->
+    <div class="etape etape-tuteur">
+      <div class="etape-num">
+        <span class="etape-ico">&#128188;</span>
+      </div>
+      <div class="etape-info">
+        <h3>Étape 6 — Interface Tuteur</h3>
+        <p>Accès simplifié via QR code, évaluation des compétences terrain, observations et bilan PFMP</p>
+        <span class="etape-role">Tuteur entreprise</span>
+      </div>
+    </div>
+
+    <!-- Étape 7 -->
+    <div class="etape etape-eleve">
+      <div class="etape-num">
+        <span class="etape-ico">&#128218;</span>
+      </div>
+      <div class="etape-info">
+        <h3>Étape 7 — Interface Élève</h3>
+        <p>Journal de stage, consultation de la progression, autoévaluation et portfolio de compétences</p>
+        <span class="etape-role">Élève</span>
+      </div>
+    </div>
+
+    <!-- Étape 8 -->
+    <div class="etape etape-admin">
+      <div class="etape-num">
+        <span class="etape-ico">&#9881;&#65039;</span>
+      </div>
+      <div class="etape-info">
+        <h3>Étape 8 — Administrer le système</h3>
+        <p>Gestion des comptes, configuration des référentiels, sauvegardes et paramètres avancés</p>
+        <span class="etape-role">Administrateur</span>
+      </div>
+    </div>
+
+  </div>
+
+  <hr class="sep">
+
+  <!-- Lien retour -->
+  <a href="index.html" class="back-link">&#8592; Retour au portail principal</a>
+
+  <!-- Crédits -->
+  <div class="credits">
+    Développé par F. Henninot — Campus Equatio, Marseille<br>
+    © 2024-2026 · Licence éducative · <a href="https://github.com/frigorx/inerweb-tt-fe" target="_blank" rel="noopener noreferrer">GitHub</a>
+  </div>
+
+</div>
+
+</body>
+</html>

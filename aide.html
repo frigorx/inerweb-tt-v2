@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><script>
+(function(){if(sessionStorage.getItem('iw_purged'))return;if('serviceWorker' in navigator){caches.keys().then(function(k){k.forEach(function(c){caches.delete(c)})});navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(sw){sw.unregister()})});}sessionStorage.setItem('iw_purged','1');setTimeout(function(){location.reload(true)},500);})();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Guide utilisateur complet INERWEB PROG+ — Mode d'emploi pour professeurs, tuteurs, élèves et administrateurs">
+<title>INERWEB PROG+ — Guide utilisateur</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bleu:#1b3a63;--bleu2:#2d5a8c;--bleu3:#e8f0f8;
+  --orange:#ff6b35;--vert:#27ae60;--vert2:#d4f4e2;
+  --rouge:#e74c3c;--rouge2:#fde8e6;
+  --teal:#16a085;--teal2:#d0f0ea;
+  --violet:#8e44ad;--violet2:#f3e5f5;
+  --jaune:#f39c12;--jaune2:#fef9e7;
+  --gris:#6c757d;--gris2:#f0f2f5;--gris3:#dee2e6;
+  --texte:#1a2332;
+  --r:14px;--r2:8px;
+  --ombre:0 4px 24px rgba(27,58,99,.12);
+  --t:all .25s cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;scroll-padding-top:5rem;}
+body{font-family:'Nunito',sans-serif;color:var(--texte);background:var(--gris2);line-height:1.6;}
+
+/* ── Header fixe ── */
+.guide-header{
+  position:sticky;top:0;z-index:100;
+  background:linear-gradient(135deg,var(--bleu),var(--bleu2));
+  color:#fff;padding:.75rem 1.25rem;
+  box-shadow:0 2px 12px rgba(0,0,0,.2);
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;
+}
+.guide-header h1{font-size:1rem;font-weight:900;white-space:nowrap;}
+.guide-header-links{display:flex;gap:.5rem;flex-wrap:wrap;}
+.guide-header-links a{
+  color:#fff;text-decoration:none;font-size:.72rem;font-weight:700;
+  padding:.3rem .65rem;border-radius:20px;background:rgba(255,255,255,.15);
+  transition:var(--t);white-space:nowrap;
+}
+.guide-header-links a:hover{background:rgba(255,255,255,.3);}
+.guide-header-links a.active{background:var(--orange);}
+.back-link{
+  color:#fff;text-decoration:none;font-size:.8rem;font-weight:700;
+  display:flex;align-items:center;gap:.3rem;opacity:.85;
+}
+.back-link:hover{opacity:1;}
+
+/* ── Recherche ── */
+.search-bar{
+  max-width:900px;margin:1.25rem auto .75rem;padding:0 1rem;
+}
+.search-input{
+  width:100%;padding:.75rem 1rem .75rem 2.75rem;
+  border:2px solid var(--gris3);border-radius:var(--r);
+  font-size:.95rem;font-family:inherit;background:#fff;
+  transition:var(--t);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='%236c757d' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85zm-5.442.856a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:.85rem center;
+}
+.search-input:focus{outline:none;border-color:var(--bleu2);box-shadow:0 0 0 3px rgba(45,90,140,.12);}
+
+/* ── Container ── */
+.guide-body{max-width:900px;margin:0 auto;padding:0 1rem 3rem;}
+
+/* ── Hero ── */
+.guide-hero{
+  background:linear-gradient(135deg,var(--bleu) 0%,var(--bleu2) 50%,var(--teal) 100%);
+  border-radius:var(--r);padding:2.5rem 2rem;margin-bottom:1.5rem;
+  color:#fff;text-align:center;
+}
+.guide-hero h2{font-size:1.6rem;font-weight:900;margin-bottom:.5rem;}
+.guide-hero p{font-size:.9rem;opacity:.9;max-width:600px;margin:0 auto;}
+
+/* ── Sommaire ── */
+.toc{
+  background:#fff;border-radius:var(--r);padding:1.5rem;
+  box-shadow:var(--ombre);margin-bottom:1.5rem;
+}
+.toc-title{font-size:.95rem;font-weight:800;color:var(--bleu);margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;}
+.toc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.75rem;}
+.toc-card{
+  display:flex;align-items:center;gap:.75rem;
+  padding:.85rem 1rem;border-radius:var(--r2);
+  text-decoration:none;color:var(--texte);
+  transition:var(--t);border:2px solid var(--gris3);
+}
+.toc-card:hover{transform:translateY(-2px);box-shadow:var(--ombre);}
+.toc-ico{font-size:1.8rem;flex-shrink:0;}
+.toc-lbl{font-size:.82rem;font-weight:700;}
+.toc-sub{font-size:.68rem;color:var(--gris);font-weight:600;}
+.toc-prof{border-color:var(--bleu2);background:var(--bleu3);}
+.toc-prof:hover{background:#d0e4f4;}
+.toc-tuteur{border-color:var(--teal);background:var(--teal2);}
+.toc-tuteur:hover{background:#b0ddd4;}
+.toc-eleve{border-color:var(--violet);background:var(--violet2);}
+.toc-eleve:hover{background:#e0c8f0;}
+.toc-admin{border-color:var(--orange);background:#fff3ee;}
+.toc-admin:hover{background:#ffe8d8;}
+
+/* ── Section ── */
+.section{
+  background:#fff;border-radius:var(--r);
+  box-shadow:var(--ombre);margin-bottom:1.5rem;
+  overflow:hidden;
+}
+.section[data-role="prof"]{border-top:4px solid var(--bleu2);}
+.section[data-role="tuteur"]{border-top:4px solid var(--teal);}
+.section[data-role="eleve"]{border-top:4px solid var(--violet);}
+.section[data-role="admin"]{border-top:4px solid var(--orange);}
+.section[data-role="faq"]{border-top:4px solid var(--gris);}
+
+.section-header{
+  padding:1.25rem 1.5rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:space-between;
+  transition:var(--t);user-select:none;
+}
+.section-header:hover{background:var(--gris2);}
+.section-header h2{font-size:1.1rem;font-weight:800;display:flex;align-items:center;gap:.6rem;}
+.section-arrow{font-size:.8rem;color:var(--gris);transition:transform .25s;}
+.section.open .section-arrow{transform:rotate(180deg);}
+.section-body{display:none;padding:0 1.5rem 1.5rem;}
+.section.open .section-body{display:block;}
+
+/* ── Chapitres ── */
+.chapter{margin-bottom:1.75rem;}
+.chapter:last-child{margin-bottom:0;}
+.chapter-title{
+  font-size:.95rem;font-weight:800;color:var(--bleu);
+  margin-bottom:.75rem;padding-bottom:.4rem;
+  border-bottom:2px solid var(--gris3);
+  display:flex;align-items:center;gap:.5rem;
+}
+.chapter p,.chapter li{font-size:.85rem;line-height:1.7;margin-bottom:.4rem;}
+.chapter ul,.chapter ol{padding-left:1.5rem;margin-bottom:.75rem;}
+
+/* ── Étapes numérotées ── */
+.steps{counter-reset:step;margin:.75rem 0;}
+.step{
+  display:flex;gap:.85rem;margin-bottom:.75rem;
+  padding:.75rem 1rem;background:var(--gris2);border-radius:var(--r2);
+  align-items:flex-start;
+}
+.step::before{
+  counter-increment:step;content:counter(step);
+  min-width:28px;height:28px;border-radius:50%;
+  background:var(--bleu2);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.8rem;font-weight:900;flex-shrink:0;
+}
+.step[data-color="teal"]::before{background:var(--teal);}
+.step[data-color="violet"]::before{background:var(--violet);}
+.step[data-color="orange"]::before{background:var(--orange);}
+.step-content{flex:1;font-size:.85rem;}
+.step-content strong{color:var(--bleu);}
+
+/* ── Mockups (captures CSS) ── */
+.mockup{
+  border:2px solid var(--gris3);border-radius:var(--r);
+  overflow:hidden;margin:.75rem 0 1rem;
+  box-shadow:0 2px 12px rgba(0,0,0,.08);
+  font-size:.72rem;
+}
+.mockup-bar{
+  background:var(--bleu);color:#fff;padding:.4rem .75rem;
+  display:flex;align-items:center;justify-content:space-between;
+  font-weight:700;font-size:.65rem;
+}
+.mockup-bar.teal{background:var(--teal);}
+.mockup-bar.violet{background:linear-gradient(135deg,var(--violet),var(--bleu2));}
+.mockup-bar.orange{background:linear-gradient(135deg,var(--violet),var(--bleu));}
+.mockup-body{background:#fff;padding:.75rem;}
+.mockup-body.grey{background:var(--gris2);}
+
+/* Éléments de mockup */
+.mk-card{background:#fff;border-radius:6px;padding:.6rem;margin-bottom:.4rem;box-shadow:0 1px 4px rgba(0,0,0,.06);font-size:.68rem;}
+.mk-row{display:flex;gap:.5rem;margin-bottom:.4rem;}
+.mk-stat{flex:1;background:var(--gris2);border-radius:6px;padding:.4rem;text-align:center;}
+.mk-stat-val{font-size:1rem;font-weight:900;color:var(--violet);}
+.mk-stat-lbl{font-size:.55rem;color:var(--gris);font-weight:700;}
+.mk-btn{
+  display:inline-block;padding:.25rem .5rem;border-radius:4px;
+  font-size:.6rem;font-weight:700;color:#fff;
+}
+.mk-btn.blue{background:var(--bleu2);}
+.mk-btn.teal{background:var(--teal);}
+.mk-btn.violet{background:var(--violet);}
+.mk-btn.orange{background:var(--orange);}
+.mk-btn.green{background:var(--vert);}
+.mk-btn.ghost{background:var(--gris2);color:var(--texte);}
+.mk-input{
+  width:100%;padding:.3rem .5rem;border:1.5px solid var(--gris3);
+  border-radius:4px;font-size:.65rem;color:var(--gris);background:#fff;
+}
+.mk-tabs{display:flex;gap:.25rem;margin-bottom:.5rem;}
+.mk-tab{padding:.25rem .5rem;border-radius:4px;font-size:.6rem;font-weight:700;background:var(--gris3);color:var(--gris);}
+.mk-tab.active{background:var(--bleu2);color:#fff;}
+.mk-tab.active.teal{background:var(--teal);}
+.mk-tab.active.violet{background:var(--violet);}
+.mk-tab.active.orange{background:var(--orange);}
+.mk-table{width:100%;border-collapse:collapse;font-size:.6rem;}
+.mk-table th{background:var(--gris2);padding:.25rem .4rem;text-align:left;font-weight:700;color:var(--bleu);}
+.mk-table td{padding:.25rem .4rem;border-bottom:1px solid var(--gris3);}
+.mk-badge{display:inline-block;padding:.1rem .3rem;border-radius:10px;font-size:.55rem;font-weight:700;}
+.mk-badge.green{background:var(--vert2);color:var(--vert);}
+.mk-badge.blue{background:var(--bleu3);color:var(--bleu2);}
+.mk-badge.orange{background:var(--jaune2);color:#7a5000;}
+.mk-badge.grey{background:var(--gris2);color:var(--gris);}
+.mk-legend{font-size:.6rem;color:var(--gris);font-style:italic;margin-top:.3rem;}
+.mk-ring{
+  width:48px;height:48px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;font-weight:900;color:var(--bleu2);
+  background:conic-gradient(var(--bleu2) 65%,var(--gris3) 0);
+  position:relative;
+}
+.mk-ring::before{content:'';position:absolute;inset:4px;border-radius:50%;background:#fff;}
+.mk-ring span{position:relative;z-index:1;}
+.mk-nav{display:flex;justify-content:space-around;padding:.3rem;background:#fff;border-top:1px solid var(--gris3);}
+.mk-nav-item{text-align:center;font-size:.5rem;font-weight:700;color:var(--gris);}
+.mk-nav-item.active{color:var(--violet);}
+.mk-nav-ico{font-size:.75rem;display:block;}
+.mk-hero{background:linear-gradient(135deg,var(--teal),var(--bleu2));color:#fff;padding:.5rem;border-radius:6px;margin-bottom:.4rem;font-weight:700;font-size:.65rem;}
+.mk-comp{display:flex;align-items:center;gap:.3rem;padding:.3rem .4rem;border-bottom:1px solid var(--gris3);font-size:.62rem;}
+.mk-comp-code{background:var(--bleu2);color:#fff;padding:.1rem .25rem;border-radius:3px;font-size:.55rem;font-weight:700;}
+.mk-comp-nom{flex:1;font-weight:600;}
+.mk-niv{display:flex;gap:.2rem;}
+.mk-niv-btn{padding:.15rem .3rem;border-radius:4px;font-size:.5rem;font-weight:800;background:var(--gris2);color:var(--gris);}
+.mk-niv-btn.sel{background:var(--vert);color:#fff;}
+.mk-scan{border:2px dashed var(--teal);border-radius:8px;padding:.75rem;text-align:center;font-size:.7rem;color:var(--teal);font-weight:700;}
+
+/* ── Info / Tips / Warning ── */
+.tip{
+  border-radius:var(--r2);padding:.85rem 1rem;margin:.75rem 0;font-size:.82rem;
+  display:flex;align-items:flex-start;gap:.6rem;
+}
+.tip-ico{font-size:1.1rem;flex-shrink:0;}
+.tip.info{background:var(--bleu3);border-left:4px solid var(--bleu2);}
+.tip.success{background:var(--vert2);border-left:4px solid var(--vert);}
+.tip.warning{background:var(--jaune2);border-left:4px solid var(--jaune);}
+.tip.danger{background:var(--rouge2);border-left:4px solid var(--rouge);}
+
+/* ── FAQ ── */
+.faq-item{margin-bottom:.5rem;}
+.faq-q{
+  font-size:.85rem;font-weight:700;padding:.65rem .85rem;
+  background:var(--gris2);border-radius:var(--r2);
+  cursor:pointer;display:flex;align-items:center;justify-content:space-between;
+  transition:var(--t);
+}
+.faq-q:hover{background:var(--bleu3);}
+.faq-a{display:none;padding:.65rem .85rem;font-size:.82rem;border-left:3px solid var(--bleu2);}
+.faq-item.open .faq-a{display:block;}
+.faq-item.open .faq-q{background:var(--bleu3);color:var(--bleu);}
+
+/* ── Responsive ── */
+@media(max-width:600px){
+  .guide-header{flex-wrap:wrap;gap:.5rem;}
+  .guide-header-links{width:100%;justify-content:center;}
+  .guide-hero{padding:1.5rem 1rem;}
+  .guide-hero h2{font-size:1.2rem;}
+  .section-body{padding:0 1rem 1rem;}
+  .toc-grid{grid-template-columns:1fr;}
+}
+
+/* ── Print ── */
+@media print{
+  .guide-header,.search-bar{display:none!important;}
+  .section,.section-body{display:block!important;}
+  .section{box-shadow:none;border:1px solid #ddd;page-break-inside:avoid;}
+  body{background:#fff;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER FIXE ═══ -->
+<header class="guide-header">
+  <a href="index.html" class="back-link">← Portail</a>
+  <h1>📖 Guide utilisateur</h1>
+  <nav class="guide-header-links">
+    <a href="#prof">👨‍🏫 Prof</a>
+    <a href="#tuteur">🏢 Tuteur</a>
+    <a href="#eleve">🎓 Élève</a>
+    <a href="#admin">🔐 Admin</a>
+    <a href="#faq">❓ FAQ</a>
+  </nav>
+</header>
+
+<!-- ═══ RECHERCHE ═══ -->
+<div class="search-bar">
+  <input type="text" class="search-input" id="searchInput" placeholder="Rechercher dans le guide (ex : mot de passe, QR code, export PDF...)">
+</div>
+
+<div class="guide-body">
+
+<!-- ═══ HERO ═══ -->
+<div class="guide-hero">
+  <h2>❄️ INERWEB PROG+</h2>
+  <p>Guide complet pour les professeurs, tuteurs d'entreprise, élèves et administrateurs.<br>Tout ce qu'il faut savoir pour utiliser la plateforme CCF Bac Pro MFER.</p>
+</div>
+
+<!-- ═══ SOMMAIRE ═══ -->
+<div class="toc">
+  <div class="toc-title">📑 Sommaire rapide</div>
+  <div class="toc-grid">
+    <a href="#prof" class="toc-card toc-prof">
+      <div class="toc-ico">👨‍🏫</div>
+      <div><div class="toc-lbl">Espace Professeur</div><div class="toc-sub">Tableau de bord, évaluations, bilans, exports</div></div>
+    </a>
+    <a href="#tuteur" class="toc-card toc-tuteur">
+      <div class="toc-ico">🏢</div>
+      <div><div class="toc-lbl">Espace Tuteur</div><div class="toc-sub">Évaluation PFMP, compétences, comportement</div></div>
+    </a>
+    <a href="#eleve" class="toc-card toc-eleve">
+      <div class="toc-ico">🎓</div>
+      <div><div class="toc-lbl">Espace Élève</div><div class="toc-sub">Journal de stage, progression, documents</div></div>
+    </a>
+    <a href="#admin" class="toc-card toc-admin">
+      <div class="toc-ico">🔐</div>
+      <div><div class="toc-lbl">Administration</div><div class="toc-sub">Utilisateurs, tokens, clés, journal</div></div>
+    </a>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION : PROFESSEUR
+     ═══════════════════════════════════════════════════════════ -->
+<div class="section open" id="prof" data-role="prof">
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2>👨‍🏫 Espace Professeur</h2>
+    <span class="section-arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <!-- Présentation -->
+    <div class="chapter" id="prof-intro">
+      <div class="chapter-title">📋 À quoi ça sert ?</div>
+      <p>L'espace professeur est le <strong>cœur de la plateforme</strong>. Il permet de :</p>
+      <ul>
+        <li><strong>Gérer les élèves</strong> — fiches complètes, classes, entreprises de stage</li>
+        <li><strong>Évaluer les compétences</strong> — E31 (Réalisation), E32 (Diagnostic), E33 (Dossier)</li>
+        <li><strong>Suivre les PFMP</strong> — périodes de stage, tuteurs, progression</li>
+        <li><strong>Générer les bilans</strong> — notes certificatives, jurys, exports PDF</li>
+        <li><strong>Partager des documents</strong> — conventions, supports, rapports-types</li>
+      </ul>
+    </div>
+
+    <!-- Connexion -->
+    <div class="chapter" id="prof-connexion">
+      <div class="chapter-title">🔑 Comment se connecter</div>
+
+      <div class="mockup">
+        <div class="mockup-bar">❄️ INERWEB PROG+ — Configuration</div>
+        <div class="mockup-body" style="text-align:center;padding:1.25rem">
+          <div style="font-size:2rem;margin-bottom:.3rem">⚙️</div>
+          <div style="font-weight:800;font-size:.8rem;margin-bottom:.75rem;color:var(--bleu)">Configuration initiale</div>
+          <div class="mk-input" style="max-width:280px;margin:0 auto .4rem;text-align:center;letter-spacing:1px">XXXX-XXXX-XXXX-XXXX</div>
+          <div class="mk-legend">Collez ici votre clé API (fournie par l'administrateur)</div>
+          <div style="margin-top:.6rem"><span class="mk-btn blue">✓ Connecter</span></div>
+        </div>
+      </div>
+
+      <div class="steps">
+        <div class="step"><div class="step-content">Ouvrez <strong>inerweb_prof.html</strong> dans votre navigateur (Chrome recommandé)</div></div>
+        <div class="step"><div class="step-content">L'écran de configuration apparaît — collez la <strong>clé API</strong> fournie par l'administrateur</div></div>
+        <div class="step"><div class="step-content">Cliquez <strong>Connecter</strong> — le tableau de bord se charge avec les données élèves</div></div>
+      </div>
+
+      <div class="tip info">
+        <span class="tip-ico">💡</span>
+        <div>La clé est sauvegardée dans votre navigateur. Vous n'aurez pas à la ressaisir au prochain accès, sauf si vous videz vos données de navigation.</div>
+      </div>
+
+      <div class="tip warning">
+        <span class="tip-ico">⚠️</span>
+        <div><strong>Mode démo</strong> : ajoutez <code>?demo=1</code> à l'URL pour tester l'interface avec des données fictives, sans clé API.</div>
+      </div>
+    </div>
+
+    <!-- Tableau de bord -->
+    <div class="chapter" id="prof-dashboard">
+      <div class="chapter-title">📊 Le tableau de bord</div>
+      <p>Après connexion, vous voyez le tableau de bord avec la liste de vos élèves et les statistiques globales.</p>
+
+      <div class="mockup">
+        <div class="mockup-bar">❄️ INERWEB PROG+ — Professeur <span>🟢 Connecté</span></div>
+        <div class="mockup-body grey">
+          <div class="mk-tabs">
+            <div class="mk-tab active">📊 Tableau de bord</div>
+            <div class="mk-tab">📋 E31</div>
+            <div class="mk-tab">🔍 E32</div>
+            <div class="mk-tab">📝 E33</div>
+            <div class="mk-tab">📈 Bilan</div>
+          </div>
+          <div class="mk-row">
+            <div class="mk-stat"><div class="mk-stat-val">24</div><div class="mk-stat-lbl">Élèves</div></div>
+            <div class="mk-stat"><div class="mk-stat-val">67%</div><div class="mk-stat-lbl">Progression</div></div>
+            <div class="mk-stat"><div class="mk-stat-val">3</div><div class="mk-stat-lbl">En PFMP</div></div>
+            <div class="mk-stat"><div class="mk-stat-val">18</div><div class="mk-stat-lbl">Évalués</div></div>
+          </div>
+          <div class="mk-card">
+            <table class="mk-table">
+              <tr><th>Élève</th><th>Classe</th><th>E31</th><th>E32</th><th>Stage</th></tr>
+              <tr><td>DUPONT Martin</td><td>1MFER</td><td><span class="mk-badge green">67%</span></td><td><span class="mk-badge orange">42%</span></td><td><span class="mk-badge green">En cours</span></td></tr>
+              <tr><td>MARTIN Julie</td><td>TMFER</td><td><span class="mk-badge blue">85%</span></td><td><span class="mk-badge green">71%</span></td><td><span class="mk-badge grey">Terminé</span></td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <ul>
+        <li><strong>Statistiques en haut</strong> — nombre d'élèves, progression moyenne, PFMP en cours</li>
+        <li><strong>Liste des élèves</strong> — cliquez sur un nom pour accéder à sa fiche détaillée</li>
+        <li><strong>Onglets d'épreuve</strong> — naviguez entre E31, E32, E33, Bilan et PFMP</li>
+      </ul>
+    </div>
+
+    <!-- Évaluations -->
+    <div class="chapter" id="prof-eval">
+      <div class="chapter-title">📝 Évaluer un élève</div>
+
+      <div class="steps">
+        <div class="step"><div class="step-content">Sélectionnez l'élève dans la liste du tableau de bord</div></div>
+        <div class="step"><div class="step-content">Naviguez vers l'onglet de l'épreuve (<strong>E31</strong>, <strong>E32</strong> ou <strong>E33</strong>)</div></div>
+        <div class="step"><div class="step-content">Ouvrez chaque compétence en cliquant dessus — choisissez le <strong>niveau</strong> (NE, NA, EC, M, PM)</div></div>
+        <div class="step"><div class="step-content">Cochez les <strong>tâches observées</strong> et ajoutez une observation si nécessaire</div></div>
+        <div class="step"><div class="step-content">Les données sont <strong>sauvegardées automatiquement</strong> en local et synchronisées avec le serveur</div></div>
+      </div>
+
+      <div class="tip info">
+        <span class="tip-ico">📖</span>
+        <div><strong>Niveaux de compétence :</strong> NE = Non Évalué · NA = Non Acquis · EC = En Cours · M = Maîtrisé · PM = Pleinement Maîtrisé</div>
+      </div>
+    </div>
+
+    <!-- Exports -->
+    <div class="chapter" id="prof-exports">
+      <div class="chapter-title">📥 Exports et bilans</div>
+      <p>L'espace professeur permet de générer plusieurs types d'exports :</p>
+      <ul>
+        <li><strong>Fiche élève PDF</strong> — bilan individuel avec toutes les compétences et niveaux</li>
+        <li><strong>Grille de jury</strong> — document formaté pour les commissions d'évaluation</li>
+        <li><strong>Export Excel</strong> — tableau de données brutes pour analyse</li>
+        <li><strong>Backup JSON</strong> — sauvegarde complète de toutes les données</li>
+        <li><strong>QR codes élèves</strong> — badges individuels pour scanner</li>
+      </ul>
+
+      <div class="tip success">
+        <span class="tip-ico">✅</span>
+        <div>Les exports fonctionnent <strong>hors-ligne</strong> — ils utilisent les données stockées localement dans votre navigateur.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION : TUTEUR
+     ═══════════════════════════════════════════════════════════ -->
+<div class="section" id="tuteur" data-role="tuteur">
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2>🏢 Espace Tuteur entreprise</h2>
+    <span class="section-arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <div class="chapter" id="tuteur-intro">
+      <div class="chapter-title">📋 À quoi ça sert ?</div>
+      <p>L'espace tuteur permet au <strong>tuteur de stage en entreprise</strong> d'évaluer le stagiaire directement depuis son téléphone, sans créer de compte. Il sert à :</p>
+      <ul>
+        <li><strong>Évaluer les compétences techniques</strong> du stagiaire (12 compétences E31)</li>
+        <li><strong>Noter le comportement professionnel</strong> (ponctualité, initiative, sécurité...)</li>
+        <li><strong>Transmettre l'évaluation</strong> à l'enseignant automatiquement</li>
+      </ul>
+      <div class="tip info">
+        <span class="tip-ico">⏱️</span>
+        <div>L'évaluation prend environ <strong>5 à 10 minutes</strong>. Aucun compte à créer, aucune installation.</div>
+      </div>
+    </div>
+
+    <div class="chapter" id="tuteur-acces">
+      <div class="chapter-title">🔑 Comment accéder</div>
+      <p>Le tuteur accède à l'application de 2 façons :</p>
+
+      <div class="steps">
+        <div class="step" data-color="teal"><div class="step-content"><strong>Scanner le QR code</strong> du badge tuteur (carte verte) remis par l'enseignant — la caméra du téléphone s'ouvre automatiquement</div></div>
+        <div class="step" data-color="teal"><div class="step-content">Ou <strong>saisir manuellement</strong> le code stagiaire et le token tuteur sur la page de scan</div></div>
+      </div>
+
+      <div class="mockup">
+        <div class="mockup-bar teal">❄️ INERWEB PROG+ — Espace tuteur</div>
+        <div class="mockup-body" style="text-align:center;padding:1.25rem">
+          <div class="mk-hero">🏢 Bienvenue, tuteur de stage !</div>
+          <div style="font-size:.65rem;color:var(--gris);margin-bottom:.5rem">Pas besoin de créer un compte</div>
+          <div class="mk-scan">📷 Appuyer pour scanner le badge</div>
+          <div style="margin-top:.4rem;font-size:.6rem;color:var(--gris)">— ou saisir manuellement —</div>
+          <div style="margin-top:.3rem"><div class="mk-input" style="margin-bottom:.25rem">Code stagiaire : ELV-001</div></div>
+          <div><div class="mk-input">Token tuteur : ABCD-EFGH-1234</div></div>
+        </div>
+      </div>
+
+      <div class="tip warning">
+        <span class="tip-ico">⚠️</span>
+        <div>Le badge <strong>vert</strong> est pour le tuteur. Le badge <strong>bleu</strong> est celui de l'élève — ne les confondez pas !</div>
+      </div>
+    </div>
+
+    <div class="chapter" id="tuteur-parcours">
+      <div class="chapter-title">📱 Le parcours d'évaluation</div>
+      <p>L'évaluation se fait en 4 étapes guidées :</p>
+
+      <div class="mockup">
+        <div class="mockup-bar teal">Étapes</div>
+        <div class="mockup-body">
+          <div style="display:flex;gap:2px;margin-bottom:.5rem">
+            <div style="flex:1;padding:.25rem;text-align:center;font-size:.55rem;font-weight:800;background:var(--vert2);color:var(--vert);border-radius:4px 0 0 4px">✓ Entreprise</div>
+            <div style="flex:1;padding:.25rem;text-align:center;font-size:.55rem;font-weight:800;background:var(--vert2);color:var(--vert)">✓ Tuteur(s)</div>
+            <div style="flex:1;padding:.25rem;text-align:center;font-size:.55rem;font-weight:800;background:var(--vert2);color:var(--vert)">✓ Stagiaire</div>
+            <div style="flex:1;padding:.25rem;text-align:center;font-size:.55rem;font-weight:800;background:var(--teal);color:#fff;border-radius:0 4px 4px 0">📋 Évaluation</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="steps">
+        <div class="step" data-color="teal"><div class="step-content"><strong>🏢 Entreprise</strong> — Nom, adresse, téléphones (optionnel, pré-rempli si déjà renseigné)</div></div>
+        <div class="step" data-color="teal"><div class="step-content"><strong>👤 Tuteur(s)</strong> — Votre nom, téléphone, email (possibilité d'ajouter plusieurs tuteurs)</div></div>
+        <div class="step" data-color="teal"><div class="step-content"><strong>📱 Stagiaire</strong> — Scanner le badge ou saisir le code manuellement</div></div>
+        <div class="step" data-color="teal"><div class="step-content"><strong>📋 Évaluation</strong> — Noter les compétences, le comportement, ajouter des observations</div></div>
+      </div>
+    </div>
+
+    <div class="chapter" id="tuteur-competences">
+      <div class="chapter-title">📊 Évaluer les compétences</div>
+      <p>Chaque compétence technique s'ouvre en cliquant dessus. Vous choisissez le niveau observé :</p>
+
+      <div class="mockup">
+        <div class="mockup-bar teal">📋 Compétences E31</div>
+        <div class="mockup-body">
+          <div class="mk-comp">
+            <span class="mk-comp-code">C3.1</span>
+            <span class="mk-comp-nom">Organiser le poste de travail</span>
+            <span style="font-size:.55rem;color:var(--orange);font-weight:700">✱ Oblig.</span>
+            <span style="font-size:.55rem;color:var(--gris)">▼</span>
+          </div>
+          <div style="padding:.5rem;background:var(--gris2);border-radius:0 0 6px 6px">
+            <div style="font-size:.6rem;font-weight:700;color:var(--bleu);margin-bottom:.3rem">Niveau global :</div>
+            <div class="mk-niv">
+              <div class="mk-niv-btn">NE</div>
+              <div class="mk-niv-btn">NA</div>
+              <div class="mk-niv-btn">EC</div>
+              <div class="mk-niv-btn sel">M</div>
+              <div class="mk-niv-btn">PM</div>
+            </div>
+            <div style="font-size:.55rem;margin-top:.3rem;color:var(--gris);font-weight:700">Tâches observées :</div>
+            <div style="font-size:.55rem">✅ Zone sécurisée · ✅ Outillage adapté · ⬜ Zone rangée</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tip info">
+        <span class="tip-ico">🔒</span>
+        <div>Une fois un niveau choisi (autre que NE), la compétence se <strong>verrouille automatiquement</strong> pour éviter les modifications accidentelles. Vous pouvez la déverrouiller si besoin.</div>
+      </div>
+    </div>
+
+    <div class="chapter" id="tuteur-envoi">
+      <div class="chapter-title">📤 Envoyer l'évaluation</div>
+      <div class="steps">
+        <div class="step" data-color="teal"><div class="step-content">Vérifiez que toutes les compétences obligatoires (marquées ✱) sont évaluées</div></div>
+        <div class="step" data-color="teal"><div class="step-content">Notez le <strong>comportement professionnel</strong> (6 critères de 0 à 3)</div></div>
+        <div class="step" data-color="teal"><div class="step-content">Ajoutez une <strong>observation générale</strong> si vous le souhaitez</div></div>
+        <div class="step" data-color="teal"><div class="step-content">Appuyez sur <strong>📤 Envoyer l'évaluation</strong> — elle est transmise à l'enseignant</div></div>
+      </div>
+      <div class="tip success">
+        <span class="tip-ico">📶</span>
+        <div><strong>Pas de réseau ?</strong> L'évaluation est sauvegardée localement et sera envoyée automatiquement dès que la connexion revient.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION : ÉLÈVE
+     ═══════════════════════════════════════════════════════════ -->
+<div class="section" id="eleve" data-role="eleve">
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2>🎓 Espace Élève</h2>
+    <span class="section-arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <div class="chapter" id="eleve-intro">
+      <div class="chapter-title">📋 À quoi ça sert ?</div>
+      <p>L'espace élève te permet de :</p>
+      <ul>
+        <li><strong>Tenir ton journal de stage</strong> — photos et descriptions de tes activités quotidiennes</li>
+        <li><strong>Suivre ta progression</strong> — voir tes niveaux de compétence en temps réel</li>
+        <li><strong>Consulter ton calendrier</strong> — activités, cours et évaluations</li>
+        <li><strong>Gérer tes documents</strong> — déposer ton rapport, ta convention signée</li>
+        <li><strong>Exporter ton journal</strong> — en PDF ou en texte pour ton dossier</li>
+      </ul>
+    </div>
+
+    <div class="chapter" id="eleve-connexion">
+      <div class="chapter-title">🔑 Comment se connecter</div>
+
+      <div class="mockup">
+        <div class="mockup-bar violet">❄️ INERWEB PROG+ — Espace Élève</div>
+        <div class="mockup-body" style="text-align:center;padding:1.25rem">
+          <div style="font-size:2rem;margin-bottom:.3rem">🎓</div>
+          <div style="font-weight:800;font-size:.8rem;color:var(--violet);margin-bottom:.5rem">Espace Élève</div>
+          <div class="mk-input" style="max-width:250px;margin:0 auto .5rem;text-align:center;letter-spacing:2px">ENTRE TON CODE ÉLÈVE</div>
+          <div><span class="mk-btn violet">🚀 Accéder à mon espace</span></div>
+        </div>
+      </div>
+
+      <div class="steps">
+        <div class="step" data-color="violet"><div class="step-content">Ouvre <strong>inerweb_eleve.html</strong> ou scanne ton <strong>badge QR bleu</strong></div></div>
+        <div class="step" data-color="violet"><div class="step-content">Entre ton <strong>code élève</strong> (sur ton badge, ex : ELV-001)</div></div>
+        <div class="step" data-color="violet"><div class="step-content">Tu arrives sur ton <strong>tableau de bord personnel</strong></div></div>
+      </div>
+
+      <div class="tip info">
+        <span class="tip-ico">🎮</span>
+        <div>Tu n'as pas ton code ? Entre <strong>DEMO</strong> pour tester l'interface avec des données fictives.</div>
+      </div>
+    </div>
+
+    <div class="chapter" id="eleve-accueil">
+      <div class="chapter-title">🏠 L'accueil</div>
+
+      <div class="mockup">
+        <div class="mockup-bar violet">Martin DUPONT — 1ère MFER <span>🔄</span></div>
+        <div class="mockup-body grey">
+          <div style="background:linear-gradient(135deg,var(--violet),var(--bleu2));color:#fff;padding:.5rem .6rem;border-radius:6px;margin-bottom:.4rem;display:flex;align-items:center;gap:.5rem">
+            <span style="font-size:1.5rem">📸</span>
+            <div><div style="font-weight:800;font-size:.7rem">Mon journal de stage</div><div style="font-size:.55rem;opacity:.8">Ajoute des photos et décris ta journée</div></div>
+            <span style="margin-left:auto">▶</span>
+          </div>
+          <div class="mk-card">
+            <div style="font-size:.65rem;font-weight:800;color:var(--bleu);margin-bottom:.4rem">📊 Ma progression</div>
+            <div style="display:flex;justify-content:space-around">
+              <div style="text-align:center"><div class="mk-ring" style="margin:0 auto"><span>65%</span></div><div style="font-size:.5rem;font-weight:700;color:var(--gris);margin-top:.2rem">E31</div></div>
+              <div style="text-align:center"><div class="mk-ring" style="margin:0 auto;background:conic-gradient(var(--violet) 42%,var(--gris3) 0)"><span>42%</span></div><div style="font-size:.5rem;font-weight:700;color:var(--gris);margin-top:.2rem">E32</div></div>
+              <div style="text-align:center"><div class="mk-ring" style="margin:0 auto;background:conic-gradient(#6c3483 30%,var(--gris3) 0)"><span>30%</span></div><div style="font-size:.5rem;font-weight:700;color:var(--gris);margin-top:.2rem">E33</div></div>
+            </div>
+          </div>
+          <div class="mk-card">
+            <div style="font-size:.65rem;font-weight:800;color:var(--bleu);margin-bottom:.3rem">🏢 Mon stage</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.25rem;font-size:.55rem">
+              <div style="background:var(--gris2);padding:.25rem .4rem;border-radius:4px"><span style="color:var(--gris)">Entreprise</span><br><strong>Climafroid SARL</strong></div>
+              <div style="background:var(--gris2);padding:.25rem .4rem;border-radius:4px"><span style="color:var(--gris)">Tuteur</span><br><strong>Jean Martin</strong></div>
+            </div>
+          </div>
+        </div>
+        <div class="mk-nav">
+          <div class="mk-nav-item active"><span class="mk-nav-ico">🏠</span>Accueil</div>
+          <div class="mk-nav-item"><span class="mk-nav-ico">📊</span>Compétences</div>
+          <div class="mk-nav-item"><span class="mk-nav-ico">📅</span>Calendrier</div>
+          <div class="mk-nav-item"><span class="mk-nav-ico">📁</span>Documents</div>
+          <div class="mk-nav-item"><span class="mk-nav-ico">📓</span>Journal</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chapter" id="eleve-journal">
+      <div class="chapter-title">📓 Le journal de stage</div>
+      <p>Le journal est l'outil le plus important de ton stage. Chaque jour, ajoute tes activités :</p>
+
+      <div class="steps">
+        <div class="step" data-color="violet"><div class="step-content">Va dans l'onglet <strong>Journal</strong> (ou clique sur la bannière d'accueil)</div></div>
+        <div class="step" data-color="violet"><div class="step-content"><strong>Prends des photos</strong> de ton travail (max 10 par jour) — pas de visages ni d'infos confidentielles</div></div>
+        <div class="step" data-color="violet"><div class="step-content">Choisis le <strong>type d'entrée</strong> : activité, observation, question ou réflexion</div></div>
+        <div class="step" data-color="violet"><div class="step-content"><strong>Décris</strong> ce que tu as fait ou appris</div></div>
+        <div class="step" data-color="violet"><div class="step-content">Clique <strong>Enregistrer</strong> — c'est synchronisé automatiquement</div></div>
+      </div>
+
+      <div class="tip warning">
+        <span class="tip-ico">📷</span>
+        <div><strong>Règles photos :</strong> ✅ Ton travail, le matériel, les installations · ❌ Pas de visages · ❌ Pas d'infos clients · 📏 Max 10 photos/jour</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION : ADMINISTRATION
+     ═══════════════════════════════════════════════════════════ -->
+<div class="section" id="admin" data-role="admin">
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2>🔐 Administration</h2>
+    <span class="section-arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <div class="chapter" id="admin-intro">
+      <div class="chapter-title">📋 À quoi ça sert ?</div>
+      <p>L'espace administration permet de <strong>gérer la plateforme</strong> au niveau système :</p>
+      <ul>
+        <li><strong>Gérer les utilisateurs</strong> — créer, modifier, désactiver des comptes (admin, enseignant, lecture)</li>
+        <li><strong>Générer les tokens</strong> — créer les identifiants d'accès pour les élèves et tuteurs</li>
+        <li><strong>Gérer les clés système</strong> — rotation des clés API et admin</li>
+        <li><strong>Consulter le journal</strong> — traçabilité des actions d'administration</li>
+      </ul>
+    </div>
+
+    <div class="chapter" id="admin-connexion">
+      <div class="chapter-title">🔑 Comment se connecter</div>
+
+      <div class="mockup">
+        <div class="mockup-bar orange">🔐 INERWEB PROG+ — Administration</div>
+        <div class="mockup-body" style="text-align:center;padding:1.25rem">
+          <div style="font-size:2rem;margin-bottom:.3rem">🔐</div>
+          <div style="font-weight:800;font-size:.8rem;color:var(--bleu);margin-bottom:.5rem">Accès Administration</div>
+          <div class="mk-input" style="max-width:280px;margin:0 auto .5rem;text-align:center">••••••••••••••••</div>
+          <div><span class="mk-btn violet" style="width:80%">Connexion</span></div>
+        </div>
+      </div>
+
+      <div class="steps">
+        <div class="step" data-color="orange"><div class="step-content">Ouvrez <strong>inerweb_admin.html</strong></div></div>
+        <div class="step" data-color="orange"><div class="step-content">Saisissez la <strong>clé administrateur</strong> (différente de la clé prof)</div></div>
+        <div class="step" data-color="orange"><div class="step-content">L'interface d'administration se charge avec les 4 onglets</div></div>
+      </div>
+
+      <div class="tip danger">
+        <span class="tip-ico">🔴</span>
+        <div>La clé admin donne un accès complet. Ne la partagez <strong>jamais</strong> et ne la stockez pas dans un document non sécurisé.</div>
+      </div>
+    </div>
+
+    <div class="chapter" id="admin-users">
+      <div class="chapter-title">👥 Gestion des utilisateurs</div>
+
+      <div class="mockup">
+        <div class="mockup-bar orange">🔐 Administration <span>🟢 Admin</span></div>
+        <div class="mockup-body grey">
+          <div class="mk-tabs">
+            <div class="mk-tab active" style="background:var(--violet);color:#fff">👥 Utilisateurs</div>
+            <div class="mk-tab">🎫 Tokens</div>
+            <div class="mk-tab">🔑 Clés</div>
+            <div class="mk-tab">📋 Journal</div>
+          </div>
+          <div class="mk-row">
+            <div class="mk-stat"><div class="mk-stat-val" style="color:var(--violet)">1</div><div class="mk-stat-lbl">Admin</div></div>
+            <div class="mk-stat"><div class="mk-stat-val" style="color:var(--bleu2)">3</div><div class="mk-stat-lbl">Enseignants</div></div>
+            <div class="mk-stat"><div class="mk-stat-val" style="color:var(--gris)">1</div><div class="mk-stat-lbl">Lecture</div></div>
+          </div>
+          <div class="mk-card">
+            <table class="mk-table">
+              <tr><th>Nom</th><th>Rôle</th><th>Statut</th><th></th></tr>
+              <tr><td>HENNINOT F.</td><td><span class="mk-badge" style="background:var(--violet2);color:var(--violet)">ADMIN</span></td><td><span class="mk-badge green">Actif</span></td><td style="font-size:.6rem">✏️ 🗑️</td></tr>
+              <tr><td>DUPONT M.</td><td><span class="mk-badge blue">ENSEIGNANT</span></td><td><span class="mk-badge green">Actif</span></td><td style="font-size:.6rem">✏️ 🗑️</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <ul>
+        <li><strong>Ajouter</strong> — bouton ➕ en haut du tableau, renseigner nom, email, rôle et classes</li>
+        <li><strong>Modifier</strong> — cliquer ✏️ pour éditer les informations</li>
+        <li><strong>Désactiver</strong> — cliquer 🗑️ (l'utilisateur est désactivé, pas supprimé)</li>
+      </ul>
+    </div>
+
+    <div class="chapter" id="admin-tokens">
+      <div class="chapter-title">🎫 Tokens élèves et tuteurs</div>
+      <p>Les tokens sont les identifiants uniques qui permettent aux élèves et tuteurs d'accéder à leurs espaces respectifs.</p>
+
+      <div class="steps">
+        <div class="step" data-color="orange"><div class="step-content">Allez dans l'onglet <strong>🎫 Tokens</strong></div></div>
+        <div class="step" data-color="orange"><div class="step-content">Sélectionnez l'élève dans la liste déroulante</div></div>
+        <div class="step" data-color="orange"><div class="step-content">Cliquez <strong>🔄 Générer nouveaux tokens</strong></div></div>
+        <div class="step" data-color="orange"><div class="step-content">Copiez les tokens générés — le token élève (badge bleu) et le token tuteur (badge vert)</div></div>
+      </div>
+
+      <div class="tip warning">
+        <span class="tip-ico">⚠️</span>
+        <div>La génération de nouveaux tokens <strong>invalide les anciens</strong>. L'élève et le tuteur devront utiliser les nouveaux codes.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION : FAQ
+     ═══════════════════════════════════════════════════════════ -->
+<div class="section" id="faq" data-role="faq">
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2>❓ Questions fréquentes</h2>
+    <span class="section-arrow">▼</span>
+  </div>
+  <div class="section-body">
+
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">Je n'ai pas ma clé API / mon code, que faire ? <span>▼</span></div>
+      <div class="faq-a"><strong>Professeur :</strong> Contactez l'administrateur de votre établissement pour obtenir la clé API.<br><strong>Élève :</strong> Demandez votre badge QR à votre professeur principal.<br><strong>Tuteur :</strong> Le badge vert vous est remis par l'enseignant au début de la PFMP.</div>
+    </div>
+
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">L'application fonctionne-t-elle sans internet ? <span>▼</span></div>
+      <div class="faq-a">Oui, partiellement. Les données sont sauvegardées localement dans votre navigateur. Vous pouvez évaluer, ajouter des entrées au journal, etc. Les données seront synchronisées automatiquement dès que la connexion revient. Seul le premier chargement nécessite une connexion.</div>
+    </div>
+
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">J'ai perdu mes données, que faire ? <span>▼</span></div>
+      <div class="faq-a">Les données sont stockées dans votre navigateur ET sur le serveur Google Sheets. Si vous avez vidé votre navigateur, reconnectez-vous — vos données serveur seront rechargées. Pour le professeur, utilisez la fonction <strong>Restaurer backup</strong> si vous avez exporté un fichier JSON.</div>
+    </div>
+
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">Le QR code ne se scanne pas, que faire ? <span>▼</span></div>
+      <div class="faq-a">Vérifiez que votre navigateur a l'autorisation d'accéder à la caméra. Si le scan échoue, utilisez la <strong>saisie manuelle</strong> en entrant le code et le token imprimés sous le QR code.</div>
+    </div>
+
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">Quel navigateur utiliser ? <span>▼</span></div>
+      <div class="faq-a"><strong>Chrome</strong> ou <strong>Edge</strong> sont recommandés (ordinateur et mobile). Safari fonctionne aussi sur iPhone/iPad. Évitez les navigateurs très anciens — l'application utilise des fonctionnalités modernes.</div>
+    </div>
+
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">Comment exporter mon journal en PDF ? (Élève) <span>▼</span></div>
+      <div class="faq-a">Sur la page d'accueil, clique sur <strong>📄 Export PDF</strong>. Une nouvelle fenêtre s'ouvre avec ton journal formaté — utilise le bouton <strong>🖨️ Imprimer</strong> et choisis "Enregistrer en PDF" comme destination.</div>
+    </div>
+
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">Le tuteur peut-il modifier son évaluation après l'envoi ? <span>▼</span></div>
+      <div class="faq-a">Oui, tant que l'enseignant n'a pas validé l'évaluation. Le tuteur peut rescanner le badge et modifier ses réponses. Les évaluations sont envoyées avec le statut "proposé" — seul le professeur peut les valider définitivement.</div>
+    </div>
+
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">Comment contacter le support ? <span>▼</span></div>
+      <div class="faq-a">Contactez l'enseignant référent de votre établissement. Pour les problèmes techniques, signalez-les sur le <a href="https://github.com/frigorx/inerweb-tt-mfer" target="_blank" rel="noopener noreferrer" style="color:var(--bleu2)">dépôt GitHub</a> du projet.</div>
+    </div>
+
+  </div>
+</div>
+
+</div><!-- /guide-body -->
+
+<script>
+/* ── Accordéon des sections ── */
+function toggleSection(header){
+  header.closest('.section').classList.toggle('open');
+}
+
+/* ── Ouverture auto par hash ── */
+function openFromHash(){
+  var hash=window.location.hash.replace('#','');
+  if(!hash)return;
+  // Fermer toutes les sections
+  document.querySelectorAll('.section').forEach(function(s){s.classList.remove('open');});
+  // Ouvrir la section cible
+  var target=document.getElementById(hash);
+  if(target){
+    var section=target.closest('.section')||target;
+    section.classList.add('open');
+    // Mettre en surbrillance le lien actif dans le header
+    document.querySelectorAll('.guide-header-links a').forEach(function(a){
+      a.classList.toggle('active',a.getAttribute('href')==='#'+hash);
+    });
+  }
+}
+window.addEventListener('hashchange',openFromHash);
+window.addEventListener('DOMContentLoaded',openFromHash);
+
+/* ── Recherche ── */
+document.getElementById('searchInput').addEventListener('input',function(){
+  var q=this.value.toLowerCase().trim();
+  var chapters=document.querySelectorAll('.chapter');
+  var faqs=document.querySelectorAll('.faq-item');
+
+  if(!q){
+    chapters.forEach(function(c){c.style.display='';});
+    faqs.forEach(function(f){f.style.display='';});
+    return;
+  }
+
+  chapters.forEach(function(c){
+    var text=c.textContent.toLowerCase();
+    c.style.display=text.indexOf(q)!==-1?'':'none';
+    // Ouvrir la section parente si un résultat est trouvé
+    if(text.indexOf(q)!==-1){
+      c.closest('.section').classList.add('open');
+    }
+  });
+
+  faqs.forEach(function(f){
+    var text=f.textContent.toLowerCase();
+    f.style.display=text.indexOf(q)!==-1?'':'none';
+    if(text.indexOf(q)!==-1){
+      f.closest('.section').classList.add('open');
+      f.classList.add('open');
+    }
+  });
+});
+</script>
+
+</body>
+</html>

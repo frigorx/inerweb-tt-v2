@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><script>
+(function(){if(sessionStorage.getItem('iw_purged'))return;if('serviceWorker' in navigator){caches.keys().then(function(k){k.forEach(function(c){caches.delete(c)})});navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(sw){sw.unregister()})});}sessionStorage.setItem('iw_purged','1');setTimeout(function(){location.reload(true)},500);})();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>INERWEB — Inscription élève</title>
+<script src="js/core/inerweb.config.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bleu:#1b3a63;--bleu2:#2d5a8c;--bleu3:#e8f0f8;--orange:#ff6b35;--vert:#27ae60;--violet:#8e44ad;--gris:#6c757d;--gris2:#f0f2f5;--gris3:#dee2e6;--rouge:#e74c3c;--r:14px;--r2:8px;}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Nunito',sans-serif;background:linear-gradient(135deg,#1b3a63 0%,#2d5a8c 50%,#8e44ad 100%);min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:1rem;}
+.card{background:#fff;border-radius:20px;padding:2rem;max-width:440px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.logo{text-align:center;margin-bottom:1.5rem;}
+.logo-icon{font-size:3rem;margin-bottom:.25rem;}
+.logo-title{font-size:1.4rem;font-weight:900;color:var(--bleu);}
+.logo-title span{color:var(--violet);}
+.logo-sub{font-size:.78rem;color:var(--gris);margin-top:.25rem;}
+.step{display:none;}.step.active{display:block;}
+.fr{margin-bottom:.75rem;}
+.fr label{display:block;font-size:.8rem;font-weight:700;color:var(--bleu);margin-bottom:.25rem;}
+.fr input{width:100%;padding:.75rem;border:2px solid var(--gris3);border-radius:var(--r2);font-size:1rem;font-family:inherit;transition:border-color .2s;}
+.fr input:focus{outline:none;border-color:var(--violet);}
+.btn{width:100%;padding:.85rem;border:none;border-radius:var(--r2);font-size:1rem;font-weight:800;cursor:pointer;transition:all .2s;min-height:44px;font-family:inherit;}
+.btn-primary{background:linear-gradient(135deg,var(--violet),var(--bleu2));color:#fff;}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(142,68,173,.4);}
+.btn-primary:disabled{background:var(--gris3);color:var(--gris);cursor:not-allowed;transform:none;}
+.btn-ghost{background:var(--gris2);color:var(--gris);margin-top:.5rem;}
+.alert{padding:.75rem;border-radius:var(--r2);font-size:.82rem;margin-bottom:.75rem;}
+.al-info{background:var(--bleu3);color:var(--bleu);border-left:4px solid var(--bleu);}
+.al-ok{background:#d4f4e2;color:var(--vert);border-left:4px solid var(--vert);}
+.spinner{display:none;text-align:center;padding:1.5rem;}
+.spinner.active{display:block;}
+.spinner-icon{font-size:2rem;animation:spin 1s linear infinite;display:inline-block;}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.suggestion{padding:.6rem .75rem;border-bottom:1px solid var(--gris3);cursor:pointer;font-size:.9rem;transition:background .15s;}
+.suggestion:hover,.suggestion.selected{background:var(--bleu3);}
+.suggestion .s-nom{font-weight:800;color:var(--bleu);}
+.suggestion .s-classe{font-size:.72rem;color:var(--gris);margin-left:.5rem;}
+.suggestions-box{border:2px solid var(--gris3);border-radius:var(--r2);max-height:200px;overflow-y:auto;display:none;margin-bottom:.75rem;}
+.suggestions-box.active{display:block;}
+.hint{font-size:.72rem;color:var(--gris);margin-top:.25rem;}
+.selected-student{background:var(--bleu3);border-radius:var(--r2);padding:.75rem;margin-bottom:.75rem;display:none;}
+.selected-student.active{display:block;}
+.selected-student .ss-nom{font-weight:900;color:var(--bleu);font-size:1.1rem;}
+.selected-student .ss-classe{font-size:.78rem;color:var(--gris);}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">
+    <div class="logo-icon">🎓</div>
+    <div class="logo-title">iner<span>Web</span> TT</div>
+    <div class="logo-sub">Inscription élève</div>
+  </div>
+
+  <!-- ÉTAPE 1 : Chargement -->
+  <div class="step active" id="step-load">
+    <div class="spinner active">
+      <div class="spinner-icon">⏳</div>
+      <div style="margin-top:.5rem;font-size:.85rem;color:var(--gris)">Chargement...</div>
+    </div>
+    <div id="loadError" style="display:none"></div>
+  </div>
+
+  <!-- ÉTAPE 2 : Recherche par nom -->
+  <div class="step" id="step-search">
+    <div class="alert al-info">🔍 Tapez votre nom de famille (3 lettres minimum)</div>
+    <div class="fr">
+      <label>Votre nom</label>
+      <input type="text" id="searchInput" placeholder="Tapez votre nom..." autocomplete="off" oninput="rechercher()">
+      <div class="hint" id="searchHint">Minimum 3 lettres</div>
+    </div>
+    <div class="suggestions-box" id="suggestions"></div>
+
+    <div class="selected-student" id="selectedInfo">
+      <div class="ss-nom" id="ssNom"></div>
+      <div class="ss-classe" id="ssClasse"></div>
+    </div>
+
+    <button class="btn btn-primary" onclick="confirmerChoix()" id="btnConfirm" disabled>C'est moi →</button>
+  </div>
+
+  <!-- ÉTAPE 3 : Coordonnées -->
+  <div class="step" id="step-contact">
+    <div id="contactInfo"></div>
+    <div class="alert al-info">📞 Renseignez vos coordonnées pour recevoir votre code d'accès</div>
+    <div class="fr">
+      <label>Téléphone *</label>
+      <input type="tel" id="inTel" placeholder="06 12 34 56 78">
+    </div>
+    <div class="fr">
+      <label>Email (facultatif)</label>
+      <input type="email" id="inEmail" placeholder="prenom.nom@email.fr">
+    </div>
+    <button class="btn btn-primary" onclick="validerInscription()">✅ Valider mon inscription</button>
+    <button class="btn btn-ghost" onclick="goStep('step-search')">← Retour</button>
+  </div>
+
+  <!-- ÉTAPE 4 : Confirmation -->
+  <div class="step" id="step-done">
+    <div style="text-align:center;padding:1rem 0">
+      <div style="font-size:3rem;margin-bottom:.5rem">✅</div>
+      <h2 style="font-size:1.2rem;font-weight:900;color:var(--vert);margin-bottom:.5rem">Inscription enregistrée !</h2>
+      <p style="font-size:.85rem;color:var(--gris);margin-bottom:1rem">Votre enseignant va vous envoyer votre code d'accès personnel par SMS ou WhatsApp.</p>
+      <div style="background:var(--bleu3);border-radius:var(--r2);padding:.75rem;font-size:.82rem;color:var(--bleu)">
+        <strong>En attendant :</strong> gardez votre téléphone à portée de main. Vous recevrez un message avec votre code et un lien pour accéder à votre espace.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var allStudents=[];
+var selectedStudent=null;
+var apiUrl='';
+var apiKey='';
+
+function goStep(id){
+  document.querySelectorAll('.step').forEach(function(s){s.classList.remove('active');});
+  document.getElementById(id).classList.add('active');
+}
+
+function normalize(s){
+  return String(s||'').trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
+
+// Chargement initial
+document.addEventListener('DOMContentLoaded',async function(){
+  apiUrl=window.iwConfig?window.iwConfig.getApiUrl():'';
+  apiKey=window.INERWEB_CONFIG?window.INERWEB_CONFIG.API_KEY:'';
+
+  if(!apiUrl){
+    document.getElementById('loadError').style.display='block';
+    document.getElementById('loadError').innerHTML='<div class="alert" style="background:#fde8e6;color:#e74c3c;border-left:4px solid #e74c3c">Configuration manquante.</div>';
+    document.querySelector('#step-load .spinner').style.display='none';
+    return;
+  }
+
+  try{
+    var url=new URL(apiUrl);
+    url.searchParams.set('action','getDashboard');
+    url.searchParams.set('key',apiKey);
+    var r=await fetch(url.toString(),{method:'GET',redirect:'follow'});
+    var data=await r.json();
+    if(!Array.isArray(data))throw new Error('Format invalide');
+    allStudents=data;
+
+    if(!allStudents.length){
+      document.getElementById('loadError').style.display='block';
+      document.getElementById('loadError').innerHTML='<div class="alert" style="background:#fde8e6;color:#e74c3c;border-left:4px solid #e74c3c">Aucun élève trouvé. Demandez à votre enseignant.</div>';
+      document.querySelector('#step-load .spinner').style.display='none';
+      return;
+    }
+    goStep('step-search');
+    document.getElementById('searchInput').focus();
+  }catch(e){
+    document.getElementById('loadError').style.display='block';
+    document.getElementById('loadError').innerHTML='<div class="alert" style="background:#fde8e6;color:#e74c3c;border-left:4px solid #e74c3c">Erreur de connexion.<br><button class="btn btn-ghost" style="margin-top:.5rem" onclick="location.reload()">🔄 Réessayer</button></div>';
+    document.querySelector('#step-load .spinner').style.display='none';
+  }
+});
+
+function rechercher(){
+  var query=normalize(document.getElementById('searchInput').value);
+  var box=document.getElementById('suggestions');
+  var hint=document.getElementById('searchHint');
+  var selInfo=document.getElementById('selectedInfo');
+
+  selectedStudent=null;
+  selInfo.classList.remove('active');
+  document.getElementById('btnConfirm').disabled=true;
+
+  if(query.length<3){
+    box.classList.remove('active');
+    box.innerHTML='';
+    hint.textContent='Minimum 3 lettres';
+    return;
+  }
+
+  var results=allStudents.filter(function(s){
+    var nom=normalize(s.nom);
+    var prenom=normalize(s.prenom);
+    return nom.indexOf(query)===0||prenom.indexOf(query)===0||(nom+' '+prenom).indexOf(query)===0||(prenom+' '+nom).indexOf(query)===0;
+  });
+
+  if(!results.length){
+    box.classList.remove('active');
+    box.innerHTML='';
+    hint.textContent='Aucun résultat. Vérifiez l\'orthographe.';
+    return;
+  }
+
+  hint.textContent=results.length+' résultat(s)';
+  box.classList.add('active');
+  box.innerHTML=results.map(function(s,i){
+    return '<div class="suggestion" onclick="selectionner('+i+')" data-idx="'+i+'"><span class="s-nom">'+esc(s.nom)+' '+esc(s.prenom||'')+'</span><span class="s-classe">'+esc(s.classe||'')+'</span></div>';
+  }).join('');
+
+  // Stocker les résultats pour la sélection
+  window._searchResults=results;
+}
+
+function selectionner(idx){
+  var s=window._searchResults[idx];
+  if(!s)return;
+  selectedStudent=s;
+
+  document.getElementById('suggestions').classList.remove('active');
+  document.getElementById('searchInput').value=s.nom+' '+s.prenom;
+  document.getElementById('searchHint').textContent='';
+
+  // Aller directement à l'étape contact (pas de clic supplémentaire)
+  document.getElementById('contactInfo').innerHTML=
+    '<div style="background:var(--bleu3);border-radius:var(--r2);padding:.75rem;margin-bottom:.75rem">'+
+    '<div style="font-weight:900;color:var(--bleu);font-size:1rem">'+esc(s.nom)+' '+esc(s.prenom||'')+'</div>'+
+    '<div style="font-size:.78rem;color:var(--gris)">'+esc(s.classe||'')+'</div></div>';
+  goStep('step-contact');
+}
+
+async function validerInscription(){
+  var tel=document.getElementById('inTel').value.trim();
+  var email=document.getElementById('inEmail').value.trim();
+
+  if(!tel){alert('Le numéro de téléphone est obligatoire');return;}
+  if(!/^0[67]/.test(tel.replace(/[\s.\-]/g,''))){alert('Le numéro doit commencer par 06 ou 07');return;}
+
+  // Enregistrer les coordonnées via l'API (POST)
+  try{
+    var url=new URL(apiUrl);
+    url.searchParams.set('action','updateEleveProfil');
+    await fetch(url.toString(),{
+      method:'POST',
+      redirect:'follow',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({key:apiKey,code:selectedStudent.code,telephone:tel,email:email})
+    });
+  }catch(e){console.warn('Erreur enregistrement:',e);}
+
+  goStep('step-done');
+}
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+</script>
+
+</body>
+</html>

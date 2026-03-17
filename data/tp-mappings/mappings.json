@@ -1,0 +1,367 @@
+{
+  "_meta": {
+    "version": "1.0",
+    "description": "Correspondances TP ↔ formations ↔ compétences",
+    "lastUpdate": "2026-03-14"
+  },
+  "mappings": [
+    {
+      "tpId": "TP-001",
+      "formation": "CAP_IFCA",
+      "annee": [1, 2],
+      "epreuve": "EP2",
+      "competences": [
+        {"code": "C3.4", "niveauAttendu": 5, "contexte": "atelier", "criteres": ["Brasage fort étanche", "Dudgeon/Flare conformes", "Cintrage correct", "Isolation continue"]},
+        {"code": "C3.1", "niveauAttendu": 4, "contexte": "atelier", "criteres": ["Zone sécurisée", "Outillage adapté"]},
+        {"code": "C3.8", "niveauAttendu": 4, "contexte": "atelier", "criteres": ["Tri sélectif respecté", "Zone propre"]}
+      ],
+      "sequencesSuggerees": ["S4"],
+      "dureeAdaptee": 240,
+      "remarques": "TP fondamental du CAP — évaluation EP2 directe"
+    },
+    {
+      "tpId": "TP-001",
+      "formation": "TNE",
+      "annee": [1],
+      "epreuve": null,
+      "competences": [
+        {"code": "CT.3", "niveauAttendu": 4, "contexte": null, "criteres": []},
+        {"code": "CT.2", "niveauAttendu": 4, "contexte": null, "criteres": []}
+      ],
+      "sequencesSuggerees": ["S3"],
+      "dureeAdaptee": 180,
+      "remarques": "Version simplifiée — découverte du geste. 2 brasures droites maximum."
+    },
+    {
+      "tpId": "TP-001",
+      "formation": "BAC_MFER",
+      "annee": [1, 2],
+      "epreuve": "E31",
+      "competences": [
+        {"code": "C3.3", "niveauAttendu": 5, "contexte": "atelier", "criteres": ["Brasures conformes", "Circuit étanche"]},
+        {"code": "C3.1", "niveauAttendu": 5, "contexte": "atelier", "criteres": ["Poste organisé", "EPI portés"]}
+      ],
+      "sequencesSuggerees": ["S2"],
+      "dureeAdaptee": 180,
+      "remarques": "Exigence plus élevée qu'en CAP — raccordements complexes"
+    },
+    {
+      "tpId": "TP-002",
+      "formation": "CAP_IFCA",
+      "annee": [1, 2],
+      "epreuve": "EP3",
+      "competences": [
+        {"code": "C4.1", "niveauAttendu": 5, "contexte": "A", "criteres": ["Groupe de tirage connecté", "Vide atteint (< 200 µm Hg)", "Durée adaptée au volume"]},
+        {"code": "C4.5", "niveauAttendu": 4, "contexte": "A", "criteres": ["Lecture manomètre correcte", "Relevé vacuomètre"]}
+      ],
+      "sequencesSuggerees": ["S2"],
+      "dureeAdaptee": 120,
+      "remarques": "Situation A de l'EP3"
+    },
+    {
+      "tpId": "TP-002",
+      "formation": "BAC_MFER",
+      "annee": [1],
+      "epreuve": "E31",
+      "competences": [
+        {"code": "C4.1", "niveauAttendu": 5, "contexte": "atelier", "criteres": ["Vide conforme", "Procédure respectée"]},
+        {"code": "C3.1", "niveauAttendu": 4, "contexte": "atelier", "criteres": ["Organisation poste"]}
+      ],
+      "sequencesSuggerees": ["S2"],
+      "dureeAdaptee": 120,
+      "remarques": "Même TP, exigences E31"
+    },
+    {
+      "tpId": "TP-003",
+      "formation": "CAP_IFCA",
+      "annee": [2],
+      "epreuve": "EP3",
+      "competences": [
+        {"code": "C4.2", "niveauAttendu": 5, "contexte": "A", "criteres": ["Raccordement bouteille sécurisé", "Charge pesée conforme", "EPI fluides"]},
+        {"code": "C4.5", "niveauAttendu": 5, "contexte": "A", "criteres": ["Mesures HP/BP correctes", "Surchauffe calculée"]},
+        {"code": "C4.6", "niveauAttendu": 4, "contexte": "A", "criteres": ["Réglage détendeur", "Stabilisation circuit"]}
+      ],
+      "sequencesSuggerees": ["S2"],
+      "dureeAdaptee": 180,
+      "remarques": "TP avancé — 2ème année recommandé"
+    },
+    {
+      "tpId": "TP-003",
+      "formation": "BAC_MFER",
+      "annee": [1, 2],
+      "epreuve": "E31",
+      "competences": [
+        {"code": "C4.2", "niveauAttendu": 6, "contexte": "atelier", "criteres": ["Charge conforme", "Sécurité F-Gas"]},
+        {"code": "C4.4", "niveauAttendu": 5, "contexte": "atelier", "criteres": ["Mise en service complète"]}
+      ],
+      "sequencesSuggerees": ["S2"],
+      "dureeAdaptee": 180,
+      "remarques": "Niveau PM attendu en Bac Pro"
+    },
+    {
+      "tpId": "TP-004",
+      "formation": "CAP_IFCA",
+      "annee": [1, 2],
+      "epreuve": "EP2",
+      "competences": [
+        {"code": "C3.6", "niveauAttendu": 5, "contexte": "atelier", "criteres": ["Schéma lu correctement", "Câblage conforme", "Serrage vérifié"]},
+        {"code": "C3.7", "niveauAttendu": 4, "contexte": "atelier", "criteres": ["Continuité vérifiée", "Isolement mesuré"]}
+      ],
+      "sequencesSuggerees": ["S3"],
+      "dureeAdaptee": 180,
+      "remarques": "TP structurant pour EP2"
+    },
+    {
+      "tpId": "TP-004",
+      "formation": "TNE",
+      "annee": [1],
+      "epreuve": null,
+      "competences": [
+        {"code": "CT.4", "niveauAttendu": 4, "contexte": null, "criteres": []},
+        {"code": "CT.5", "niveauAttendu": 3, "contexte": null, "criteres": []}
+      ],
+      "sequencesSuggerees": ["S3"],
+      "dureeAdaptee": 120,
+      "remarques": "Version simplifiée : câblage mono simple uniquement"
+    },
+    {
+      "tpId": "TP-004",
+      "formation": "BAC_MFER",
+      "annee": [1, 2],
+      "epreuve": "E31",
+      "competences": [
+        {"code": "C3.5", "niveauAttendu": 5, "contexte": "atelier", "criteres": ["Câblage puissance conforme", "Câblage commande conforme"]},
+        {"code": "C3.1", "niveauAttendu": 5, "contexte": "atelier", "criteres": ["Consignation respectée"]}
+      ],
+      "sequencesSuggerees": ["S2"],
+      "dureeAdaptee": 180,
+      "remarques": "Version complète mono + tri"
+    },
+    {
+      "tpId": "TP-005",
+      "formation": "CAP_IFCA",
+      "annee": [1, 2],
+      "epreuve": "EP2",
+      "competences": [
+        {"code": "C3.9", "niveauAttendu": 5, "contexte": "atelier", "criteres": ["Pression azote correcte", "Méthode systématique", "Fuites localisées"]},
+        {"code": "C1.2", "niveauAttendu": 4, "contexte": "dossier", "criteres": ["Rapport de contrôle rédigé"]}
+      ],
+      "sequencesSuggerees": ["S1"],
+      "dureeAdaptee": 120,
+      "remarques": "TP rapide — combinable avec TP-001"
+    },
+    {
+      "tpId": "TP-005",
+      "formation": "BAC_MFER",
+      "annee": [1],
+      "epreuve": "E31",
+      "competences": [
+        {"code": "C4.3", "niveauAttendu": 5, "contexte": "atelier", "criteres": ["Étanchéité vérifiée", "Méthode normalisée"]}
+      ],
+      "sequencesSuggerees": ["S2"],
+      "dureeAdaptee": 120,
+      "remarques": "Même TP, épreuve E31"
+    },
+    {
+      "tpId": "TP-006",
+      "formation": "CAP_IFCA",
+      "annee": [2],
+      "epreuve": "EP3",
+      "competences": [
+        {"code": "C4.5", "niveauAttendu": 5, "contexte": "A", "criteres": ["Raccordement correct", "Relevés précis", "Calculs justes"]},
+        {"code": "C4.6", "niveauAttendu": 4, "contexte": "A", "criteres": ["Interprétation cohérente"]}
+      ],
+      "sequencesSuggerees": ["S2"],
+      "dureeAdaptee": 180,
+      "remarques": "TP avancé — lien avec FRIGOLO Mollier"
+    },
+    {
+      "tpId": "TP-006",
+      "formation": "TNE",
+      "annee": [1],
+      "epreuve": null,
+      "competences": [
+        {"code": "CT.6", "niveauAttendu": 3, "contexte": null, "criteres": []}
+      ],
+      "sequencesSuggerees": ["S3"],
+      "dureeAdaptee": 120,
+      "remarques": "Version découverte : relevé seul, pas de Mollier"
+    },
+    {
+      "tpId": "TP-006",
+      "formation": "BAC_MFER",
+      "annee": [1, 2],
+      "epreuve": "E32",
+      "competences": [
+        {"code": "C5.3", "niveauAttendu": 5, "contexte": "B", "criteres": ["Mesures complètes", "Bilan énergétique"]},
+        {"code": "C6.1", "niveauAttendu": 5, "contexte": "C", "criteres": ["Analyse performances"]}
+      ],
+      "sequencesSuggerees": ["S3"],
+      "dureeAdaptee": 240,
+      "remarques": "Version complète avec analyse performances"
+    },
+    {
+      "tpId": "TP-007",
+      "formation": "CAP_IFCA",
+      "annee": [1],
+      "epreuve": "EP2",
+      "competences": [
+        {"code": "C3.1", "niveauAttendu": 4, "contexte": "atelier", "criteres": ["Zone sécurisée", "EPI portés"]}
+      ],
+      "sequencesSuggerees": ["S1"],
+      "dureeAdaptee": 120,
+      "remarques": "Obligatoire en début d'année"
+    },
+    {
+      "tpId": "TP-007",
+      "formation": "TNE",
+      "annee": [1],
+      "epreuve": null,
+      "competences": [
+        {"code": "CT.2", "niveauAttendu": 4, "contexte": null, "criteres": []}
+      ],
+      "sequencesSuggerees": ["S1"],
+      "dureeAdaptee": 120,
+      "remarques": "Obligatoire — première séance de l'année"
+    },
+    {
+      "tpId": "TP-007",
+      "formation": "BAC_MFER",
+      "annee": [1],
+      "epreuve": "E31",
+      "competences": [
+        {"code": "C3.1", "niveauAttendu": 4, "contexte": "atelier", "criteres": ["Poste organisé", "EPI", "Consignes"]}
+      ],
+      "sequencesSuggerees": ["S1"],
+      "dureeAdaptee": 120,
+      "remarques": "Rappel sécurité en début d'année"
+    },
+    {
+      "tpId": "TP-008",
+      "formation": "TNE",
+      "annee": [1],
+      "epreuve": null,
+      "competences": [
+        {"code": "CT.5", "niveauAttendu": 4, "contexte": null, "criteres": []}
+      ],
+      "sequencesSuggerees": ["S4"],
+      "dureeAdaptee": 120,
+      "remarques": "TD/TP hybride pour découverte"
+    },
+    {
+      "tpId": "TP-008",
+      "formation": "CAP_IFCA",
+      "annee": [1],
+      "epreuve": "EP2",
+      "competences": [
+        {"code": "C3.2", "niveauAttendu": 4, "contexte": "atelier", "criteres": ["Composants identifiés", "Circuits repérés"]}
+      ],
+      "sequencesSuggerees": ["S1"],
+      "dureeAdaptee": 120,
+      "remarques": "Base pour tout TP atelier"
+    },
+    {
+      "tpId": "TP-009",
+      "formation": "CAP_IFCA",
+      "annee": [2],
+      "epreuve": "EP3",
+      "competences": [
+        {"code": "C4.4", "niveauAttendu": 4, "contexte": "B", "criteres": ["Panne identifiée", "Méthode suivie"]},
+        {"code": "C4.5", "niveauAttendu": 5, "contexte": "B", "criteres": ["Mesures pertinentes"]},
+        {"code": "C4.6", "niveauAttendu": 5, "contexte": "B", "criteres": ["Remède proposé"]}
+      ],
+      "sequencesSuggerees": ["S1"],
+      "dureeAdaptee": 240,
+      "remarques": "Situation B EP3 — 2ème année"
+    },
+    {
+      "tpId": "TP-009",
+      "formation": "BAC_MFER",
+      "annee": [2, 3],
+      "epreuve": "E32",
+      "competences": [
+        {"code": "C5.1", "niveauAttendu": 6, "contexte": "A", "criteres": ["Diagnostic méthodique", "Panne identifiée", "Justification"]},
+        {"code": "C5.2", "niveauAttendu": 5, "contexte": "A", "criteres": ["Composant remplacé correctement"]}
+      ],
+      "sequencesSuggerees": ["S3"],
+      "dureeAdaptee": 240,
+      "remarques": "Situation A E32 — exigence PM"
+    },
+    {
+      "tpId": "TP-010",
+      "formation": "CAP_IFCA",
+      "annee": [1],
+      "epreuve": "EP2",
+      "competences": [
+        {"code": "C3.4", "niveauAttendu": 4, "contexte": "atelier", "criteres": ["Cintrage correct", "Pas d'ovalisation"]}
+      ],
+      "sequencesSuggerees": ["S4"],
+      "dureeAdaptee": 120,
+      "remarques": "Premier TP atelier — confiance"
+    },
+    {
+      "tpId": "TP-010",
+      "formation": "TNE",
+      "annee": [1],
+      "epreuve": null,
+      "competences": [
+        {"code": "CT.3", "niveauAttendu": 3, "contexte": null, "criteres": []}
+      ],
+      "sequencesSuggerees": ["S3"],
+      "dureeAdaptee": 90,
+      "remarques": "Découverte outillage — version allégée"
+    },
+    {
+      "tpId": "TP-011",
+      "formation": "CAP_IFCA",
+      "annee": [2],
+      "epreuve": "EP3",
+      "competences": [
+        {"code": "C5.1", "niveauAttendu": 4, "contexte": "A", "criteres": ["Composant identifié", "Démontage/remontage"]},
+        {"code": "C1.1", "niveauAttendu": 4, "contexte": "C", "criteres": ["Fiche maintenance remplie"]}
+      ],
+      "sequencesSuggerees": ["S1"],
+      "dureeAdaptee": 180,
+      "remarques": "Maintenance préventive — lien PFMP"
+    },
+    {
+      "tpId": "TP-011",
+      "formation": "BAC_MFER",
+      "annee": [1, 2],
+      "epreuve": "E32",
+      "competences": [
+        {"code": "C5.3", "niveauAttendu": 5, "contexte": "B", "criteres": ["Opérations préventives réalisées"]},
+        {"code": "C5.1", "niveauAttendu": 4, "contexte": "B", "criteres": ["Conformité réglementaire vérifiée"]}
+      ],
+      "sequencesSuggerees": ["S3"],
+      "dureeAdaptee": 180,
+      "remarques": "Situation B E32"
+    },
+    {
+      "tpId": "TP-012",
+      "formation": "CAP_IFCA",
+      "annee": [2],
+      "epreuve": "EP3",
+      "competences": [
+        {"code": "C5.1", "niveauAttendu": 5, "contexte": "A", "criteres": ["Composant remplacé", "Circuit opérationnel"]},
+        {"code": "C4.1", "niveauAttendu": 5, "contexte": "A", "criteres": ["Vide conforme après remplacement"]},
+        {"code": "C4.2", "niveauAttendu": 5, "contexte": "A", "criteres": ["Charge conforme après remplacement"]}
+      ],
+      "sequencesSuggerees": ["S1"],
+      "dureeAdaptee": 240,
+      "remarques": "TP complet de synthèse — évaluation multiple"
+    },
+    {
+      "tpId": "TP-012",
+      "formation": "BAC_MFER",
+      "annee": [2, 3],
+      "epreuve": "E32",
+      "competences": [
+        {"code": "C5.2", "niveauAttendu": 6, "contexte": "A", "criteres": ["Remplacement conforme", "Procédure fluides respectée"]}
+      ],
+      "sequencesSuggerees": ["S3"],
+      "dureeAdaptee": 240,
+      "remarques": "Situation A E32 — exigence PM"
+    }
+  ]
+}

@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"><script>
+(function(){if(sessionStorage.getItem('iw_purged'))return;if('serviceWorker' in navigator){caches.keys().then(function(k){k.forEach(function(c){caches.delete(c)})});navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(sw){sw.unregister()})});}sessionStorage.setItem('iw_purged','1');setTimeout(function(){location.reload(true)},500);})();
+</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1b3a63">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x2744;</text></svg>">
+  <title>InerWeb Classroom — Tableau de bord</title>
+  <style>
+    :root {
+      --bleu: #1b3a63;
+      --bleu2: #2d5a8c;
+      --bleu3: #e8f0f8;
+      --orange: #ff6b35;
+      --vert: #27ae60;
+      --rouge: #e74c3c;
+      --gris: #6c757d;
+      --blanc: #ffffff;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: linear-gradient(135deg, var(--bleu) 0%, var(--bleu2) 100%);
+      min-height: 100vh;
+      padding: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .dashboard {
+      background: var(--blanc);
+      border-radius: 20px;
+      padding: 2rem;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,.3);
+      text-align: center;
+    }
+
+    .logo {
+      font-size: 2.5rem;
+      margin-bottom: .5rem;
+    }
+    h1 {
+      color: var(--bleu);
+      font-size: 1.5rem;
+      margin-bottom: .25rem;
+    }
+    .version {
+      color: var(--gris);
+      font-size: .85rem;
+      margin-bottom: .5rem;
+    }
+
+    /* Indicateur de statut */
+    .statut {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      padding: .3rem .8rem;
+      border-radius: 20px;
+      font-size: .8rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+    .statut.ok {
+      background: #dcfce7;
+      color: #166534;
+    }
+    .statut.erreur {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+    .statut-point {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .statut.ok .statut-point { background: var(--vert); }
+    .statut.erreur .statut-point { background: var(--rouge); }
+
+    .qr-section {
+      background: var(--bleu3);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .qr-section h2 {
+      font-size: 1rem;
+      color: var(--bleu);
+      margin-bottom: 1rem;
+    }
+    .qr-code {
+      background: var(--blanc);
+      padding: 1rem;
+      border-radius: 12px;
+      display: inline-block;
+      min-height: 232px;
+      min-width: 232px;
+    }
+    .qr-code img {
+      width: 200px;
+      height: 200px;
+      display: block;
+    }
+    .qr-url {
+      margin-top: 1rem;
+      font-size: .9rem;
+      color: var(--bleu2);
+      font-weight: 700;
+      word-break: break-all;
+    }
+
+    .stats {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .stat {
+      flex: 1;
+      background: var(--bleu3);
+      border-radius: 12px;
+      padding: 1rem;
+    }
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--bleu);
+    }
+    .stat-label {
+      font-size: .8rem;
+      color: var(--gris);
+    }
+
+    .aide-fichiers {
+      background: #fef3c7;
+      border-radius: 10px;
+      padding: .75rem 1rem;
+      margin-bottom: 1.5rem;
+      font-size: .82rem;
+      color: #92400e;
+      display: none;
+    }
+
+    .chemin-dossier {
+      font-size: .78rem;
+      color: var(--gris);
+      background: var(--bleu3);
+      border-radius: 8px;
+      padding: .5rem .75rem;
+      margin-bottom: 1.5rem;
+      word-break: break-all;
+      text-align: left;
+    }
+    .chemin-dossier strong {
+      color: var(--bleu);
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: .75rem;
+    }
+    .btn {
+      display: block;
+      padding: 1rem;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: .95rem;
+      transition: transform .15s;
+      text-align: center;
+    }
+    .btn:active { transform: scale(.98); }
+    .btn-primary {
+      background: var(--orange);
+      color: var(--blanc);
+    }
+    .btn-secondary {
+      background: var(--bleu3);
+      color: var(--bleu);
+    }
+
+    /* Erreur serveur */
+    .erreur-serveur {
+      background: #fee2e2;
+      border: 2px solid var(--rouge);
+      border-radius: 16px;
+      padding: 2rem 1.5rem;
+      margin-bottom: 1.5rem;
+      display: none;
+    }
+    .erreur-serveur h2 {
+      color: var(--rouge);
+      font-size: 1.1rem;
+      margin-bottom: .75rem;
+    }
+    .erreur-serveur p {
+      font-size: .85rem;
+      color: #991b1b;
+      margin-bottom: .5rem;
+    }
+    .erreur-serveur code {
+      background: #fecaca;
+      padding: .15rem .4rem;
+      border-radius: 4px;
+      font-size: .82rem;
+    }
+
+    .footer {
+      margin-top: 1.5rem;
+      font-size: .75rem;
+      color: var(--gris);
+    }
+
+    @media (max-width: 480px) {
+      body { padding: 1rem; }
+      .dashboard { padding: 1.25rem; }
+      .stats { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="dashboard">
+  <div class="logo">&#x2744;&#xFE0F;</div>
+  <h1>InerWeb Classroom</h1>
+  <p class="version">Hub de partage — Classroom v4.0</p>
+
+  <div class="statut" id="statut" style="display:none" role="status" aria-live="polite">
+    <span class="statut-point"></span>
+    <span id="statut-texte"></span>
+  </div>
+
+  <!-- Message d'erreur si serveur non lancé -->
+  <div class="erreur-serveur" id="erreur-serveur">
+    <h2>Serveur non démarré</h2>
+    <p>Le serveur Classroom n'est pas lancé.</p>
+    <p>Double-cliquez sur <code>LANCER.bat</code> dans le dossier du projet, puis rechargez cette page.</p>
+  </div>
+
+  <div id="contenu-ok">
+    <div class="qr-section">
+      <h2>QR Code pour les élèves</h2>
+      <p style="font-size:.82rem;color:var(--gris);margin-bottom:.75rem;">Projetez ce QR code au tableau — les élèves le scannent pour accéder aux fichiers.</p>
+      <div class="qr-code">
+        <img id="qrcode" alt="QR Code" style="display:none">
+      </div>
+      <p class="qr-url" id="url-eleves" aria-live="polite"></p>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-value" id="nb-fichiers" aria-live="polite">-</div>
+        <div class="stat-label">Fichiers partagés</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="ip" aria-live="polite">-</div>
+        <div class="stat-label">IP locale</div>
+      </div>
+    </div>
+
+    <div class="aide-fichiers" id="aide-fichiers">
+      Aucun fichier partagé. Glissez vos fichiers (PDF, vidéos, TP...) dans le dossier ci-dessous.
+    </div>
+
+    <div class="chemin-dossier" id="chemin-dossier" style="display:none">
+      <strong>Dossier de partage :</strong><br>
+      <span id="chemin-texte"></span>
+    </div>
+
+    <div class="actions">
+      <a href="eleve.html" target="_blank" rel="noopener noreferrer" class="btn btn-primary" aria-label="Prévisualiser l'interface élève">
+        Voir comme un élève
+      </a>
+      <a href="index.html" class="btn btn-secondary" aria-label="Retour au portail InerWeb">
+        Retour au portail InerWeb
+      </a>
+    </div>
+  </div>
+
+  <p class="footer">
+    Glissez vos fichiers dans le dossier <strong>partage/</strong><br>
+    Les élèves les verront après avoir scanné le QR code.
+  </p>
+</div>
+
+<script>
+var serveurOk = false;
+var enCours = false;
+var refreshTimer = null;
+
+function init() {
+  if (enCours) return;
+  enCours = true;
+
+  var promesses = 0;
+  var erreurs = 0;
+  var total = 3;
+
+  function verifier() {
+    promesses++;
+    if (promesses < total) return;
+    enCours = false;
+
+    var statut = document.getElementById('statut');
+    var statutTexte = document.getElementById('statut-texte');
+    var erreurDiv = document.getElementById('erreur-serveur');
+    var contenu = document.getElementById('contenu-ok');
+
+    if (erreurs === total) {
+      // Serveur non accessible
+      serveurOk = false;
+      statut.className = 'statut erreur';
+      statut.style.display = 'inline-flex';
+      statutTexte.textContent = 'Serveur hors ligne';
+      erreurDiv.style.display = 'block';
+      contenu.style.display = 'none';
+    } else {
+      serveurOk = true;
+      statut.className = 'statut ok';
+      statut.style.display = 'inline-flex';
+      statutTexte.textContent = 'Serveur actif';
+      erreurDiv.style.display = 'none';
+      contenu.style.display = 'block';
+    }
+  }
+
+  // Info serveur
+  fetch('/api/info')
+    .then(function(r) { if (!r.ok) throw new Error(); return r.json(); })
+    .then(function(info) {
+      document.getElementById('url-eleves').textContent = info.urlEleves;
+      document.getElementById('ip').textContent = info.ip;
+      if (info.dossierPartage) {
+        document.getElementById('chemin-dossier').style.display = 'block';
+        document.getElementById('chemin-texte').textContent = info.dossierPartage;
+      }
+      verifier();
+    })
+    .catch(function() { erreurs++; verifier(); });
+
+  // QR Code
+  fetch('/api/qrcode')
+    .then(function(r) { if (!r.ok) throw new Error(); return r.json(); })
+    .then(function(qr) {
+      var img = document.getElementById('qrcode');
+      img.src = qr.qrcode;
+      img.style.display = 'block';
+      verifier();
+    })
+    .catch(function() { erreurs++; verifier(); });
+
+  // Fichiers
+  fetch('/api/fichiers')
+    .then(function(r) { if (!r.ok) throw new Error(); return r.json(); })
+    .then(function(data) {
+      document.getElementById('nb-fichiers').textContent = data.total;
+      var aide = document.getElementById('aide-fichiers');
+      aide.style.display = data.total === 0 ? 'block' : 'none';
+      verifier();
+    })
+    .catch(function() { erreurs++; verifier(); });
+}
+
+init();
+
+// Refresh toutes les 10 secondes, pause si onglet masqué
+function demarrerRefresh() {
+  if (refreshTimer) return;
+  refreshTimer = setInterval(init, 10000);
+}
+function arreterRefresh() {
+  if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
+}
+
+demarrerRefresh();
+
+document.addEventListener('visibilitychange', function() {
+  if (document.hidden) {
+    arreterRefresh();
+  } else {
+    init();
+    demarrerRefresh();
+  }
+});
+</script>
+
+</body>
+</html>

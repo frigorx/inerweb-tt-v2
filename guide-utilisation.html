@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><script>
+(function(){if(sessionStorage.getItem('iw_purged'))return;if('serviceWorker' in navigator){caches.keys().then(function(k){k.forEach(function(c){caches.delete(c)})});navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(sw){sw.unregister()})});}sessionStorage.setItem('iw_purged','1');setTimeout(function(){location.reload(true)},500);})();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guide Utilisation — inerWeb TT</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bleu:#1b3a63;--violet:#8e44ad;--vert:#27ae60;--orange:#ff6b35;--gris:#6c757d;--teal:#16a085;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Nunito',sans-serif;background:#f0f2f5;min-height:100dvh;}
+.guide{max-width:500px;margin:0 auto;padding:1rem;}
+.header{background:linear-gradient(135deg,var(--violet),var(--bleu));color:#fff;padding:1.5rem;border-radius:16px;text-align:center;margin-bottom:1.5rem;}
+.header h1{font-size:1.3rem;font-weight:900;}
+.header p{font-size:.8rem;opacity:.8;margin-top:.25rem;}
+.section{background:#fff;border-radius:14px;padding:1.25rem;margin-bottom:1rem;box-shadow:0 2px 12px rgba(0,0,0,.08);}
+.section-title{font-size:1rem;font-weight:900;color:var(--bleu);margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem;}
+.feature{display:flex;gap:.75rem;padding:.6rem 0;border-bottom:1px solid #f0f2f5;align-items:flex-start;}
+.feature:last-child{border-bottom:none;}
+.feature-ico{font-size:1.5rem;flex-shrink:0;width:40px;text-align:center;}
+.feature-text{flex:1;}
+.feature-name{font-size:.88rem;font-weight:800;color:var(--bleu);}
+.feature-desc{font-size:.78rem;color:var(--gris);line-height:1.4;margin-top:.15rem;}
+.nav-demo{display:flex;background:#f8f9fa;border-radius:10px;overflow:hidden;margin:1rem 0;border:2px solid #e0e0e0;}
+.nav-demo-item{flex:1;padding:.6rem .3rem;text-align:center;font-size:.65rem;font-weight:700;color:var(--gris);border-right:1px solid #e0e0e0;}
+.nav-demo-item:last-child{border-right:none;}
+.nav-demo-item.active{background:var(--violet);color:#fff;}
+.nav-demo-item .ico{font-size:1.1rem;display:block;margin-bottom:.15rem;}
+.tip{background:#fff3cd;border-left:4px solid var(--orange);border-radius:0 8px 8px 0;padding:.75rem;font-size:.78rem;color:#856404;margin-bottom:1rem;}
+.tip-green{background:#d4f4e2;border-left-color:var(--vert);color:#1a5632;}
+.screen-mock{background:#f8f9fa;border:2px solid #e0e0e0;border-radius:10px;padding:.75rem;margin:.75rem 0;font-size:.75rem;}
+.badge{display:inline-block;padding:.15rem .4rem;border-radius:4px;font-size:.7rem;font-weight:800;color:#fff;}
+.back-btn{display:block;text-align:center;margin-top:1rem;color:var(--violet);font-weight:700;font-size:.85rem;text-decoration:none;}
+
+/* Raccourci écran d'accueil */
+.install-block{background:#000;color:#fff;border-radius:10px;padding:.75rem;margin-bottom:.75rem;}
+.install-block h3{font-weight:900;font-size:.85rem;margin-bottom:.5rem;}
+.install-step{display:flex;align-items:flex-start;gap:.5rem;margin-bottom:.4rem;}
+.install-step:last-child{margin-bottom:0;}
+.install-num{background:#333;padding:.2rem .4rem;border-radius:4px;font-weight:900;font-size:.7rem;white-space:nowrap;flex-shrink:0;}
+.install-txt{font-size:.78rem;}
+.install-android{background:#3ddc84;color:#000;}
+.install-android .install-num{background:rgba(0,0,0,.2);}
+</style>
+</head>
+<body>
+
+<div class="guide">
+  <div class="header">
+    <div style="font-size:2.5rem;margin-bottom:.25rem">📱</div>
+    <h1>Guide 2 — Utilisation</h1>
+    <p>Découvre tout ce que tu peux faire avec inerWeb TT</p>
+  </div>
+
+  <!-- CONNEXION -->
+  <div class="section">
+    <div class="section-title">🔐 Se connecter</div>
+    <div class="step-desc" style="font-size:.82rem;color:var(--gris);line-height:1.5;margin-bottom:.5rem">
+      Quand tu ouvres l'appli, tu vois l'écran de connexion. Tape ton <strong>code badge</strong> (8 caractères) puis appuie sur <strong>"Connexion"</strong>.
+    </div>
+    <div class="screen-mock">
+      <div style="text-align:center">
+        <div style="font-size:2rem">🎓</div>
+        <div style="font-weight:900;color:var(--bleu);font-size:.9rem">iner<span style="color:var(--violet)">Web</span> TT</div>
+        <div style="font-size:.7rem;color:var(--gris);margin-bottom:.5rem">Mon espace stage</div>
+        <div style="background:#fff;border:2px solid #ddd;border-radius:8px;padding:.5rem;margin:.4rem auto;max-width:200px;text-align:center;font-weight:700;letter-spacing:3px;color:var(--bleu)">ABCD1234</div>
+        <div style="background:linear-gradient(135deg,var(--violet),var(--bleu));color:#fff;border-radius:8px;padding:.5rem;max-width:200px;margin:.4rem auto;font-weight:800;font-size:.8rem">Connexion</div>
+      </div>
+    </div>
+    <div class="tip">Tu n'as pas besoin de retaper ton code à chaque fois. L'appli te reconnait automatiquement.</div>
+  </div>
+
+  <!-- BARRE DE NAVIGATION -->
+  <div class="section">
+    <div class="section-title">📍 La barre de navigation</div>
+    <div style="font-size:.82rem;color:var(--gris);line-height:1.5;margin-bottom:.5rem">
+      En bas de l'écran, tu as <strong>5 onglets</strong>. C'est comme ça que tu navigues dans l'appli.
+    </div>
+    <div class="nav-demo">
+      <div class="nav-demo-item active"><span class="ico">🏠</span>Accueil</div>
+      <div class="nav-demo-item"><span class="ico">📝</span>Journal</div>
+      <div class="nav-demo-item"><span class="ico">📊</span>Compétences</div>
+      <div class="nav-demo-item"><span class="ico">📅</span>Calendrier</div>
+      <div class="nav-demo-item"><span class="ico">📁</span>Documents</div>
+    </div>
+  </div>
+
+  <!-- ACCUEIL -->
+  <div class="section">
+    <div class="section-title">🏠 Accueil</div>
+    <div class="feature">
+      <div class="feature-ico">📊</div>
+      <div class="feature-text">
+        <div class="feature-name">Ta progression</div>
+        <div class="feature-desc">3 anneaux de progression pour tes épreuves (E31, E32, E33). Plus tu valides de compétences, plus les anneaux se remplissent.</div>
+      </div>
+    </div>
+    <div class="feature">
+      <div class="feature-ico">📰</div>
+      <div class="feature-text">
+        <div class="feature-name">Dernière entrée du journal</div>
+        <div class="feature-desc">Un aperçu de ta dernière activité enregistrée. Clique dessus pour voir le journal complet.</div>
+      </div>
+    </div>
+    <div class="feature">
+      <div class="feature-ico">🔄</div>
+      <div class="feature-text">
+        <div class="feature-name">Synchronisation</div>
+        <div class="feature-desc">Le bouton 🔄 en haut à droite envoie tes données au serveur. Appuie dessus si tu vois des entrées "En attente".</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JOURNAL -->
+  <div class="section">
+    <div class="section-title">📝 Journal de stage</div>
+    <div style="font-size:.82rem;color:var(--gris);line-height:1.5;margin-bottom:.75rem">
+      C'est ici que tu racontes ta journée de stage. Tu peux ajouter du <strong>texte</strong> et des <strong>photos</strong>.
+    </div>
+    <div class="feature">
+      <div class="feature-ico">✏️</div>
+      <div class="feature-text">
+        <div class="feature-name">Ajouter une entrée</div>
+        <div class="feature-desc">Choisis le type (activité, observation, réflexion), écris ton texte et ajoute des photos si tu veux. Appuie sur "Publier".</div>
+      </div>
+    </div>
+    <div class="feature">
+      <div class="feature-ico">📷</div>
+      <div class="feature-text">
+        <div class="feature-name">Ajouter des photos</div>
+        <div class="feature-desc">Jusqu'à <strong>10 photos par jour</strong>. Tu peux prendre une photo directement ou choisir dans ta galerie. <a href="guide-photos.html" style="color:var(--violet);font-weight:700">Voir le guide photos</a></div>
+      </div>
+    </div>
+    <div class="feature">
+      <div class="feature-ico">🏷️</div>
+      <div class="feature-text">
+        <div class="feature-name">Types d'entrées</div>
+        <div class="feature-desc">
+          <span class="badge" style="background:var(--bleu)">Activité</span> = ce que tu as fait<br>
+          <span class="badge" style="background:var(--teal)">Observation</span> = ce que tu as remarqué<br>
+          <span class="badge" style="background:var(--violet)">Réflexion</span> = ce que tu as appris
+        </div>
+      </div>
+    </div>
+    <div class="tip tip-green"><strong>Conseil :</strong> Écris tous les jours, même 2-3 phrases. C'est plus facile que de tout rattraper à la fin du stage !</div>
+  </div>
+
+  <!-- COMPÉTENCES -->
+  <div class="section">
+    <div class="section-title">📊 Compétences</div>
+    <div style="font-size:.82rem;color:var(--gris);line-height:1.5;margin-bottom:.75rem">
+      Tu vois ici toutes tes compétences classées par épreuve. Ton prof les valide au fur et à mesure.
+    </div>
+    <div class="feature">
+      <div class="feature-ico">🟢</div>
+      <div class="feature-text">
+        <div class="feature-name">Niveaux de validation</div>
+        <div class="feature-desc">
+          <span class="badge" style="background:#95a5a6">NE</span> Non évaluée —
+          <span class="badge" style="background:var(--orange)">NA</span> Non acquise<br>
+          <span class="badge" style="background:#f1c40f;color:#333">EC</span> En cours —
+          <span class="badge" style="background:var(--vert)">M</span> Maîtrisée
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOCUMENTS -->
+  <div class="section">
+    <div class="section-title">📁 Documents</div>
+    <div class="feature">
+      <div class="feature-ico">📄</div>
+      <div class="feature-text">
+        <div class="feature-name">Déposer un document</div>
+        <div class="feature-desc">Tu peux déposer tes conventions de stage, rapports, etc. Formats acceptés : PDF, Word, Excel, images.</div>
+      </div>
+    </div>
+    <div class="feature">
+      <div class="feature-ico">📥</div>
+      <div class="feature-text">
+        <div class="feature-name">Documents du prof</div>
+        <div class="feature-desc">Ton prof peut aussi te partager des documents (grilles d'évaluation, fiches...).</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RACCOURCI ÉCRAN D'ACCUEIL -->
+  <div class="section" style="border-top:4px solid var(--orange)">
+    <div class="section-title">📲 Raccourci sur ton téléphone</div>
+    <div style="font-size:.82rem;color:var(--gris);line-height:1.5;margin-bottom:.75rem">
+      Ajoute inerWeb TT sur ton écran d'accueil pour y accéder en <strong>un seul clic</strong>, comme une vraie appli !
+    </div>
+
+    <div class="install-block">
+      <h3>🍎 Sur iPhone (Safari)</h3>
+      <div class="install-step">
+        <span class="install-num">1</span>
+        <span class="install-txt">Ouvre ton lien dans <strong>Safari</strong> (pas Chrome !)</span>
+      </div>
+      <div class="install-step">
+        <span class="install-num">2</span>
+        <span class="install-txt">Appuie sur le bouton <strong>partage</strong> en bas <span style="background:#333;padding:.1rem .3rem;border-radius:4px">⬆️</span> (le carré avec une flèche vers le haut)</span>
+      </div>
+      <div class="install-step">
+        <span class="install-num">3</span>
+        <span class="install-txt">Fais défiler la liste vers le bas</span>
+      </div>
+      <div class="install-step">
+        <span class="install-num">4</span>
+        <span class="install-txt">Appuie sur <strong>"Sur l'écran d'accueil"</strong> <span style="background:#333;padding:.1rem .3rem;border-radius:4px">➕</span></span>
+      </div>
+      <div class="install-step">
+        <span class="install-num">5</span>
+        <span class="install-txt">Appuie sur <strong>"Ajouter"</strong> en haut à droite</span>
+      </div>
+    </div>
+
+    <div class="install-block install-android">
+      <h3>🤖 Sur Android (Chrome)</h3>
+      <div class="install-step">
+        <span class="install-num">1</span>
+        <span class="install-txt">Ouvre ton lien dans <strong>Chrome</strong></span>
+      </div>
+      <div class="install-step">
+        <span class="install-num">2</span>
+        <span class="install-txt">Appuie sur les <strong>3 points</strong> en haut à droite <span style="background:rgba(0,0,0,.2);padding:.1rem .3rem;border-radius:4px">⋮</span></span>
+      </div>
+      <div class="install-step">
+        <span class="install-num">3</span>
+        <span class="install-txt">Appuie sur <strong>"Ajouter à l'écran d'accueil"</strong></span>
+      </div>
+      <div class="install-step">
+        <span class="install-num">4</span>
+        <span class="install-txt">Appuie sur <strong>"Ajouter"</strong></span>
+      </div>
+    </div>
+
+    <div style="text-align:center;font-size:.78rem;color:var(--gris)">
+      L'icône <strong>INERWEB</strong> apparaît sur ton écran d'accueil !
+    </div>
+  </div>
+
+  <!-- DÉCONNEXION -->
+  <div class="section">
+    <div class="section-title">🚪 Se déconnecter</div>
+    <div style="font-size:.82rem;color:var(--gris);line-height:1.5">
+      Appuie sur le bouton <strong>🚪</strong> en haut à droite pour te déconnecter. Tes données locales seront effacées. Tu pourras te reconnecter avec ton code.
+    </div>
+  </div>
+
+  <div style="display:flex;gap:.5rem;margin-top:1rem">
+    <a href="guide-inscription.html" style="flex:1;background:var(--orange);color:#fff;padding:.6rem;border-radius:8px;text-decoration:none;text-align:center;font-size:.8rem;font-weight:700">Guide 1 — Inscription</a>
+    <a href="guide-photos.html" style="flex:1;background:var(--vert);color:#fff;padding:.6rem;border-radius:8px;text-decoration:none;text-align:center;font-size:.8rem;font-weight:700">Guide 3 — Photos</a>
+  </div>
+  <a href="index.html" class="back-btn">Retour à l'accueil</a>
+</div>
+
+</body>
+</html>

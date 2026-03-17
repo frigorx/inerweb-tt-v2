@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><script>
+(function(){if(sessionStorage.getItem('iw_purged'))return;if('serviceWorker' in navigator){caches.keys().then(function(k){k.forEach(function(c){caches.delete(c)})});navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(sw){sw.unregister()})});}sessionStorage.setItem('iw_purged','1');setTimeout(function(){location.reload(true)},500);})();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guide Photos — inerWeb TT</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bleu:#1b3a63;--violet:#8e44ad;--vert:#27ae60;--orange:#ff6b35;--gris:#6c757d;--rouge:#e74c3c;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Nunito',sans-serif;background:#f0f2f5;min-height:100dvh;}
+.guide{max-width:500px;margin:0 auto;padding:1rem;}
+.header{background:linear-gradient(135deg,var(--vert),#16a085);color:#fff;padding:1.5rem;border-radius:16px;text-align:center;margin-bottom:1.5rem;}
+.header h1{font-size:1.3rem;font-weight:900;}
+.header p{font-size:.8rem;opacity:.8;margin-top:.25rem;}
+.section{background:#fff;border-radius:14px;padding:1.25rem;margin-bottom:1rem;box-shadow:0 2px 12px rgba(0,0,0,.08);}
+.section-title{font-size:1rem;font-weight:900;color:var(--bleu);margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem;}
+.step{display:flex;gap:.75rem;padding:.75rem 0;border-bottom:1px solid #f0f2f5;align-items:flex-start;}
+.step:last-child{border-bottom:none;}
+.step-num-s{background:var(--vert);color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.8rem;flex-shrink:0;}
+.step-content{flex:1;}
+.step-name{font-size:.88rem;font-weight:800;color:var(--bleu);}
+.step-info{font-size:.78rem;color:var(--gris);line-height:1.4;margin-top:.15rem;}
+.screen-mock{background:#f8f9fa;border:2px solid #e0e0e0;border-radius:10px;padding:.75rem;margin:.75rem 0;font-size:.75rem;}
+.tip{background:#fff3cd;border-left:4px solid var(--orange);border-radius:0 8px 8px 0;padding:.75rem;font-size:.78rem;color:#856404;margin-bottom:1rem;}
+.tip-red{background:#fde8e6;border-left-color:var(--rouge);color:#922b21;}
+.tip-green{background:#d4f4e2;border-left-color:var(--vert);color:#1a5632;}
+.rules{list-style:none;padding:0;margin:.5rem 0;}
+.rules li{padding:.3rem 0;font-size:.8rem;color:var(--gris);}
+.rules li::before{margin-right:.4rem;}
+.btn-demo{display:inline-flex;align-items:center;gap:.4rem;padding:.5rem .8rem;border-radius:8px;font-size:.8rem;font-weight:700;border:none;color:#fff;cursor:default;}
+.back-btn{display:block;text-align:center;margin-top:1rem;color:var(--violet);font-weight:700;font-size:.85rem;text-decoration:none;}
+</style>
+</head>
+<body>
+
+<div class="guide">
+  <div class="header">
+    <div style="font-size:2.5rem;margin-bottom:.25rem">📸</div>
+    <h1>Guide 3 — Photos</h1>
+    <p>Comment prendre, ajouter et envoyer tes photos de stage</p>
+  </div>
+
+  <!-- POURQUOI -->
+  <div class="section">
+    <div class="section-title">💡 Pourquoi prendre des photos ?</div>
+    <ul class="rules">
+      <li>✅ Montrer ce que tu fais en stage (installations, chantiers, matériel)</li>
+      <li>✅ Illustrer ton journal de stage</li>
+      <li>✅ Prouver tes compétences pour le CCF</li>
+      <li>✅ Ton prof peut voir tes photos depuis son espace</li>
+    </ul>
+  </div>
+
+  <!-- COMMENT AJOUTER -->
+  <div class="section">
+    <div class="section-title">📷 Ajouter des photos étape par étape</div>
+
+    <div class="step">
+      <div class="step-num-s">1</div>
+      <div class="step-content">
+        <div class="step-name">Va dans l'onglet Journal</div>
+        <div class="step-info">Appuie sur <strong>📝 Journal</strong> dans la barre en bas de l'écran.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num-s">2</div>
+      <div class="step-content">
+        <div class="step-name">Appuie sur "Ajouter une entrée"</div>
+        <div class="step-info">Tu verras la zone de texte et les boutons pour les photos.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num-s">3</div>
+      <div class="step-content">
+        <div class="step-name">Choisis comment ajouter la photo</div>
+        <div class="step-info">Tu as <strong>2 boutons</strong> :</div>
+        <div style="display:flex;gap:.5rem;margin-top:.5rem;flex-wrap:wrap">
+          <span class="btn-demo" style="background:var(--bleu)">📷 Appareil photo</span>
+          <span class="btn-demo" style="background:var(--gris)">🖼️ Galerie</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-mock">
+      <div style="font-weight:800;color:var(--bleu);font-size:.8rem;margin-bottom:.5rem">📷 Appareil photo</div>
+      <div style="font-size:.78rem;color:var(--gris);line-height:1.5">
+        Ouvre directement l'appareil photo de ton téléphone. Tu prends la photo et elle s'ajoute automatiquement.
+      </div>
+      <div style="margin-top:.5rem;font-weight:800;color:var(--bleu);font-size:.8rem;margin-bottom:.5rem">🖼️ Galerie</div>
+      <div style="font-size:.78rem;color:var(--gris);line-height:1.5">
+        Ouvre ta galerie. Tu peux choisir <strong>plusieurs photos d'un coup</strong> (maintiens appuyé pour sélectionner).
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num-s">4</div>
+      <div class="step-content">
+        <div class="step-name">Vérifie tes photos</div>
+        <div class="step-info">Les miniatures apparaissent sous la zone de texte. Tu peux les supprimer en appuyant sur la croix <strong>X</strong>.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num-s">5</div>
+      <div class="step-content">
+        <div class="step-name">Écris un texte et publie</div>
+        <div class="step-info">Décris ce que montre la photo (ex: "Brasure cuivre sur circuit frigo"). Puis appuie sur <strong>"Publier"</strong>.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num-s">6</div>
+      <div class="step-content">
+        <div class="step-name">Synchronise</div>
+        <div class="step-info">Appuie sur le bouton <strong>🔄</strong> en haut à droite pour envoyer tes photos au serveur. Si tu vois <span style="background:var(--orange);color:#fff;padding:.1rem .3rem;border-radius:4px;font-size:.7rem;font-weight:800">En attente</span>, c'est que la photo n'est pas encore envoyée.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BONNES PRATIQUES -->
+  <div class="section">
+    <div class="section-title">✅ Quoi photographier</div>
+    <ul class="rules">
+      <li>✅ Les installations sur lesquelles tu travailles (climatiseurs, groupes froids...)</li>
+      <li>✅ Le matériel que tu utilises (manomètres, détecteur de fuites, poste à braser...)</li>
+      <li>✅ Tes brasures, tes raccordements, ton travail fini</li>
+      <li>✅ Les relevés de pression (manomètres, afficheurs)</li>
+      <li>✅ Les tableaux électriques, les schémas</li>
+      <li>✅ Le chantier avant/après</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="section-title">🚫 Ce qu'il ne faut PAS photographier</div>
+    <ul class="rules">
+      <li>❌ Les personnes (collègues, clients) sans leur accord</li>
+      <li>❌ Les documents confidentiels de l'entreprise</li>
+      <li>❌ Les plaques d'adresse des clients</li>
+      <li>❌ Les selfies ou photos personnelles</li>
+    </ul>
+  </div>
+
+  <!-- LIMITES -->
+  <div class="section">
+    <div class="section-title">📏 Limites à connaître</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.5rem">
+      <div style="background:var(--bleu);color:#fff;padding:.6rem;border-radius:8px;text-align:center">
+        <div style="font-size:1.5rem;font-weight:900">10</div>
+        <div style="font-size:.7rem;opacity:.8">photos par jour</div>
+      </div>
+      <div style="background:var(--violet);color:#fff;padding:.6rem;border-radius:8px;text-align:center">
+        <div style="font-size:1.5rem;font-weight:900">Auto</div>
+        <div style="font-size:.7rem;opacity:.8">compression JPEG</div>
+      </div>
+    </div>
+    <div style="font-size:.78rem;color:var(--gris);line-height:1.5">
+      Les photos sont automatiquement compressées pour ne pas prendre trop de place. La qualité reste correcte pour voir les détails.
+    </div>
+  </div>
+
+  <!-- PROBLÈMES COURANTS -->
+  <div class="section" style="border-top:4px solid var(--rouge)">
+    <div class="section-title">🔧 Problèmes courants</div>
+
+    <div class="step">
+      <div style="font-size:1.3rem;flex-shrink:0;width:28px;text-align:center">❓</div>
+      <div class="step-content">
+        <div class="step-name">"En attente" qui ne part pas</div>
+        <div class="step-info">Vérifie que tu as <strong>du réseau</strong> (Wi-Fi ou 4G). Appuie sur <strong>🔄</strong> pour relancer la synchronisation.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div style="font-size:1.3rem;flex-shrink:0;width:28px;text-align:center">❓</div>
+      <div class="step-content">
+        <div class="step-name">L'appareil photo ne s'ouvre pas</div>
+        <div class="step-info">Ton navigateur te demande peut-être l'autorisation. Appuie sur <strong>"Autoriser"</strong> quand le message apparaît. Sur iPhone, utilise <strong>Safari</strong> (pas Chrome).</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div style="font-size:1.3rem;flex-shrink:0;width:28px;text-align:center">❓</div>
+      <div class="step-content">
+        <div class="step-name">"Limite de 10 photos atteinte"</div>
+        <div class="step-info">Tu as atteint la limite du jour. Tu pourras ajouter de nouvelles photos demain.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div style="font-size:1.3rem;flex-shrink:0;width:28px;text-align:center">❓</div>
+      <div class="step-content">
+        <div class="step-name">Photo floue ou trop sombre</div>
+        <div class="step-info">Assure-toi d'avoir <strong>assez de lumière</strong>. Tiens ton téléphone <strong>stable</strong>. Tu peux supprimer la photo et la reprendre.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div style="font-size:1.3rem;flex-shrink:0;width:28px;text-align:center">❓</div>
+      <div class="step-content">
+        <div class="step-name">iPhone : la photo ne se charge pas</div>
+        <div class="step-info">Les photos iPhone (HEIC) sont automatiquement converties. Si ça bloque, utilise le bouton <strong>📷 Appareil photo</strong> au lieu de la galerie.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RÉSUMÉ -->
+  <div class="tip tip-green">
+    <strong>En résumé :</strong> Journal → Ajouter une entrée → 📷 Photo → Texte → Publier → 🔄 Synchroniser. C'est tout !
+  </div>
+
+  <div style="display:flex;gap:.5rem;margin-top:1rem">
+    <a href="guide-inscription.html" style="flex:1;background:var(--orange);color:#fff;padding:.6rem;border-radius:8px;text-decoration:none;text-align:center;font-size:.8rem;font-weight:700">Guide 1 — Inscription</a>
+    <a href="guide-utilisation.html" style="flex:1;background:var(--violet);color:#fff;padding:.6rem;border-radius:8px;text-decoration:none;text-align:center;font-size:.8rem;font-weight:700">Guide 2 — Utilisation</a>
+  </div>
+  <a href="index.html" class="back-btn">Retour à l'accueil</a>
+</div>
+
+</body>
+</html>

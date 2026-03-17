@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><script>
+(function(){if(sessionStorage.getItem('iw_purged'))return;if('serviceWorker' in navigator){caches.keys().then(function(k){k.forEach(function(c){caches.delete(c)})});navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(sw){sw.unregister()})});}sessionStorage.setItem('iw_purged','1');setTimeout(function(){location.reload(true)},500);})();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guide Inscription — inerWeb TT</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bleu:#1b3a63;--violet:#8e44ad;--vert:#27ae60;--orange:#ff6b35;--gris:#6c757d;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Nunito',sans-serif;background:#f0f2f5;min-height:100dvh;}
+.guide{max-width:500px;margin:0 auto;padding:1rem;}
+.header{background:linear-gradient(135deg,var(--orange),#e74c3c);color:#fff;padding:1.5rem;border-radius:16px;text-align:center;margin-bottom:1.5rem;}
+.header h1{font-size:1.3rem;font-weight:900;}
+.header p{font-size:.8rem;opacity:.8;margin-top:.25rem;}
+.step-card{background:#fff;border-radius:14px;padding:1.25rem;margin-bottom:1rem;box-shadow:0 2px 12px rgba(0,0,0,.08);position:relative;overflow:hidden;}
+.step-num{position:absolute;top:0;left:0;background:var(--orange);color:#fff;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1rem;border-radius:0 0 14px 0;}
+.step-ico{font-size:2.5rem;text-align:center;margin:1rem 0 .5rem;}
+.step-title{font-size:1rem;font-weight:800;color:var(--bleu);text-align:center;margin-bottom:.5rem;}
+.step-desc{font-size:.82rem;color:var(--gris);text-align:center;line-height:1.5;}
+.step-screen{background:#f8f9fa;border:2px solid #e0e0e0;border-radius:10px;margin:1rem 0;padding:.75rem;font-size:.75rem;}
+.step-screen .mock-input{background:#fff;border:2px solid #ddd;border-radius:8px;padding:.5rem;margin:.4rem 0;color:#999;font-size:.8rem;}
+.step-screen .mock-btn{background:linear-gradient(135deg,var(--violet),var(--bleu));color:#fff;border:none;border-radius:8px;padding:.6rem;text-align:center;font-weight:800;font-size:.82rem;margin-top:.4rem;}
+.step-screen .mock-list{background:#fff;border:2px solid var(--violet);border-radius:8px;padding:.4rem .6rem;margin:.3rem 0;}
+.step-screen .mock-list .item{padding:.3rem 0;border-bottom:1px solid #eee;font-weight:700;color:var(--bleu);}
+.step-screen .mock-list .item:last-child{border:none;}
+.arrow{text-align:center;font-size:1.5rem;color:var(--orange);margin:.5rem 0;}
+.tip{background:#fff3cd;border-left:4px solid var(--orange);border-radius:0 8px 8px 0;padding:.75rem;font-size:.78rem;color:#856404;margin-bottom:1rem;}
+.final{background:linear-gradient(135deg,var(--vert),#16a085);color:#fff;border-radius:14px;padding:1.5rem;text-align:center;margin-top:1rem;}
+.final h2{font-size:1.1rem;margin-bottom:.5rem;}
+.final p{font-size:.82rem;opacity:.9;}
+.back-btn{display:block;text-align:center;margin-top:1rem;color:var(--violet);font-weight:700;font-size:.85rem;text-decoration:none;}
+</style>
+</head>
+<body>
+
+<div class="guide">
+  <div class="header">
+    <div style="font-size:2.5rem;margin-bottom:.25rem">📝</div>
+    <h1>Guide 1 — Inscription</h1>
+    <p>Comment s'inscrire et recevoir son code d'accès</p>
+  </div>
+
+  <!-- ÉTAPE 1 -->
+  <div class="step-card">
+    <div class="step-num">1</div>
+    <div class="step-ico">🔗</div>
+    <div class="step-title">Ton prof t'envoie un lien</div>
+    <div class="step-desc">Tu reçois un message <strong>WhatsApp</strong> ou <strong>SMS</strong> avec un lien d'inscription.</div>
+    <div class="step-screen">
+      <div style="background:#25D366;color:#fff;padding:.5rem .6rem;border-radius:8px;font-size:.78rem">
+        <strong>Prof :</strong> Bonjour ! Inscris-toi ici :<br>
+        <span style="text-decoration:underline;word-break:break-all">https://frigorx.github.io/tt-ia/inscription.html</span>
+      </div>
+    </div>
+    <div class="step-desc"><strong>Clique sur le lien</strong> dans le message</div>
+  </div>
+
+  <div class="arrow">⬇️</div>
+
+  <!-- ÉTAPE 2 -->
+  <div class="step-card">
+    <div class="step-num">2</div>
+    <div class="step-ico">🔍</div>
+    <div class="step-title">Cherche ton nom</div>
+    <div class="step-desc">La page s'ouvre. Tape les <strong>3 premières lettres</strong> de ton nom de famille.</div>
+    <div class="step-screen">
+      <div style="font-weight:800;color:var(--bleu);font-size:.8rem;margin-bottom:.3rem">🔍 Tapez votre nom</div>
+      <div class="mock-input">MAR<span style="animation:blink 1s infinite">|</span></div>
+      <div class="mock-list">
+        <div class="item">MARTIN Lucas — CAP IFCA 2</div>
+      </div>
+      <div style="font-size:.7rem;color:var(--gris);text-align:center;margin-top:.3rem">1 résultat</div>
+    </div>
+    <div class="step-desc"><strong>Clique sur ton nom</strong> quand il apparaît</div>
+  </div>
+
+  <div class="tip">Si ton nom n'apparaît pas, vérifie l'orthographe. Si ça ne marche toujours pas, préviens ton prof.</div>
+
+  <div class="arrow">⬇️</div>
+
+  <!-- ÉTAPE 3 -->
+  <div class="step-card">
+    <div class="step-num">3</div>
+    <div class="step-ico">📱</div>
+    <div class="step-title">Entre ton numéro</div>
+    <div class="step-desc">Renseigne ton <strong>numéro de téléphone</strong> (obligatoire).<br>L'email est facultatif.</div>
+    <div class="step-screen">
+      <div style="background:var(--bleu);color:#fff;padding:.4rem;border-radius:8px 8px 0 0;font-weight:800;font-size:.8rem">MARTIN Lucas — CAP IFCA 2</div>
+      <div style="padding:.5rem">
+        <div style="font-size:.72rem;font-weight:700;color:var(--bleu);margin-bottom:.2rem">Téléphone *</div>
+        <div class="mock-input">06 12 34 56 78</div>
+        <div style="font-size:.72rem;font-weight:700;color:var(--bleu);margin-bottom:.2rem;margin-top:.3rem">Email (facultatif)</div>
+        <div class="mock-input" style="color:#ccc">prenom.nom@email.fr</div>
+        <div class="mock-btn" style="background:var(--vert)">Valider mon inscription</div>
+      </div>
+    </div>
+    <div class="step-desc">Appuie sur <strong>"Valider mon inscription"</strong></div>
+  </div>
+
+  <div class="arrow">⬇️</div>
+
+  <!-- ÉTAPE 4 -->
+  <div class="step-card">
+    <div class="step-num">4</div>
+    <div class="step-ico">⏳</div>
+    <div class="step-title">Attends ton code</div>
+    <div class="step-desc">Tu vois un écran de confirmation. <strong>C'est fini pour toi !</strong><br>Maintenant, attends que ton prof t'envoie ton code personnel.</div>
+    <div class="step-screen">
+      <div style="text-align:center;padding:.75rem">
+        <div style="font-size:2.5rem">✅</div>
+        <div style="font-weight:900;color:var(--vert);font-size:.95rem;margin-top:.25rem">Inscription enregistrée !</div>
+        <div style="font-size:.75rem;color:var(--gris);margin-top:.4rem">Votre enseignant va vous envoyer<br>votre code d'accès personnel.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tip">
+    <strong>Combien de temps ?</strong> Ton prof vérifie les inscriptions et t'envoie le code par WhatsApp ou SMS. Ça peut prendre de quelques minutes à 24h.
+  </div>
+
+  <div class="arrow">⬇️</div>
+
+  <!-- ÉTAPE 5 -->
+  <div class="step-card">
+    <div class="step-num">5</div>
+    <div class="step-ico">🔑</div>
+    <div class="step-title">Tu reçois ton code !</div>
+    <div class="step-desc">Ton prof t'envoie un message avec <strong>ton code</strong> et un <strong>lien direct</strong>.</div>
+    <div class="step-screen">
+      <div style="background:#25D366;color:#fff;padding:.5rem .6rem;border-radius:8px;font-size:.78rem;line-height:1.6">
+        <strong>Prof :</strong> Bonjour Lucas !<br><br>
+        Ton code inerWeb : <strong style="font-size:1rem;letter-spacing:2px;background:rgba(255,255,255,.2);padding:.1rem .4rem;border-radius:4px">ABCD1234</strong><br><br>
+        Clique ici pour te connecter :<br>
+        <span style="text-decoration:underline;font-size:.7rem;word-break:break-all">https://frigorx.github.io/tt-ia/inerweb_eleve.html?token=ABCD1234</span>
+      </div>
+    </div>
+    <div class="step-desc"><strong>Clique sur le lien</strong> pour ouvrir ton espace directement.<br>Ou bien tape le code sur la page de connexion.</div>
+  </div>
+
+  <div class="final">
+    <div style="font-size:2rem;margin-bottom:.25rem">🎉</div>
+    <h2>Bravo, tu es inscrit !</h2>
+    <p>Consulte le <a href="guide-utilisation.html" style="color:#fff;text-decoration:underline;font-weight:900">Guide 2 — Utilisation</a> pour découvrir ton espace.</p>
+  </div>
+
+  <div style="display:flex;gap:.5rem;margin-top:1rem">
+    <a href="guide-utilisation.html" class="back-btn" style="flex:1;background:var(--violet);color:#fff;padding:.6rem;border-radius:8px;text-decoration:none;text-align:center;font-size:.8rem">Guide 2 — Utilisation</a>
+    <a href="guide-photos.html" class="back-btn" style="flex:1;background:var(--orange);color:#fff;padding:.6rem;border-radius:8px;text-decoration:none;text-align:center;font-size:.8rem">Guide 3 — Photos</a>
+  </div>
+  <a href="index.html" class="back-btn">Retour à l'accueil</a>
+</div>
+
+<style>@keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}</style>
+</body>
+</html>

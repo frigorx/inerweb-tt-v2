@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><script>
+(function(){if(sessionStorage.getItem('iw_purged'))return;if('serviceWorker' in navigator){caches.keys().then(function(k){k.forEach(function(c){caches.delete(c)})});navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(sw){sw.unregister()})});}sessionStorage.setItem('iw_purged','1');setTimeout(function(){location.reload(true)},500);})();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Assistant de premier lancement — INERWEB PROG+ Filière Énergétique">
+<title>INERWEB — Assistant de configuration</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{
+  --bleu:#1b3a63;--bleu2:#2d5a8c;--bleu3:#e8f0f8;
+  --orange:#ff6b35;--vert:#27ae60;--vert2:#d4f4e2;
+  --rouge:#e74c3c;--rouge2:#fde8e6;
+  --teal:#16a085;--teal2:#d0f0ea;
+  --violet:#8e44ad;--violet2:#f3e5f5;
+  --gris:#6c757d;--gris2:#f0f2f5;--gris3:#dee2e6;
+  --texte:#1a2332;
+  --r:16px;--r2:10px;
+  --ombre:0 8px 32px rgba(27,58,99,.18);
+  --t:all .3s cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Nunito',sans-serif;color:var(--texte);background:var(--gris2);min-height:100dvh;}
+
+/* ── Header ── */
+.setup-header{
+  background:linear-gradient(135deg,var(--bleu),var(--bleu2));
+  color:#fff;padding:1rem 1.5rem;
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 2px 12px rgba(0,0,0,.2);position:sticky;top:0;z-index:100;
+}
+.setup-header h1{font-size:1.1rem;font-weight:900;display:flex;align-items:center;gap:.5rem;}
+.setup-header a{color:#fff;text-decoration:none;font-size:.8rem;opacity:.8;}
+.setup-header a:hover{opacity:1;}
+
+/* ── Stepper ── */
+.stepper{
+  display:flex;justify-content:center;gap:0;
+  padding:1.25rem 1rem;background:#fff;
+  border-bottom:2px solid var(--gris3);
+  overflow-x:auto;
+}
+.step-dot{
+  display:flex;flex-direction:column;align-items:center;gap:.3rem;
+  min-width:80px;cursor:pointer;opacity:.4;transition:var(--t);
+  position:relative;
+}
+.step-dot.active{opacity:1;}
+.step-dot.done{opacity:.7;}
+.step-dot .dot{
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.85rem;font-weight:900;color:#fff;
+  background:var(--gris);transition:var(--t);
+}
+.step-dot.active .dot{background:var(--orange);transform:scale(1.15);}
+.step-dot.done .dot{background:var(--vert);}
+.step-dot .dot-label{font-size:.65rem;font-weight:700;color:var(--gris);text-align:center;}
+.step-dot.active .dot-label{color:var(--bleu);font-weight:800;}
+.step-line{width:32px;height:2px;background:var(--gris3);align-self:center;margin-top:-10px;}
+
+/* ── Container principal ── */
+.setup-body{max-width:700px;margin:0 auto;padding:1.5rem 1rem 4rem;}
+
+/* ── Panneaux d'étape ── */
+.step-panel{display:none;animation:fadeIn .3s ease-out;}
+.step-panel.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Carte ── */
+.card{background:#fff;border-radius:var(--r);padding:1.5rem;box-shadow:var(--ombre);margin-bottom:1.25rem;}
+.card-icon{font-size:2.5rem;text-align:center;margin-bottom:.75rem;}
+.card h2{font-size:1.2rem;font-weight:900;color:var(--bleu);text-align:center;margin-bottom:.5rem;}
+.card p{font-size:.85rem;color:var(--gris);text-align:center;line-height:1.5;margin-bottom:1rem;}
+
+/* ── Formulaire ── */
+.fr{margin-bottom:.75rem;}
+.fr label{display:block;font-size:.78rem;font-weight:700;color:var(--bleu);margin-bottom:.3rem;}
+.fr input,.fr select,.fr textarea{
+  width:100%;padding:.65rem .85rem;border:2px solid var(--gris3);
+  border-radius:var(--r2);font-size:.85rem;font-family:inherit;
+  transition:var(--t);background:#fff;
+}
+.fr input:focus,.fr select:focus,.fr textarea:focus{
+  outline:none;border-color:var(--bleu2);box-shadow:0 0 0 3px rgba(45,90,140,.1);
+}
+.fr .hint{font-size:.7rem;color:var(--gris);margin-top:.25rem;}
+.fr textarea{resize:vertical;min-height:120px;font-family:'JetBrains Mono',monospace;font-size:.75rem;}
+
+/* ── Boutons ── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.4rem;
+  padding:.7rem 1.5rem;border:none;border-radius:var(--r2);
+  font-size:.85rem;font-weight:700;font-family:inherit;cursor:pointer;
+  transition:var(--t);
+}
+.btn-orange{background:var(--orange);color:#fff;}
+.btn-orange:hover{background:#e55a28;transform:translateY(-1px);}
+.btn-bleu{background:var(--bleu);color:#fff;}
+.btn-bleu:hover{background:var(--bleu2);}
+.btn-vert{background:var(--vert);color:#fff;}
+.btn-vert:hover{background:#219a52;}
+.btn-ghost{background:transparent;color:var(--bleu2);border:2px solid var(--gris3);}
+.btn-ghost:hover{background:var(--bleu3);border-color:var(--bleu2);}
+.btn-full{width:100%;}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important;}
+
+.btn-row{display:flex;gap:.75rem;margin-top:1rem;}
+.btn-row .btn{flex:1;}
+
+/* ── Status ── */
+.status{
+  display:flex;align-items:center;gap:.5rem;
+  padding:.6rem .85rem;border-radius:var(--r2);
+  font-size:.8rem;font-weight:700;margin-bottom:.75rem;
+}
+.status-ok{background:var(--vert2);color:#1a7a3a;}
+.status-err{background:var(--rouge2);color:#c0392b;}
+.status-warn{background:#fef9e7;color:#7d6608;}
+.status-info{background:var(--bleu3);color:var(--bleu);}
+
+/* ── Tableau élèves ── */
+.eleve-table{width:100%;border-collapse:collapse;font-size:.78rem;margin:.75rem 0;}
+.eleve-table th{background:var(--bleu);color:#fff;padding:.5rem;text-align:left;font-weight:700;}
+.eleve-table td{padding:.45rem .5rem;border-bottom:1px solid var(--gris3);}
+.eleve-table tr:hover td{background:var(--bleu3);}
+.eleve-table .token{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--violet);font-weight:700;}
+
+/* ── Apercu QR ── */
+.qr-preview{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;margin:1rem 0;}
+.qr-card{background:#fff;border:2px solid var(--gris3);border-radius:var(--r2);padding:.75rem;text-align:center;}
+.qr-card h4{font-size:.75rem;font-weight:800;color:var(--bleu);margin-bottom:.4rem;}
+.qr-card .qr-img{margin:0 auto;}
+.qr-card p{font-size:.65rem;color:var(--gris);margin-top:.3rem;}
+
+/* ── Badge ── */
+.badge-count{
+  display:inline-flex;align-items:center;gap:.3rem;
+  background:var(--orange);color:#fff;
+  font-size:.72rem;font-weight:800;
+  padding:.2rem .6rem;border-radius:20px;
+}
+
+/* ── Animation check ── */
+@keyframes checkPop{
+  0%{transform:scale(0)}
+  60%{transform:scale(1.2)}
+  100%{transform:scale(1)}
+}
+.check-anim{animation:checkPop .4s ease-out;}
+
+/* ── Responsive ── */
+@media(max-width:500px){
+  .stepper{padding:.75rem .5rem;}
+  .step-dot{min-width:60px;}
+  .step-dot .dot{width:30px;height:30px;font-size:.75rem;}
+  .step-dot .dot-label{font-size:.55rem;}
+  .setup-body{padding:1rem .75rem 3rem;}
+  .card{padding:1rem;}
+  .btn-row{flex-direction:column;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<div class="setup-header">
+  <h1>❄️ INERWEB — Configuration</h1>
+  <a href="index.html">← Retour au portail</a>
+</div>
+
+<!-- ═══ STEPPER ═══ -->
+<div class="stepper" id="stepper">
+  <div class="step-dot active" data-step="0">
+    <div class="dot">1</div>
+    <div class="dot-label">Bienvenue</div>
+  </div>
+  <div class="step-line"></div>
+  <div class="step-dot" data-step="1">
+    <div class="dot">2</div>
+    <div class="dot-label">Connexion</div>
+  </div>
+  <div class="step-line"></div>
+  <div class="step-dot" data-step="2">
+    <div class="dot">3</div>
+    <div class="dot-label">Élèves</div>
+  </div>
+  <div class="step-line"></div>
+  <div class="step-dot" data-step="3">
+    <div class="dot">4</div>
+    <div class="dot-label">Tokens</div>
+  </div>
+  <div class="step-line"></div>
+  <div class="step-dot" data-step="4">
+    <div class="dot">5</div>
+    <div class="dot-label">QR Codes</div>
+  </div>
+  <div class="step-line"></div>
+  <div class="step-dot" data-step="5">
+    <div class="dot">✓</div>
+    <div class="dot-label">Terminé</div>
+  </div>
+</div>
+
+<!-- ═══ CONTENU ═══ -->
+<div class="setup-body">
+
+  <!-- ═══ ÉTAPE 0 — Bienvenue ═══ -->
+  <div class="step-panel active" id="panel-0">
+    <div class="card">
+      <div class="card-icon">🚀</div>
+      <h2>Bienvenue dans l'assistant de configuration</h2>
+      <p>
+        Cet assistant va vous guider pour configurer INERWEB en quelques minutes.<br>
+        À la fin, vos élèves et tuteurs auront chacun leur QR code d'accès.
+      </p>
+
+      <div style="background:var(--bleu3);border-radius:var(--r2);padding:1rem;margin:1rem 0;text-align:left;">
+        <div style="font-weight:800;color:var(--bleu);font-size:.85rem;margin-bottom:.5rem;">Ce qu'il vous faut :</div>
+        <div style="font-size:.8rem;line-height:1.8;">
+          ✅ L'<strong>URL API</strong> de votre Google Apps Script (fournie par l'administrateur)<br>
+          ✅ La <strong>clé maître</strong> correspondante<br>
+          ✅ La <strong>liste de vos élèves</strong> (noms, classes) — en CSV ou à saisir manuellement<br>
+          ⏱️ Temps estimé : <strong>5 minutes</strong>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-orange btn-full" onclick="goStep(1)">Commencer la configuration →</button>
+      </div>
+      <div style="text-align:center;margin-top:.75rem;">
+        <button class="btn btn-ghost" onclick="window.location.href='inerweb_prof.html?demo=1'">🎮 Juste tester en mode démo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ ÉTAPE 1 — Connexion API ═══ -->
+  <div class="step-panel" id="panel-1">
+    <div class="card">
+      <div class="card-icon">🔗</div>
+      <h2>Connexion au serveur</h2>
+      <p>Saisissez les informations de connexion à votre backend Google Apps Script.</p>
+
+      <div class="fr">
+        <label>URL API Google Apps Script</label>
+        <input id="setupUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec">
+        <div class="hint">L'URL de déploiement de votre Code.gs — demandez-la à votre administrateur.</div>
+      </div>
+
+      <div class="fr">
+        <label>Clé maître (MASTER_KEY)</label>
+        <input id="setupKey" type="password" placeholder="MFER-2026-PROF-XXXXX">
+        <div class="hint">La clé d'authentification configurée dans le script. Ne la partagez pas.</div>
+      </div>
+
+      <div class="fr">
+        <label>Votre nom (enseignant)</label>
+        <input id="setupNom" placeholder="Prénom Nom">
+      </div>
+
+      <div class="fr">
+        <label>URL de base pour les QR codes</label>
+        <input id="setupBase" placeholder="https://votre-domaine.fr/inerweb/">
+        <div class="hint">L'URL où sont hébergés les fichiers HTML. Pour les QR codes des élèves et tuteurs.</div>
+      </div>
+
+      <div id="testResult" style="display:none;"></div>
+
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="goStep(0)">← Retour</button>
+        <button class="btn btn-bleu" onclick="testConnexion()" id="btnTest">🔍 Tester la connexion</button>
+        <button class="btn btn-orange" onclick="saveConnexion()" id="btnSaveConn" disabled>Suivant →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ ÉTAPE 2 — Import élèves ═══ -->
+  <div class="step-panel" id="panel-2">
+    <div class="card">
+      <div class="card-icon">👨‍🎓</div>
+      <h2>Ajouter vos élèves</h2>
+      <p>Importez votre liste d'élèves depuis un fichier CSV ou saisissez-les manuellement.</p>
+
+      <!-- Onglets import -->
+      <div style="display:flex;gap:.5rem;margin-bottom:1rem;">
+        <button class="btn btn-bleu" id="tabCsv" onclick="showImportTab('csv')" style="flex:1;">📄 Import CSV</button>
+        <button class="btn btn-ghost" id="tabManuel" onclick="showImportTab('manuel')" style="flex:1;">✍️ Saisie manuelle</button>
+      </div>
+
+      <!-- Import CSV -->
+      <div id="importCsv">
+        <div class="fr">
+          <label>Collez votre CSV ici</label>
+          <textarea id="csvData" placeholder="nom;prenom;classe;entreprise;tuteur
+DUPONT;Martin;CAP IFCA 1;Climafroid SARL;Jean Martin
+MARTIN;Léa;CAP IFCA 2;FrigoTech;Sophie Bernard
+GARCIA;Tom;1ère MFER;AC Solutions;Paul Roux"></textarea>
+          <div class="hint">Format : nom;prenom;classe;entreprise;tuteur — séparateur : point-virgule ou tabulation. La 1ère ligne d'entête est optionnelle.</div>
+        </div>
+        <button class="btn btn-bleu btn-full" onclick="parseCsv()">📋 Analyser le CSV</button>
+      </div>
+
+      <!-- Saisie manuelle -->
+      <div id="importManuel" style="display:none;">
+        <div id="manuelRows">
+          <div class="fr" style="display:grid;grid-template-columns:2fr 2fr 2fr 2fr 2fr 32px;gap:.4rem;align-items:end;margin-bottom:.25rem;">
+            <label style="font-size:.65rem;">Nom</label>
+            <label style="font-size:.65rem;">Prénom</label>
+            <label style="font-size:.65rem;">Classe</label>
+            <label style="font-size:.65rem;">Entreprise</label>
+            <label style="font-size:.65rem;">Tuteur</label>
+            <span></span>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-full" onclick="addManuelRow()" style="margin-top:.5rem;">+ Ajouter un élève</button>
+      </div>
+
+      <div id="importPreview" style="display:none;margin-top:1rem;"></div>
+
+      <div class="btn-row" style="margin-top:1rem;">
+        <button class="btn btn-ghost" onclick="goStep(1)">← Retour</button>
+        <button class="btn btn-orange" onclick="confirmerEleves()" id="btnConfirmEleves" disabled>Valider <span id="eleveCount" class="badge-count" style="display:none;">0</span> →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ ÉTAPE 3 — Génération tokens ═══ -->
+  <div class="step-panel" id="panel-3">
+    <div class="card">
+      <div class="card-icon">🎫</div>
+      <h2>Génération des tokens d'accès</h2>
+      <p>Chaque élève reçoit 2 tokens : un pour lui et un pour son tuteur d'entreprise.</p>
+
+      <div id="tokenPreview"></div>
+
+      <div id="tokenStatus" style="display:none;"></div>
+
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="goStep(2)">← Retour</button>
+        <button class="btn btn-orange" onclick="genererTousTokens()" id="btnGenTokens">🔑 Générer tous les tokens</button>
+        <button class="btn btn-vert" onclick="goStep(4)" id="btnToQR" style="display:none;">Suivant →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ ÉTAPE 4 — QR Codes ═══ -->
+  <div class="step-panel" id="panel-4">
+    <div class="card">
+      <div class="card-icon">📱</div>
+      <h2>Génération des QR codes</h2>
+      <p>Les QR codes permettent aux élèves et tuteurs de se connecter en un scan.</p>
+
+      <div id="qrPreviewZone"></div>
+
+      <div class="btn-row" style="margin-top:1rem;">
+        <button class="btn btn-ghost" onclick="goStep(3)">← Retour</button>
+        <button class="btn btn-bleu" onclick="genererQRCodes()" id="btnGenQR">📱 Générer les QR codes</button>
+        <button class="btn btn-orange" onclick="exporterBadgesPDF()" id="btnPdfBadges" style="display:none;">📄 Exporter en PDF</button>
+        <button class="btn btn-vert" onclick="goStep(5)" id="btnFinish" style="display:none;">Terminer →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ ÉTAPE 5 — Terminé ═══ -->
+  <div class="step-panel" id="panel-5">
+    <div class="card">
+      <div class="card-icon check-anim">🎉</div>
+      <h2>Configuration terminée !</h2>
+      <p>INERWEB est prêt à l'emploi. Vos élèves peuvent se connecter avec leurs QR codes.</p>
+
+      <div style="background:var(--vert2);border-radius:var(--r2);padding:1rem;margin:1rem 0;">
+        <div style="font-size:.85rem;line-height:1.8;text-align:left;">
+          ✅ Serveur connecté et fonctionnel<br>
+          ✅ <strong id="finalCount">0</strong> élèves configurés avec tokens<br>
+          ✅ QR codes générés — imprimez les badges !<br>
+          ✅ Configuration sauvegardée dans votre navigateur
+        </div>
+      </div>
+
+      <div style="background:var(--bleu3);border-radius:var(--r2);padding:1rem;margin:1rem 0;text-align:left;">
+        <div style="font-weight:800;color:var(--bleu);font-size:.82rem;margin-bottom:.4rem;">Prochaines étapes :</div>
+        <div style="font-size:.8rem;line-height:1.7;">
+          1. <strong>Imprimez</strong> les badges QR (bouton PDF ci-dessus)<br>
+          2. <strong>Distribuez</strong> les badges élèves et envoyez ceux des tuteurs<br>
+          3. <strong>Accédez</strong> à votre tableau de bord pour commencer à évaluer
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <a href="inerweb_prof.html" class="btn btn-orange btn-full" style="text-decoration:none;">🏠 Accéder au tableau de bord</a>
+      </div>
+      <div style="text-align:center;margin-top:.5rem;">
+        <a href="aide.html" style="font-size:.8rem;color:var(--bleu2);">📚 Consulter le guide complet</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     JAVASCRIPT
+     ═══════════════════════════════════════════════════════════ -->
+<script>
+(function(){
+  'use strict';
+
+  // ═══ ÉTAT ═══
+  var currentStep = 0;
+  var connexion = { url: '', key: '', nom: '', base: '' };
+  var eleves = []; // [{nom,prenom,classe,entreprise,tuteur,code,tokenEleve,tokenTuteur}]
+
+  // ═══ NAVIGATION ═══
+  window.goStep = function(n) {
+    if (n < 0 || n > 5) return;
+    currentStep = n;
+    // Panels
+    var panels = document.querySelectorAll('.step-panel');
+    for (var i = 0; i < panels.length; i++) {
+      panels[i].classList.toggle('active', i === n);
+    }
+    // Stepper dots
+    var dots = document.querySelectorAll('.step-dot');
+    for (var i = 0; i < dots.length; i++) {
+      dots[i].classList.remove('active', 'done');
+      if (i < n) dots[i].classList.add('done');
+      if (i === n) dots[i].classList.add('active');
+    }
+    window.scrollTo(0, 0);
+  };
+
+  // ═══ ÉTAPE 1 — CONNEXION ═══
+  function cleanUrl(raw) {
+    if (!raw) return '';
+    raw = raw.trim();
+    var all = raw.match(/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec/g);
+    if (all && all.length > 0) return 'https://' + all[all.length - 1];
+    var id = raw.match(/AKfycb[A-Za-z0-9_-]+/);
+    if (id) return 'https://script.google.com/macros/s/' + id[0] + '/exec';
+    return raw;
+  }
+
+  window.testConnexion = function() {
+    var url = cleanUrl(document.getElementById('setupUrl').value);
+    var key = document.getElementById('setupKey').value.trim();
+    var zone = document.getElementById('testResult');
+    zone.style.display = 'block';
+
+    if (!url || !key) {
+      zone.innerHTML = '<div class="status status-err">⛔ URL et clé obligatoires.</div>';
+      return;
+    }
+    zone.innerHTML = '<div class="status status-info">⏳ Test de connexion en cours...</div>';
+    document.getElementById('btnTest').disabled = true;
+
+    var testUrl = url + '?action=ping&key=' + encodeURIComponent(key);
+    fetch(testUrl, { method: 'GET' })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        document.getElementById('btnTest').disabled = false;
+        if (data && (data.ok || data.status === 'ok' || data.pong)) {
+          zone.innerHTML = '<div class="status status-ok">✅ Connexion réussie ! Le serveur répond correctement.</div>';
+          document.getElementById('btnSaveConn').disabled = false;
+        } else {
+          zone.innerHTML = '<div class="status status-err">⚠️ Le serveur répond mais la clé semble incorrecte. Vérifiez votre MASTER_KEY.</div>';
+        }
+      })
+      .catch(function(err) {
+        document.getElementById('btnTest').disabled = false;
+        // Tenter quand même — certains scripts redirigent
+        zone.innerHTML = '<div class="status status-warn">⚠️ Impossible de vérifier automatiquement. Si vous êtes sûr de vos informations, cliquez "Suivant".</div>';
+        document.getElementById('btnSaveConn').disabled = false;
+      });
+  };
+
+  window.saveConnexion = function() {
+    var url = cleanUrl(document.getElementById('setupUrl').value);
+    var key = document.getElementById('setupKey').value.trim();
+    var nom = document.getElementById('setupNom').value.trim();
+    var base = document.getElementById('setupBase').value.trim();
+
+    if (!url || !key || !nom) {
+      document.getElementById('testResult').style.display = 'block';
+      document.getElementById('testResult').innerHTML = '<div class="status status-err">⛔ URL, clé et nom sont obligatoires.</div>';
+      return;
+    }
+
+    connexion = { url: url, key: key, nom: nom, base: base || guessBaseUrl() };
+
+    // Sauvegarder dans localStorage (même format que inerweb_prof.html)
+    var cfg = { apiUrl: url, apiKey: key, nomProf: nom, baseUrl: connexion.base };
+    localStorage.setItem('inerweb-tt-fe-cfg', JSON.stringify(cfg));
+
+    goStep(2);
+  };
+
+  function guessBaseUrl() {
+    return location.href.replace(/\/[^\/]*$/, '/');
+  }
+
+  // ═══ ÉTAPE 2 — IMPORT ÉLÈVES ═══
+  window.showImportTab = function(tab) {
+    document.getElementById('importCsv').style.display = tab === 'csv' ? 'block' : 'none';
+    document.getElementById('importManuel').style.display = tab === 'manuel' ? 'block' : 'none';
+    document.getElementById('tabCsv').className = 'btn ' + (tab === 'csv' ? 'btn-bleu' : 'btn-ghost');
+    document.getElementById('tabManuel').className = 'btn ' + (tab === 'manuel' ? 'btn-bleu' : 'btn-ghost');
+    if (tab === 'manuel' && document.querySelectorAll('.manuel-row').length === 0) {
+      for (var i = 0; i < 3; i++) addManuelRow();
+    }
+  };
+
+  window.parseCsv = function() {
+    var raw = document.getElementById('csvData').value.trim();
+    if (!raw) return;
+    var sep = raw.indexOf('\t') !== -1 ? '\t' : ';';
+    var lines = raw.split('\n').map(function(l) { return l.trim(); }).filter(Boolean);
+
+    // Detecter si premiere ligne est un entete
+    var first = lines[0].toLowerCase();
+    var startIdx = (first.indexOf('nom') !== -1 || first.indexOf('prenom') !== -1) ? 1 : 0;
+
+    eleves = [];
+    for (var i = startIdx; i < lines.length; i++) {
+      var cols = lines[i].split(sep).map(function(c) { return c.trim(); });
+      if (cols.length >= 2) {
+        eleves.push({
+          nom: (cols[0] || '').toUpperCase(),
+          prenom: cols[1] || '',
+          classe: cols[2] || 'CAP IFCA 1',
+          entreprise: cols[3] || '',
+          tuteur: cols[4] || '',
+          code: 'ELV-' + String(i - startIdx + 1).padStart(3, '0'),
+          tokenEleve: '',
+          tokenTuteur: ''
+        });
+      }
+    }
+    afficherPreview();
+  };
+
+  var manuelCount = 0;
+  window.addManuelRow = function() {
+    manuelCount++;
+    var div = document.createElement('div');
+    div.className = 'manuel-row';
+    div.style.cssText = 'display:grid;grid-template-columns:2fr 2fr 2fr 2fr 2fr 32px;gap:.4rem;margin-bottom:.3rem;';
+    div.innerHTML = '<input class="m-nom" placeholder="NOM" style="padding:.4rem;font-size:.75rem;border:1.5px solid var(--gris3);border-radius:6px;">'
+      + '<input class="m-pre" placeholder="Prénom" style="padding:.4rem;font-size:.75rem;border:1.5px solid var(--gris3);border-radius:6px;">'
+      + '<input class="m-cls" placeholder="Classe" value="CAP IFCA 1" style="padding:.4rem;font-size:.75rem;border:1.5px solid var(--gris3);border-radius:6px;">'
+      + '<input class="m-ent" placeholder="Entreprise" style="padding:.4rem;font-size:.75rem;border:1.5px solid var(--gris3);border-radius:6px;">'
+      + '<input class="m-tut" placeholder="Tuteur" style="padding:.4rem;font-size:.75rem;border:1.5px solid var(--gris3);border-radius:6px;">'
+      + '<button onclick="this.parentElement.remove();parseManuel()" style="border:none;background:none;color:var(--rouge);cursor:pointer;font-size:1rem;">✕</button>';
+    document.getElementById('manuelRows').appendChild(div);
+    // Listener pour preview auto
+    var inputs = div.querySelectorAll('input');
+    for (var j = 0; j < inputs.length; j++) {
+      inputs[j].addEventListener('input', parseManuel);
+    }
+  };
+
+  window.parseManuel = function() {
+    var rows = document.querySelectorAll('.manuel-row');
+    eleves = [];
+    var idx = 1;
+    for (var i = 0; i < rows.length; i++) {
+      var nom = rows[i].querySelector('.m-nom').value.trim();
+      var pre = rows[i].querySelector('.m-pre').value.trim();
+      if (nom || pre) {
+        eleves.push({
+          nom: nom.toUpperCase(),
+          prenom: pre,
+          classe: rows[i].querySelector('.m-cls').value.trim() || 'CAP IFCA 1',
+          entreprise: rows[i].querySelector('.m-ent').value.trim(),
+          tuteur: rows[i].querySelector('.m-tut').value.trim(),
+          code: 'ELV-' + String(idx).padStart(3, '0'),
+          tokenEleve: '',
+          tokenTuteur: ''
+        });
+        idx++;
+      }
+    }
+    afficherPreview();
+  };
+
+  function afficherPreview() {
+    var zone = document.getElementById('importPreview');
+    if (eleves.length === 0) {
+      zone.style.display = 'none';
+      document.getElementById('btnConfirmEleves').disabled = true;
+      return;
+    }
+    zone.style.display = 'block';
+    var html = '<div class="status status-ok">✅ ' + eleves.length + ' élève(s) détecté(s)</div>';
+    html += '<table class="eleve-table"><thead><tr><th>Code</th><th>Nom</th><th>Prénom</th><th>Classe</th><th>Entreprise</th><th>Tuteur</th></tr></thead><tbody>';
+    for (var i = 0; i < eleves.length; i++) {
+      var e = eleves[i];
+      html += '<tr><td><strong>' + e.code + '</strong></td><td>' + esc(e.nom) + '</td><td>' + esc(e.prenom) + '</td><td>' + esc(e.classe) + '</td><td>' + esc(e.entreprise) + '</td><td>' + esc(e.tuteur) + '</td></tr>';
+    }
+    html += '</tbody></table>';
+    zone.innerHTML = html;
+
+    document.getElementById('btnConfirmEleves').disabled = false;
+    var badge = document.getElementById('eleveCount');
+    badge.style.display = 'inline-flex';
+    badge.textContent = eleves.length;
+  }
+
+  function esc(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+  window.confirmerEleves = function() {
+    if (eleves.length === 0) return;
+    // Afficher preview tokens
+    afficherTokenPreview();
+    goStep(3);
+  };
+
+  // ═══ ÉTAPE 3 — TOKENS ═══
+  function generateToken() {
+    var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    var token = '';
+    for (var i = 0; i < 8; i++) {
+      token += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return token;
+  }
+
+  function afficherTokenPreview() {
+    var zone = document.getElementById('tokenPreview');
+    var html = '<div class="status status-info">📋 ' + eleves.length + ' élève(s) — cliquez "Générer" pour créer les tokens d\'accès.</div>';
+    html += '<table class="eleve-table"><thead><tr><th>Code</th><th>Nom</th><th>Classe</th><th>Token élève</th><th>Token tuteur</th></tr></thead><tbody>';
+    for (var i = 0; i < eleves.length; i++) {
+      var e = eleves[i];
+      html += '<tr><td><strong>' + e.code + '</strong></td><td>' + esc(e.nom) + ' ' + esc(e.prenom) + '</td><td>' + esc(e.classe) + '</td>';
+      html += '<td class="token">' + (e.tokenEleve || '—') + '</td>';
+      html += '<td class="token">' + (e.tokenTuteur || '—') + '</td></tr>';
+    }
+    html += '</tbody></table>';
+    zone.innerHTML = html;
+  }
+
+  window.genererTousTokens = function() {
+    var btn = document.getElementById('btnGenTokens');
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Génération en cours...';
+
+    // Tenter via API backend d'abord
+    var apiOk = connexion.url && connexion.key;
+
+    if (apiOk) {
+      // Envoi au backend
+      var payload = {
+        action: 'setupEleves',
+        key: connexion.key,
+        eleves: eleves.map(function(e) {
+          return { code: e.code, nom: e.nom, prenom: e.prenom, classe: e.classe, entreprise: e.entreprise, tuteur: e.tuteur };
+        })
+      };
+
+      fetch(connexion.url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data && data.ok && data.eleves) {
+          // Backend a généré les tokens
+          for (var i = 0; i < data.eleves.length; i++) {
+            var be = data.eleves[i];
+            var fe = eleves.find(function(x) { return x.code === be.code; });
+            if (fe) { fe.tokenEleve = be.token || be.token_eleve; fe.tokenTuteur = be.tuteurToken || be.token_tuteur; }
+          }
+        } else {
+          genererTokensLocaux();
+        }
+        finaliserTokens(btn);
+      })
+      .catch(function() {
+        genererTokensLocaux();
+        finaliserTokens(btn);
+      });
+    } else {
+      genererTokensLocaux();
+      finaliserTokens(btn);
+    }
+  };
+
+  function genererTokensLocaux() {
+    for (var i = 0; i < eleves.length; i++) {
+      if (!eleves[i].tokenEleve) eleves[i].tokenEleve = generateToken();
+      if (!eleves[i].tokenTuteur) eleves[i].tokenTuteur = generateToken();
+    }
+  }
+
+  function finaliserTokens(btn) {
+    btn.innerHTML = '✅ Tokens générés';
+    btn.style.background = 'var(--vert)';
+    afficherTokenPreview();
+    document.getElementById('tokenStatus').style.display = 'block';
+    document.getElementById('tokenStatus').innerHTML = '<div class="status status-ok">✅ ' + eleves.length + ' × 2 tokens générés avec succès !</div>';
+    document.getElementById('btnToQR').style.display = '';
+
+    // Sauvegarder les élèves dans localStorage
+    localStorage.setItem('iw_setup_eleves', JSON.stringify(eleves));
+  }
+
+  // ═══ ÉTAPE 4 — QR CODES ═══
+  window.genererQRCodes = function() {
+    var zone = document.getElementById('qrPreviewZone');
+    var base = connexion.base || guessBaseUrl();
+    zone.innerHTML = '';
+
+    var html = '<div class="qr-preview">';
+    // On affiche max 4 aperçus (sinon trop lourd)
+    var show = Math.min(eleves.length, 4);
+    for (var i = 0; i < show; i++) {
+      var e = eleves[i];
+      var urlE = base + 'inerweb_eleve.html?eleve=' + encodeURIComponent(e.code) + '&token=' + encodeURIComponent(e.tokenEleve) + '&role=eleve';
+      var urlT = base + 'inerweb_tuteur.html?eleve=' + encodeURIComponent(e.code) + '&tuteur=' + encodeURIComponent(e.tokenTuteur) + '&role=tuteur';
+
+      html += '<div class="qr-card">'
+        + '<h4>🎓 ' + esc(e.prenom) + ' ' + esc(e.nom) + '</h4>'
+        + '<div id="qr-e-' + i + '" class="qr-img"></div>'
+        + '<p>Badge élève</p></div>';
+      html += '<div class="qr-card">'
+        + '<h4>🏢 Tuteur de ' + esc(e.prenom) + '</h4>'
+        + '<div id="qr-t-' + i + '" class="qr-img"></div>'
+        + '<p>Badge tuteur</p></div>';
+    }
+    html += '</div>';
+    if (eleves.length > 4) {
+      html += '<div class="status status-info">Aperçu des 4 premiers élèves. Le PDF contiendra les ' + eleves.length + ' élèves.</div>';
+    }
+    zone.innerHTML = html;
+
+    // Générer les vrais QR codes
+    setTimeout(function() {
+      for (var i = 0; i < show; i++) {
+        var e = eleves[i];
+        var urlE = base + 'inerweb_eleve.html?eleve=' + encodeURIComponent(e.code) + '&token=' + encodeURIComponent(e.tokenEleve) + '&role=eleve';
+        var urlT = base + 'inerweb_tuteur.html?eleve=' + encodeURIComponent(e.code) + '&tuteur=' + encodeURIComponent(e.tokenTuteur) + '&role=tuteur';
+        new QRCode(document.getElementById('qr-e-' + i), { text: urlE, width: 140, height: 140, correctLevel: QRCode.CorrectLevel.M });
+        new QRCode(document.getElementById('qr-t-' + i), { text: urlT, width: 140, height: 140, correctLevel: QRCode.CorrectLevel.M });
+      }
+    }, 100);
+
+    document.getElementById('btnGenQR').style.display = 'none';
+    document.getElementById('btnPdfBadges').style.display = '';
+    document.getElementById('btnFinish').style.display = '';
+  };
+
+  // ═══ EXPORT PDF BADGES ═══
+  window.exporterBadgesPDF = function() {
+    if (typeof jspdf === 'undefined' && typeof window.jspdf === 'undefined') {
+      alert('jsPDF non chargé. Veuillez recharger la page.');
+      return;
+    }
+    var jsPDF = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+    var doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    var base = connexion.base || guessBaseUrl();
+    var pw = 297, ph = 210;
+    var bw = 85, bh = 54; // format carte de visite
+    var mx = 8, my = 8;
+    var cols = Math.floor((pw - 2 * mx) / (bw + 4));
+    var rows = Math.floor((ph - 2 * my) / (bh + 4));
+    var perPage = cols * rows;
+    var badgeIdx = 0;
+
+    // Créer un canvas temporaire pour les QR
+    function qrToDataUrl(text) {
+      var container = document.createElement('div');
+      container.style.cssText = 'position:absolute;left:-9999px;top:-9999px;';
+      document.body.appendChild(container);
+      new QRCode(container, { text: text, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M });
+      var canvas = container.querySelector('canvas');
+      var dataUrl = canvas ? canvas.toDataURL('image/png') : null;
+      document.body.removeChild(container);
+      return dataUrl;
+    }
+
+    for (var i = 0; i < eleves.length; i++) {
+      var e = eleves[i];
+      var urlE = base + 'inerweb_eleve.html?eleve=' + encodeURIComponent(e.code) + '&token=' + encodeURIComponent(e.tokenEleve) + '&role=eleve';
+      var urlT = base + 'inerweb_tuteur.html?eleve=' + encodeURIComponent(e.code) + '&tuteur=' + encodeURIComponent(e.tokenTuteur) + '&role=tuteur';
+
+      // 2 badges par élève (élève + tuteur)
+      var badges = [
+        { type: 'Élève', url: urlE, color: [27, 58, 99], token: e.tokenEleve, icon: '🎓' },
+        { type: 'Tuteur', url: urlT, color: [22, 160, 133], token: e.tokenTuteur, icon: '🏢' }
+      ];
+
+      for (var b = 0; b < badges.length; b++) {
+        if (badgeIdx > 0 && badgeIdx % perPage === 0) doc.addPage();
+        var pos = badgeIdx % perPage;
+        var col = pos % cols;
+        var row = Math.floor(pos / cols);
+        var x = mx + col * (bw + 4);
+        var y = my + row * (bh + 4);
+
+        // Fond
+        doc.setFillColor(badges[b].color[0], badges[b].color[1], badges[b].color[2]);
+        doc.roundedRect(x, y, bw, bh, 3, 3, 'F');
+
+        // Texte
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(7);
+        doc.text('INERWEB — Badge ' + badges[b].type, x + 4, y + 6);
+        doc.setFontSize(10);
+        doc.text(e.nom + ' ' + e.prenom, x + 4, y + 14);
+        doc.setFontSize(7);
+        doc.text(e.classe, x + 4, y + 20);
+        if (e.entreprise) doc.text(e.entreprise, x + 4, y + 26);
+        doc.setFontSize(6);
+        doc.text('Token : ' + badges[b].token, x + 4, y + 50);
+
+        // QR code
+        var qrData = qrToDataUrl(badges[b].url);
+        if (qrData) {
+          doc.setFillColor(255, 255, 255);
+          doc.roundedRect(x + bw - 30, y + 4, 26, 26, 2, 2, 'F');
+          doc.addImage(qrData, 'PNG', x + bw - 29, y + 5, 24, 24);
+        }
+
+        badgeIdx++;
+      }
+    }
+
+    doc.save('INERWEB_Badges_QR_' + new Date().toISOString().slice(0, 10) + '.pdf');
+  };
+
+  // ═══ ÉTAPE 5 — TERMINÉ ═══
+  // Quand on arrive à l'étape 5, mettre à jour le compteur
+  var origGoStep = window.goStep;
+  window.goStep = function(n) {
+    origGoStep(n);
+    if (n === 5) {
+      document.getElementById('finalCount').textContent = eleves.length;
+      // Sauvegarder les élèves dans le format attendu par inerweb_prof.html
+      var students = eleves.map(function(e) {
+        return {
+          code: e.code, nom: e.nom, prenom: e.prenom, classe: e.classe,
+          statut: 'actif', referentiel: guessReferentiel(e.classe),
+          token_eleve: e.tokenEleve, token_tuteur: e.tokenTuteur,
+          entreprise_nom: e.entreprise, tuteur_nom: e.tuteur
+        };
+      });
+      localStorage.setItem('iw_setup_students', JSON.stringify(students));
+    }
+  };
+
+  function guessReferentiel(classe) {
+    var c = (classe || '').toLowerCase();
+    if (c.indexOf('cap') !== -1 || c.indexOf('ifca') !== -1) return 'CAP_IFCA';
+    if (c.indexOf('mfer') !== -1 || c.indexOf('bac') !== -1 || c.indexOf('1') !== -1 && c.indexOf('re') !== -1 || c.indexOf('term') !== -1) return 'BAC_MFER';
+    if (c.indexOf('tne') !== -1 || c.indexOf('2nde') !== -1 || c.indexOf('2de') !== -1) return 'TNE';
+    return 'CAP_IFCA';
+  }
+
+  // ═══ INITIALISATION ═══
+  // Pré-remplir si config existante
+  (function() {
+    try {
+      var saved = localStorage.getItem('inerweb-tt-fe-cfg');
+      if (saved) {
+        var cfg = JSON.parse(saved);
+        if (cfg.apiUrl) document.getElementById('setupUrl').value = cfg.apiUrl;
+        if (cfg.apiKey) document.getElementById('setupKey').value = cfg.apiKey;
+        if (cfg.nomProf) document.getElementById('setupNom').value = cfg.nomProf;
+        if (cfg.baseUrl) document.getElementById('setupBase').value = cfg.baseUrl;
+      }
+    } catch(e) {}
+
+    // Pré-remplir élèves si déjà importés
+    try {
+      var savedEleves = localStorage.getItem('iw_setup_eleves');
+      if (savedEleves) {
+        eleves = JSON.parse(savedEleves);
+      }
+    } catch(e) {}
+  })();
+
+})();
+</script>
+
+</body>
+</html>

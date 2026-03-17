@@ -1,0 +1,16 @@
+{
+  "name": "inerweb-classroom",
+  "version": "4.0.0",
+  "description": "InerWeb Classroom — Hub de partage de fichiers en classe",
+  "main": "classroom-server.js",
+  "scripts": {
+    "start": "node classroom-server.js"
+  },
+  "author": "F. Henninot",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "express": "^4.18.2",
+    "qrcode": "^1.5.3"
+  }
+}

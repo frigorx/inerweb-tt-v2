@@ -1,0 +1,201 @@
+/* ===============================================
+   INERWEB TTia — Styles Mobile Evaluation v1.0
+   =============================================== */
+
+.eval-mobile {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 1rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.eval-header {
+  background: linear-gradient(135deg, #1b3a63, #2d5a8c);
+  color: #fff;
+  padding: 1rem;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+
+.tp-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.tp-titre { font-size: 1.1rem; font-weight: 700; }
+.tp-classe { font-size: 0.85rem; opacity: 0.9; }
+
+.eval-input-zone {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.eval-input-zone textarea {
+  width: 100%;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 1rem;
+  resize: none;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+.eval-input-zone textarea:focus {
+  border-color: #1b3a63;
+  outline: none;
+}
+
+.btn-parse {
+  width: 100%;
+  padding: 12px;
+  background: #1b3a63;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s;
+}
+.btn-parse:hover { background: #2d5a8c; }
+
+.eval-preview {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.preview-eleve {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 0.75rem;
+}
+.preview-eleve .label { color: #666; font-size: 0.9rem; }
+.preview-eleve .value { font-weight: 700; color: #1b3a63; font-size: 1rem; }
+
+.comp-line {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  flex-wrap: wrap;
+  border-bottom: 1px solid #f5f5f5;
+}
+.comp-line:last-child { border-bottom: none; }
+
+.comp-code {
+  background: #e8f0f8;
+  color: #1b3a63;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.comp-label {
+  flex: 1;
+  font-size: 0.9rem;
+  min-width: 80px;
+}
+
+.niveau-selector {
+  display: flex;
+  gap: 4px;
+}
+
+.btn-niveau {
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  background: #f5f5f5;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+  min-width: 32px;
+  text-align: center;
+}
+.btn-niveau:active { transform: scale(0.95); }
+
+.btn-niveau.selected { color: #fff; border-color: transparent; }
+.btn-niveau[data-niveau="NE"].selected { background: #95a5a6; }
+.btn-niveau[data-niveau="NA"].selected { background: #e74c3c; }
+.btn-niveau[data-niveau="EC"].selected { background: #f39c12; }
+.btn-niveau[data-niveau="M"].selected  { background: #3498db; }
+.btn-niveau[data-niveau="PM"].selected { background: #27ae60; }
+
+.eval-photo-zone { margin-bottom: 1rem; }
+
+.btn-photo {
+  width: 100%;
+  padding: 12px;
+  background: #f5f5f5;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  color: #666;
+  transition: all .2s;
+}
+.btn-photo:hover { border-color: #1b3a63; color: #1b3a63; }
+
+.photo-preview { margin-top: 0.75rem; }
+
+.eval-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn-valider {
+  flex: 2;
+  padding: 14px;
+  background: #27ae60;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .2s;
+}
+.btn-valider:hover:not(:disabled) { background: #219a52; }
+.btn-valider:disabled { background: #ccc; cursor: not-allowed; }
+.btn-valider:active:not(:disabled) { transform: scale(0.97); }
+
+.btn-suivant {
+  flex: 1;
+  padding: 14px;
+  background: #1b3a63;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+}
+.btn-suivant:hover { background: #2d5a8c; }
+.btn-suivant:active { transform: scale(0.97); }
+
+/* Toast animation */
+@keyframes evalToastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* Responsive — petits ecrans */
+@media (max-width: 400px) {
+  .eval-mobile { padding: 0.5rem; }
+  .comp-line { flex-direction: column; align-items: flex-start; }
+  .niveau-selector { width: 100%; justify-content: space-between; }
+  .btn-niveau { flex: 1; padding: 8px 4px; }
+}

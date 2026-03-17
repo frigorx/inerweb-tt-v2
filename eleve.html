@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"><script>
+(function(){if(sessionStorage.getItem('iw_purged'))return;if('serviceWorker' in navigator){caches.keys().then(function(k){k.forEach(function(c){caches.delete(c)})});navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(sw){sw.unregister()})});}sessionStorage.setItem('iw_purged','1');setTimeout(function(){location.reload(true)},500);})();
+</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1b3a63">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x2744;</text></svg>">
+  <title>InerWeb — Fichiers classe</title>
+  <style>
+    :root {
+      --bleu: #1b3a63;
+      --bleu2: #2d5a8c;
+      --orange: #ff6b35;
+      --vert: #27ae60;
+      --gris: #6c757d;
+      --gris-bg: #f5f5f5;
+      --blanc: #ffffff;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--gris-bg);
+      color: #212121;
+      min-height: 100vh;
+      min-height: 100dvh;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, var(--bleu) 0%, var(--bleu2) 100%);
+      color: var(--blanc);
+      padding: 1.25rem 1rem;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    }
+    .header h1 {
+      font-size: 1.3rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .5rem;
+    }
+    .header p {
+      font-size: .85rem;
+      opacity: .9;
+      margin-top: .25rem;
+    }
+
+    /* Liste fichiers */
+    .liste {
+      padding: 1rem 1rem 5rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .fichier {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: var(--blanc);
+      padding: 1rem;
+      min-height: 56px;
+      margin-bottom: .75rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+      text-decoration: none;
+      color: inherit;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .fichier:active {
+      transform: scale(.98);
+    }
+    .fichier:focus-visible {
+      outline: 3px solid var(--orange);
+      outline-offset: 2px;
+    }
+
+    .fichier-icone {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+    .fichier-icone.pdf { background: #fee2e2; }
+    .fichier-icone.word { background: #dbeafe; }
+    .fichier-icone.excel { background: #dcfce7; }
+    .fichier-icone.powerpoint { background: #fef3c7; }
+    .fichier-icone.image { background: #f3e8ff; }
+    .fichier-icone.video { background: #fce7f3; }
+    .fichier-icone.audio { background: #fef3c7; }
+    .fichier-icone.html { background: #e0f2fe; }
+    .fichier-icone.archive { background: #f1f5f9; }
+    .fichier-icone.texte { background: #f1f5f9; }
+    .fichier-icone.dossier { background: #fef9c3; }
+    .fichier-icone.autre { background: #f1f5f9; }
+
+    .fichier-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .fichier-nom {
+      font-weight: 700;
+      font-size: .95rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .fichier-meta {
+      font-size: .8rem;
+      color: var(--gris);
+      margin-top: .15rem;
+    }
+
+    .fichier-action {
+      color: var(--bleu2);
+      font-size: 1.2rem;
+    }
+
+    /* Dossier */
+    .dossier-titre {
+      font-weight: 800;
+      font-size: .9rem;
+      color: var(--bleu);
+      margin: 1.5rem 0 .75rem;
+      padding-left: .5rem;
+      border-left: 4px solid var(--orange);
+    }
+
+    .dossier-vide {
+      font-size: .8rem;
+      color: var(--gris);
+      padding: .5rem .5rem .5rem 1rem;
+      font-style: italic;
+    }
+
+    /* Vide */
+    .vide {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--gris);
+    }
+    .vide-icone {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Chargement */
+    .chargement {
+      text-align: center;
+      padding: 3rem;
+      color: var(--gris);
+    }
+    .spinner {
+      display: inline-block;
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--gris-bg);
+      border-top-color: var(--bleu2);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      margin-bottom: .75rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Refresh */
+    .btn-refresh {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      width: 56px;
+      height: 56px;
+      background: var(--orange);
+      color: var(--blanc);
+      border: none;
+      border-radius: 50%;
+      font-size: 1.5rem;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(255,107,53,.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-refresh:active {
+      transform: scale(.95);
+    }
+    .btn-refresh:focus-visible {
+      outline: 3px solid var(--bleu);
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <h1>InerWeb Classroom</h1>
+  <p>Fichiers partagés par le professeur</p>
+</header>
+
+<main class="liste" id="liste" aria-live="polite">
+  <div class="chargement"><div class="spinner"></div><br>Chargement...</div>
+</main>
+
+<button class="btn-refresh" onclick="chargerFichiers()" aria-label="Actualiser la liste">&#x21bb;</button>
+
+<script>
+var ICONES = {
+  pdf: '\uD83D\uDCC4',
+  word: '\uD83D\uDCDD',
+  excel: '\uD83D\uDCCA',
+  powerpoint: '\uD83D\uDCFD\uFE0F',
+  image: '\uD83D\uDDBC\uFE0F',
+  video: '\uD83C\uDFAC',
+  audio: '\uD83C\uDFB5',
+  html: '\uD83C\uDF10',
+  archive: '\uD83D\uDCE6',
+  texte: '\uD83D\uDCC3',
+  dossier: '\uD83D\uDCC1',
+  autre: '\uD83D\uDCCE'
+};
+
+var TYPES_VALIDES = ['pdf','word','excel','powerpoint','image','video','audio','html','archive','texte','dossier','autre'];
+
+var dernierJSON = '';
+var refreshTimer = null;
+var enCours = false;
+
+function esc(str) {
+  var d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+function chargerFichiers() {
+  if (enCours) return;
+  enCours = true;
+
+  var liste = document.getElementById('liste');
+
+  // Premier chargement : afficher le spinner
+  if (!dernierJSON) {
+    liste.innerHTML = '<div class="chargement"><div class="spinner"></div><br>Chargement...</div>';
+  }
+
+  fetch('/api/fichiers')
+    .then(function(res) {
+      if (!res.ok) throw new Error('Erreur serveur ' + res.status);
+      return res.json();
+    })
+    .then(function(data) {
+      enCours = false;
+      // Ne mettre à jour le DOM que si les données ont changé
+      var json = JSON.stringify(data);
+      if (json === dernierJSON) return;
+      dernierJSON = json;
+
+      if (data.total === 0) {
+        liste.innerHTML =
+          '<div class="vide">' +
+          '<div class="vide-icone">\uD83D\uDCED</div>' +
+          '<p>Aucun fichier partagé pour le moment.</p>' +
+          '<p style="margin-top:.5rem;font-size:.85rem;">Le professeur ajoutera bientôt des documents.</p>' +
+          '</div>';
+        return;
+      }
+
+      liste.innerHTML = '';
+      afficherFichiers(data.fichiers, liste);
+    })
+    .catch(function() {
+      enCours = false;
+      // Ne pas écraser la liste si on avait déjà des données
+      if (dernierJSON) return;
+      liste.innerHTML =
+        '<div class="vide">' +
+        '<div class="vide-icone">\u26A0\uFE0F</div>' +
+        '<p>Impossible de charger les fichiers.</p>' +
+        '<p style="margin-top:.5rem;font-size:.85rem;">Vérifiez votre connexion WiFi.</p>' +
+        '</div>';
+    });
+}
+
+function afficherFichiers(fichiers, container) {
+  for (var i = 0; i < fichiers.length; i++) {
+    var f = fichiers[i];
+    if (f.type === 'dossier') {
+      var titre = document.createElement('div');
+      titre.className = 'dossier-titre';
+      titre.textContent = '\uD83D\uDCC1 ' + f.nom;
+      container.appendChild(titre);
+      if (f.contenu && f.contenu.length > 0) {
+        afficherFichiers(f.contenu, container);
+      } else {
+        var vide = document.createElement('div');
+        vide.className = 'dossier-vide';
+        vide.textContent = 'Dossier vide';
+        container.appendChild(vide);
+      }
+    } else {
+      var lien = document.createElement('a');
+      lien.className = 'fichier';
+      lien.href = '/fichiers/' + f.chemin.split('/').map(encodeURIComponent).join('/');
+      lien.target = '_blank';
+      lien.rel = 'noopener noreferrer';
+
+      // Certains fichiers se téléchargent plutôt que s'ouvrir
+      if (['word', 'excel', 'powerpoint', 'archive'].indexOf(f.type) !== -1) {
+        lien.download = f.nom;
+      }
+
+      // Type validé pour la classe CSS
+      var typeClasse = TYPES_VALIDES.indexOf(f.type) !== -1 ? f.type : 'autre';
+
+      lien.innerHTML =
+        '<div class="fichier-icone ' + typeClasse + '">' + (ICONES[f.type] || '\uD83D\uDCCE') + '</div>' +
+        '<div class="fichier-info">' +
+        '<div class="fichier-nom">' + esc(f.nom) + '</div>' +
+        '<div class="fichier-meta">' + esc(f.tailleHumaine) + '</div>' +
+        '</div>' +
+        '<div class="fichier-action">\u2192</div>';
+
+      container.appendChild(lien);
+    }
+  }
+}
+
+// Charger au démarrage
+chargerFichiers();
+
+// Auto-refresh intelligent : pause quand l'onglet est masqué
+function demarrerRefresh() {
+  if (refreshTimer) return;
+  refreshTimer = setInterval(chargerFichiers, 30000);
+}
+function arreterRefresh() {
+  if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
+}
+
+demarrerRefresh();
+
+document.addEventListener('visibilitychange', function() {
+  if (document.hidden) {
+    arreterRefresh();
+  } else {
+    chargerFichiers();
+    demarrerRefresh();
+  }
+});
+</script>
+
+</body>
+</html>

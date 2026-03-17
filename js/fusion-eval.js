@@ -275,7 +275,7 @@ window.fusionModule = (function () {
     if (typeof showModal === 'function') {
       showModal(html);
     } else {
-      console.log('[fusion-eval] Rapport :', rapport);
+      /* rapport affiché dans la modale ou ignoré */
     }
   }
 

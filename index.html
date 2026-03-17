@@ -1,12 +1,17 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8"><script>
+(function(){if(sessionStorage.getItem('iw_purged'))return;if('serviceWorker' in navigator){caches.keys().then(function(k){k.forEach(function(c){caches.delete(c)})});navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(sw){sw.unregister()})});}sessionStorage.setItem('iw_purged','1');setTimeout(function(){location.reload(true)},500);})();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<title>inerWeb TT — Portail CCF CAP IFCA</title>
+<meta name="description" content="Portail CCF INERWEB PROG+ — Suivi des compétences et évaluation Filière Énergétique (CAP IFCA, Bac Pro MFER, 2nde TNE)">
+<title>INERWEB — Plateforme pédagogique unifiée</title>
+<link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
+/* ── Variables & reset ── */
 :root {
   --bleu:#1b3a63; --bleu2:#2d5a8c; --bleu3:#e8f0f8;
   --orange:#ff6b35; --vert:#27ae60; --vert2:#d4f4e2;
@@ -31,6 +36,7 @@ body {
   padding:1.5rem;
 }
 
+/* ── Carte portail ── */
 .portal {
   background:#fff;
   border-radius:24px;
@@ -39,8 +45,10 @@ body {
   width:100%;
   box-shadow:0 24px 80px rgba(0,0,0,.25);
   text-align:center;
+  animation:fadeInUp .5s ease-out;
 }
 
+/* ── Logo ── */
 .logo {
   display:flex;
   align-items:center;
@@ -61,6 +69,7 @@ body {
   font-weight:600;
 }
 
+/* ── Badge version & sous-titre ── */
 .version-badge {
   display:inline-block;
   background:var(--orange);
@@ -79,6 +88,7 @@ body {
   line-height:1.5;
 }
 
+/* ── Cartes de rôle ── */
 .roles {
   display:flex;
   flex-direction:column;
@@ -149,6 +159,7 @@ body {
   line-height:1.4;
 }
 
+/* ── Footer & crédits ── */
 .footer {
   margin-top:2rem;
   padding-top:1.5rem;
@@ -192,17 +203,33 @@ body {
   text-decoration:none;
 }
 
-/* Animation d'entrée */
+/* ── Animation d'entrée ── */
 @keyframes fadeInUp {
   from { opacity:0; transform:translateY(20px); }
   to { opacity:1; transform:translateY(0); }
 }
-.portal { animation:fadeInUp .5s ease-out; }
 .role-card:nth-child(1) { animation:fadeInUp .5s ease-out .1s both; }
 .role-card:nth-child(2) { animation:fadeInUp .5s ease-out .2s both; }
 .role-card:nth-child(3) { animation:fadeInUp .5s ease-out .3s both; }
+.role-card:nth-child(4) { animation:fadeInUp .5s ease-out .4s both; }
+.role-card:nth-child(5) { animation:fadeInUp .5s ease-out .5s both; }
+.role-card:nth-child(6) { animation:fadeInUp .5s ease-out .6s both; }
 
-/* Responsive */
+.role-classroom {
+  background:var(--bleu3);
+  border-color:var(--bleu2);
+}
+.role-classroom:hover { background:#d8e8f8; }
+.role-classroom .role-ico { background:var(--bleu2); }
+
+.role-edu {
+  background:#f3e8ff;
+  border-color:#7C3AED;
+}
+.role-edu:hover { background:#e8d0ff; }
+.role-edu .role-ico { background:#7C3AED; }
+
+/* ── Responsive ── */
 @media (max-width:400px) {
   .portal { padding:1.5rem; }
   .logo-txt h1 { font-size:1.5rem; }
@@ -213,33 +240,37 @@ body {
 </head>
 <body>
 
+<!-- ═══ PORTAIL PRINCIPAL ═══ -->
 <div class="portal">
+
+  <!-- Logo & identité -->
   <div class="logo">
-    <span class="logo-ico">❄️</span>
+    <span class="logo-ico" aria-hidden="true">❄️</span>
     <div class="logo-txt">
-      <h1>inerWeb TT</h1>
-      <p>CCF CAP IFCA</p>
+      <h1>INERWEB</h1>
+      <p>Filière Énergétique</p>
     </div>
   </div>
-  
-  <span class="version-badge">Version 4.8</span>
-  
+
+  <span class="version-badge">v7.3 — Plateforme unifiée</span>
+
   <p class="subtitle">
-    Suivi des compétences et évaluation CCF<br>
-    Installation Frigorifique & Conditionnement d'Air
+    Pilotage pédagogique, suivi CCF, agenda & évaluation<br>
+    CAP IFCA · Bac Pro MFER · 2nde TNE
   </p>
 
-  <div class="roles">
+  <!-- Cartes de rôle -->
+  <nav class="roles" aria-label="Choisir votre profil">
     <a href="inerweb_prof.html" class="role-card role-prof">
-      <div class="role-ico">👨‍🏫</div>
+      <div class="role-ico" aria-hidden="true">👨‍🏫</div>
       <div class="role-info">
         <h2>Professeur</h2>
-        <p>Tableau de bord, évaluations EP2/EP3, bilans, exports PDF et gestion des élèves</p>
+        <p>Tableau de bord, évaluations EP2/EP3/E31-E33, bilans, exports PDF et gestion des élèves</p>
       </div>
     </a>
 
     <a href="inerweb_tuteur.html" class="role-card role-tuteur">
-      <div class="role-ico">🏢</div>
+      <div class="role-ico" aria-hidden="true">🏢</div>
       <div class="role-info">
         <h2>Tuteur entreprise</h2>
         <p>Évaluation des compétences en PFMP, comportement et observations terrain</p>
@@ -247,46 +278,96 @@ body {
     </a>
 
     <a href="inerweb_eleve.html" class="role-card role-eleve">
-      <div class="role-ico">🎓</div>
+      <div class="role-ico" aria-hidden="true">🎓</div>
       <div class="role-info">
         <h2>Élève</h2>
         <p>Journal de stage, suivi personnel des compétences et progression</p>
       </div>
     </a>
-  </div>
 
-  <div class="footer">
+    <a href="prof.html" class="role-card role-classroom">
+      <div class="role-ico" aria-hidden="true">📡</div>
+      <div class="role-info">
+        <h2>Classroom</h2>
+        <p>Partager des fichiers avec la classe — PDF, videos, TP, images...</p>
+        <p style="font-size:.68rem;color:var(--gris);margin-top:.3rem;font-style:italic;">Necessite le serveur local (LANCER.bat)</p>
+      </div>
+    </a>
+
+    <a href="edu/index.html" class="role-card role-edu">
+      <div class="role-ico" aria-hidden="true">📅</div>
+      <div class="role-info">
+        <h2>Agenda & Évaluation</h2>
+        <p>Pilotage quotidien — Agenda, validation séances, évaluation rapide</p>
+      </div>
+    </a>
+
+    <a href="tp-library.html" class="role-card" style="border-color:#e67e22">
+      <div class="role-ico" aria-hidden="true">📖</div>
+      <div class="role-info">
+        <h2>Bibliothèque TP</h2>
+        <p>Catalogue TP universels — Fiches, correspondances référentielles, cartes d'évaluation</p>
+      </div>
+    </a>
+
+  </nav>
+
+  <!-- Liens rapides -->
+  <footer class="footer">
     <div class="footer-title">Accès rapide</div>
     <div class="footer-links">
       <a href="inerweb_prof.html?demo=1">🎮 Mode démo</a>
-      <a href="aide_tuteur.html" target="_blank">📚 Guide tuteur</a>
+      <a href="aide.html" target="_blank" rel="noopener noreferrer">📚 Guide complet</a>
       <a href="inerweb_admin.html">🔐 Administration</a>
-      <a href="https://github.com/frigorx/inerweb-tt" target="_blank">📦 GitHub</a>
+      <a href="demo.html">🎓 Formation & Démo</a>
+      <a href="vitrine.html">🌟 Découvrir</a>
+      <a href="first-setup.html">🚀 Configuration</a>
+      <a href="installation.html">📋 Installation</a>
+      <a href="https://github.com/frigorx/inerweb-tt-fe" target="_blank" rel="noopener noreferrer">📦 GitHub</a>
     </div>
-  </div>
+  </footer>
 
+  <!-- Crédits -->
   <div class="credits">
-    Développé par <a href="#">F. Henninot</a> — Campus Equatio, Marseille<br>
+    Développé par F. Henninot — Campus Equatio, Marseille<br>
     © 2024-2026 · Licence éducative
   </div>
+
 </div>
 
 <script>
-// Gestion des paramètres URL pour redirection directe
-const params = new URLSearchParams(window.location.search);
-const role = params.get('role');
-const eleve = params.get('eleve');
-const token = params.get('token');
-const tuteur = params.get('tuteur');
-
-if (role === 'prof') {
-  window.location.href = 'inerweb_prof.html';
-} else if (role === 'tuteur' && eleve) {
-  window.location.href = `inerweb_tuteur.html?eleve=${eleve}${tuteur ? '&tuteur=' + tuteur : ''}`;
-} else if (role === 'eleve' && eleve) {
-  window.location.href = `inerweb_eleve.html?eleve=${eleve}${token ? '&token=' + token : ''}`;
+/* Enregistrement du Service Worker */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(function(){});
 }
+
+/* Redirection automatique selon les paramètres URL (QR codes, deep links).
+   Les valeurs sont encodées pour éviter l'injection de paramètres. */
+(function(){
+  var p = new URLSearchParams(window.location.search);
+  var role = p.get('role');
+  var eleve = p.get('eleve');
+  var token = p.get('token');
+  var tuteur = p.get('tuteur');
+
+  if (role === 'prof') {
+    window.location.href = 'inerweb_prof.html';
+  } else if (role === 'tuteur' && eleve) {
+    var url = 'inerweb_tuteur.html?eleve=' + encodeURIComponent(eleve);
+    if (tuteur) url += '&tuteur=' + encodeURIComponent(tuteur);
+    window.location.href = url;
+  } else if (role === 'eleve' && eleve) {
+    var url = 'inerweb_eleve.html?eleve=' + encodeURIComponent(eleve);
+    if (token) url += '&token=' + encodeURIComponent(token);
+    window.location.href = url;
+  } else if (role === 'edu') {
+    window.location.href = 'edu/index.html';
+  }
+})();
 </script>
+
+<!-- Bouton aide flottant -->
+<a href="aide.html" target="_blank" rel="noopener noreferrer" title="Guide d'utilisation" style="position:fixed;bottom:1.5rem;right:1.5rem;width:56px;height:56px;background:var(--orange);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:900;text-decoration:none;box-shadow:0 4px 20px rgba(255,107,53,.4);z-index:9999;transition:transform .2s,box-shadow .2s;font-family:'Nunito',sans-serif;" onmouseover="this.style.transform='scale(1.1)';this.style.boxShadow='0 6px 28px rgba(255,107,53,.5)'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 20px rgba(255,107,53,.4)'">?</a>
 
 </body>
 </html>

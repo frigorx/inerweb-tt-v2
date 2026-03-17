@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><script>
+(function(){if(sessionStorage.getItem('iw_purged'))return;if('serviceWorker' in navigator){caches.keys().then(function(k){k.forEach(function(c){caches.delete(c)})});navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(sw){sw.unregister()})});}sessionStorage.setItem('iw_purged','1');setTimeout(function(){location.reload(true)},500);})();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Biblioth&egrave;que TP — INERWEB</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:#F7F8FA;color:#333}
+.header{background:linear-gradient(135deg,#1B3A63 0%,#2d5a8c 100%);color:#fff;padding:16px 24px;display:flex;align-items:center;gap:16px}
+.header h1{font-size:1.3rem;font-weight:700}
+.header .badge{background:rgba(255,255,255,.2);padding:4px 10px;border-radius:12px;font-size:.75rem}
+.header .back{color:#fff;text-decoration:none;font-size:.9rem;opacity:.8}
+.header .back:hover{opacity:1}
+#tp-container{padding:1rem}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a href="index.html" class="back">&larr; Portail</a>
+  <h1>Biblioth&egrave;que TP</h1>
+  <span class="badge">v1.0</span>
+  <button id="btn-new-tp" style="margin-left:auto;background:#ff6b35;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:700;cursor:pointer;font-size:.9rem">Nouveau TP</button>
+</div>
+
+<div id="tp-container">
+  <p style="text-align:center;color:#999;padding:2rem">Chargement de la biblioth&egrave;que...</p>
+</div>
+
+<!-- Modules CORE -->
+<script src="js/core/events.js"></script>
+<script src="js/shared/levels-registry.js"></script>
+<script src="js/shared/classes-registry.js"></script>
+
+<!-- Bibliothèque TP -->
+<script src="js/tp/tp-library.js"></script>
+<script src="js/tp/tp-explorer-ui.js"></script>
+<script src="js/tp/tp-form.js"></script>
+
+<script>
+// Monter l'explorateur quand la bibliothèque est prête
+if(window.iwTpLibrary){
+  window.iwTpLibrary.onReady(function(){
+    window.iwTpExplorer.mount('tp-container');
+  });
+  document.getElementById('btn-new-tp').addEventListener('click', function(){
+    if(window.iwTpForm) window.iwTpForm.create({ onSave: function(){ window.iwTpExplorer.refresh(); } });
+  });
+}
+</script>
+
+</body>
+</html>

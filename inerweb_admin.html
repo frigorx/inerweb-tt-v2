@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8"><script>
+(function(){if(sessionStorage.getItem('iw_purged'))return;if('serviceWorker' in navigator){caches.keys().then(function(k){k.forEach(function(c){caches.delete(c)})});navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(sw){sw.unregister()})});}sessionStorage.setItem('iw_purged','1');setTimeout(function(){location.reload(true)},500);})();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<title>inerWeb TT — Administration</title>
+<title>INERWEB PROG+ — Administration Filière Énergétique</title>
+<script src="js/core/inerweb.config.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -136,7 +139,7 @@ tr:hover{background:var(--bleu3);}
   <div class="hdr-logo">
     <span class="hdr-ico">🔐</span>
     <div class="hdr-txt">
-      <h1>inerWeb TT</h1>
+      <h1>INERWEB PROG+</h1>
       <p>Administration</p>
     </div>
   </div>
@@ -165,9 +168,11 @@ tr:hover{background:var(--bleu3);}
   <!-- TABS -->
   <div class="tabs">
     <button class="tab active" onclick="switchTab('users')">👥 Utilisateurs</button>
+    <button class="tab" onclick="switchTab('filieres')">🏫 Filières & Classes</button>
     <button class="tab" onclick="switchTab('tokens')">🎫 Tokens élèves</button>
     <button class="tab" onclick="switchTab('keys')">🔑 Clés système</button>
     <button class="tab" onclick="switchTab('log')">📋 Journal</button>
+    <button class="tab" onclick="switchTab('guide')">📖 Guide</button>
   </div>
   
   <!-- TAB: USERS -->
@@ -210,6 +215,50 @@ tr:hover{background:var(--bleu3);}
     </div>
   </div>
   
+  <!-- TAB: FILIERES -->
+  <div class="tab-content" id="tab-filieres">
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-value">3</div>
+        <div class="stat-label">Filières</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">5</div>
+        <div class="stat-label">Classes</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">8</div>
+        <div class="stat-label">Épreuves CCF</div>
+      </div>
+    </div>
+
+    <div class="card" id="filiere-CAP_IFCA" style="border-left:4px solid #2d5a8c">
+      <div class="card-title" style="color:#2d5a8c">❄️ CAP Installateur en Froid et Conditionnement d'Air</div>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:.5rem">
+        <span class="badge b-prof">CAP IFCA 1</span>
+        <span class="badge b-prof">CAP IFCA 2</span>
+      </div>
+      <p style="font-size:.82rem;color:var(--gris)">Épreuves CCF : <strong>EP2, EP3</strong></p>
+    </div>
+
+    <div class="card" id="filiere-BAC_MFER" style="border-left:4px solid #8e44ad">
+      <div class="card-title" style="color:#8e44ad">🔧 Bac Pro Métiers du Froid et des Énergies Renouvelables</div>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:.5rem">
+        <span class="badge b-admin">1ère MFER</span>
+        <span class="badge b-admin">Term MFER</span>
+      </div>
+      <p style="font-size:.82rem;color:var(--gris)">Épreuves CCF : <strong>E31, E32, E33</strong></p>
+    </div>
+
+    <div class="card" id="filiere-TNE" style="border-left:4px solid #16a085">
+      <div class="card-title" style="color:#16a085">⚡ 2nde Transitions Numérique et Énergétique</div>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:.5rem">
+        <span class="badge" style="background:var(--teal2);color:var(--teal)">2nde TNE</span>
+      </div>
+      <p style="font-size:.82rem;color:var(--gris)">Épreuves CCF : <em>aucune (année de détermination)</em></p>
+    </div>
+  </div>
+
   <!-- TAB: TOKENS -->
   <div class="tab-content" id="tab-tokens">
     <div class="card">
@@ -287,7 +336,70 @@ tr:hover{background:var(--bleu3);}
       <div id="logList"></div>
     </div>
   </div>
-  
+
+  <!-- TAB: GUIDE -->
+  <div class="tab-content" id="tab-guide">
+    <div class="card">
+      <div class="card-title">📖 Configuration du guide interactif</div>
+      <p style="font-size:.85rem;color:var(--gris);margin-bottom:1rem">
+        Le guide interactif aide les utilisateurs à découvrir le logiciel. Par défaut, il est visible pour tous.
+      </p>
+
+      <div class="fr" style="margin-bottom:1rem">
+        <label>État global</label>
+        <label style="font-size:.88rem;display:flex;align-items:center;gap:.5rem;cursor:pointer;padding:.3rem 0">
+          <input type="checkbox" id="guideEnabled" checked onchange="updateGuideConfig()"> Activer le guide interactif
+        </label>
+        <label style="font-size:.88rem;display:flex;align-items:center;gap:.5rem;cursor:pointer;padding:.3rem 0">
+          <input type="checkbox" id="guideForceDemo" onchange="updateGuideConfig()"> Uniquement en mode démo (?demo=1)
+        </label>
+      </div>
+
+      <div class="fr" style="margin-bottom:1rem">
+        <label>Permissions par rôle</label>
+        <p style="font-size:.78rem;color:var(--gris);margin-bottom:.5rem">Cochez les pages que chaque rôle peut voir dans le guide.</p>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+          <div class="card" style="margin:0;padding:.75rem;border:2px solid #2d5a8c">
+            <div style="font-size:.8rem;font-weight:800;color:#2d5a8c;margin-bottom:.5rem">👨‍🏫 Professeur</div>
+            <label style="font-size:.82rem;display:flex;align-items:center;gap:.4rem;cursor:pointer">
+              <input type="checkbox" class="guide-perm" data-role="prof" data-page="all" checked onchange="updateGuideConfig()"> Toutes les pages
+            </label>
+          </div>
+
+          <div class="card" style="margin:0;padding:.75rem;border:2px solid #16a085">
+            <div style="font-size:.8rem;font-weight:800;color:#16a085;margin-bottom:.5rem">🏢 Tuteur</div>
+            <label style="font-size:.82rem;display:flex;align-items:center;gap:.4rem;cursor:pointer">
+              <input type="checkbox" class="guide-perm" data-role="tuteur" data-page="all" checked onchange="updateGuideConfig()"> Toutes les pages
+            </label>
+          </div>
+
+          <div class="card" style="margin:0;padding:.75rem;border:2px solid #8e44ad">
+            <div style="font-size:.8rem;font-weight:800;color:#8e44ad;margin-bottom:.5rem">🎓 Élève</div>
+            <label style="font-size:.82rem;display:flex;align-items:center;gap:.4rem;cursor:pointer">
+              <input type="checkbox" class="guide-perm" data-role="eleve" data-page="all" checked onchange="updateGuideConfig()"> Toutes les pages
+            </label>
+          </div>
+
+          <div class="card" style="margin:0;padding:.75rem;border:2px solid #ff6b35">
+            <div style="font-size:.8rem;font-weight:800;color:#ff6b35;margin-bottom:.5rem">🔐 Admin</div>
+            <label style="font-size:.82rem;display:flex;align-items:center;gap:.4rem;cursor:pointer">
+              <input type="checkbox" class="guide-perm" data-role="admin" data-page="all" checked onchange="updateGuideConfig()"> Toutes les pages
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🔗 Accès direct</div>
+      <div class="btn-group">
+        <a href="demo.html" class="btn btn-orange" target="_blank">🎓 Portail Formation & Démo</a>
+        <a href="inerweb_prof.html?demo=1" class="btn btn-violet" target="_blank">🎮 Mode démo Prof</a>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- MODAL: USER -->
@@ -318,8 +430,27 @@ tr:hover{background:var(--bleu3);}
       </select>
     </div>
     <div class="fr">
-      <label>Classes (séparées par virgule)</label>
-      <input id="userClasses" placeholder="CAP IFCA 1, CAP IFCA 2">
+      <label>Classes</label>
+      <div id="userClassesCheckboxes" style="display:flex;flex-direction:column;gap:.6rem;padding:.5rem 0">
+        <div style="font-size:.75rem;font-weight:800;color:#2d5a8c">CAP IFCA</div>
+        <label style="font-size:.85rem;display:flex;align-items:center;gap:.5rem;cursor:pointer;padding-left:.5rem">
+          <input type="checkbox" class="cls-cb" value="CAP IFCA 1"> CAP IFCA 1
+        </label>
+        <label style="font-size:.85rem;display:flex;align-items:center;gap:.5rem;cursor:pointer;padding-left:.5rem">
+          <input type="checkbox" class="cls-cb" value="CAP IFCA 2"> CAP IFCA 2
+        </label>
+        <div style="font-size:.75rem;font-weight:800;color:#8e44ad;margin-top:.3rem">Bac Pro MFER</div>
+        <label style="font-size:.85rem;display:flex;align-items:center;gap:.5rem;cursor:pointer;padding-left:.5rem">
+          <input type="checkbox" class="cls-cb" value="1ère MFER"> 1ère MFER
+        </label>
+        <label style="font-size:.85rem;display:flex;align-items:center;gap:.5rem;cursor:pointer;padding-left:.5rem">
+          <input type="checkbox" class="cls-cb" value="Term MFER"> Term MFER
+        </label>
+        <div style="font-size:.75rem;font-weight:800;color:#16a085;margin-top:.3rem">2nde TNE</div>
+        <label style="font-size:.85rem;display:flex;align-items:center;gap:.5rem;cursor:pointer;padding-left:.5rem">
+          <input type="checkbox" class="cls-cb" value="2nde TNE"> 2nde TNE
+        </label>
+      </div>
     </div>
     <div class="btn-group" style="margin-top:1rem">
       <button class="btn btn-vert" onclick="saveUser()">💾 Enregistrer</button>
@@ -332,46 +463,152 @@ tr:hover{background:var(--bleu3);}
 <div class="spin-ov" id="spinOv"><div class="spinner"></div></div>
 
 <script>
-/* ═══ CONFIG ═══ */
-const API_URL='https://script.google.com/macros/s/AKfycbzlTtAjTpQF6piZe2pOh8gwal1sV0c-EJJzcvU5Kvly_U02apW4yN4Q8iUSL-SRDhG4/exec';
+/* ═══════════════════════════════════════════════════════════
+   CONFIG & ÉTAT GLOBAL
+   ═══════════════════════════════════════════════════════════ */
+const API_URL=(window.iwConfig?window.iwConfig.getApiUrl():'');
 let ADMIN_KEY='';
 let users=[];
 let eleves=[];
 
-/* ═══ LOGIN ═══ */
+const FILIERES = {
+  'CAP_IFCA': { nom: 'CAP Installateur en Froid et Conditionnement d\'Air', classes: ['CAP IFCA 1', 'CAP IFCA 2'], epreuves: ['EP2', 'EP3'], couleur: '#2d5a8c' },
+  'BAC_MFER': { nom: 'Bac Pro Métiers du Froid et des Énergies Renouvelables', classes: ['1ère MFER', 'Term MFER'], epreuves: ['E31', 'E32', 'E33'], couleur: '#8e44ad' },
+  'TNE': { nom: '2nde Transitions Numérique et Énergétique', classes: ['2nde TNE'], epreuves: [], couleur: '#16a085' }
+};
+
+/* ═══════════════════════════════════════════════════════════
+   UTILITAIRES : sécurité, réseau, parsing
+   ═══════════════════════════════════════════════════════════ */
+
+/** Échappement HTML anti-XSS */
+function esc(s){if(s==null)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
+/** JSON.parse protégé */
+function safeParse(str,fallback){try{return JSON.parse(str);}catch(e){console.warn('[admin] JSON.parse échoué :',e.message);return fallback;}}
+
+/** Parse le champ classes (string JSON ou tableau) en tableau */
+function parseClasses(raw){
+  if(!raw)return [];
+  if(Array.isArray(raw))return raw;
+  if(typeof raw==='string'){try{const a=JSON.parse(raw);return Array.isArray(a)?a:[];}catch{return[];}}
+  return [];
+}
+
+/**
+ * Appel API centralisé — élimine la duplication fetch.
+ * @param {string} action — nom de l'action API
+ * @param {Object} [extra] — paramètres supplémentaires
+ * @param {Object} [opts] — {silent:bool} pour ne pas afficher de spinner
+ * @returns {Promise<Object>} réponse JSON parsée
+ */
+async function apiCall(action,extra={},opts={}){
+  if(!opts.silent)showSpinner();
+  try{
+    const p=new URLSearchParams({action,key:ADMIN_KEY,...extra});
+    const r=await fetch(`${API_URL}?${p}`,{redirect:'follow'});
+    const d=await r.json();
+    if(d.error){toast(d.error,'err');return null;}
+    return d;
+  }catch(e){
+    console.error('[admin] Erreur API ('+action+') :',e);
+    toast('Erreur réseau','err');
+    return null;
+  }finally{
+    if(!opts.silent)hideSpinner();
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   AUTHENTIFICATION
+   ═══════════════════════════════════════════════════════════ */
 async function login(){
   const key=document.getElementById('adminKey').value.trim();
   if(!key){toast('Saisir la clé admin','err');return;}
-  
+
+  // On ne peut pas utiliser apiCall ici car ADMIN_KEY n'est pas encore défini
   showSpinner();
   try{
     const p=new URLSearchParams({action:'getUsers',key});
     const r=await fetch(`${API_URL}?${p}`,{redirect:'follow'});
-    const d=await r.json();
-    if(d.error){
+    const txt=await r.text();
+    let d;
+    try{ d=JSON.parse(txt); }catch(e){
+      console.error('[admin] Réponse non-JSON :',txt.substring(0,200));
+      toast('Erreur : réponse invalide du serveur','err');
       hideSpinner();
-      toast(d.error,'err');
       return;
     }
-    // Connexion réussie
+    if(d.error){hideSpinner();toast(d.error,'err');return;}
+
     ADMIN_KEY=key;
     sessionStorage.setItem('admin_key',key);
     users=d;
     document.getElementById('loginPage').style.display='none';
     document.getElementById('mainContent').classList.add('active');
-    document.getElementById('connStatus').innerHTML='🟢 Admin';
-    document.getElementById('connStatus').style.background='rgba(39,174,96,.3)';
+    const badge=document.getElementById('connStatus');
+    badge.textContent='🟢 Admin';
+    badge.style.background='rgba(39,174,96,.3)';
     renderUsers();
     loadEleves();
     loadLog();
+    renderGuideConfig();
   }catch(e){
-    toast('Erreur connexion','err');
+    console.error('[admin] Erreur connexion :',e);
+    toast('Erreur connexion : '+e.message,'err');
   }
   hideSpinner();
 }
 
-/* ═══ AUTO-LOGIN ═══ */
+/* ── Mode démo admin ── */
+function loadAdminDemo(){
+  ADMIN_KEY='[DEMO]';
+  users=[
+    {id:'U1',nom:'HENNINOT',prenom:'Frédéric',email:'f.henninot@raynaud.fr',role:'ADMIN',classes:'["CAP IFCA 1","CAP IFCA 2","1ère MFER","Term MFER","2nde TNE"]',actif:true},
+    {id:'U2',nom:'MARTIN',prenom:'Sophie',email:'s.martin@raynaud.fr',role:'ENSEIGNANT',classes:'["CAP IFCA 1","CAP IFCA 2"]',actif:true},
+    {id:'U3',nom:'BERNARD',prenom:'Paul',email:'p.bernard@raynaud.fr',role:'ENSEIGNANT',classes:'["1ère MFER","Term MFER"]',actif:true},
+    {id:'U4',nom:'DUPONT',prenom:'Marie',email:'m.dupont@raynaud.fr',role:'LECTURE',classes:'["2nde TNE"]',actif:true}
+  ];
+  eleves=[
+    {code:'ELV-001',nom:'DUPONT',prenom:'Martin',classe:'CAP IFCA 1'},
+    {code:'ELV-002',nom:'MARTIN',prenom:'Léa',classe:'CAP IFCA 2'},
+    {code:'ELV-003',nom:'GARCIA',prenom:'Tom',classe:'1ère MFER'},
+    {code:'ELV-004',nom:'BERNARD',prenom:'Emma',classe:'Term MFER'},
+    {code:'ELV-005',nom:'PETIT',prenom:'Lucas',classe:'2nde TNE'},
+    {code:'ELV-006',nom:'ROUX',prenom:'Camille',classe:'CAP IFCA 1'}
+  ];
+  document.getElementById('loginPage').style.display='none';
+  document.getElementById('mainContent').classList.add('active');
+  const badge=document.getElementById('connStatus');
+  badge.textContent='🟢 Démo Admin';
+  badge.style.background='rgba(243,156,18,.3)';
+  renderUsers();
+  // Peupler le sélecteur d'élèves pour les tokens
+  const sel=document.getElementById('tokenEleve');
+  sel.innerHTML='<option value="">— Sélectionner un élève —</option>'+
+    eleves.map(e=>`<option value="${esc(e.code)}">${esc(e.nom)} ${esc(e.prenom)} (${esc(e.code)})</option>`).join('');
+  // Journal fictif
+  document.getElementById('logList').innerHTML=[
+    {timestamp:new Date(Date.now()-3600000*2).toISOString(),action:'Connexion admin',target:'f.henninot@raynaud.fr',actor:'admin'},
+    {timestamp:new Date(Date.now()-86400000).toISOString(),action:'Ajout utilisateur',target:'s.martin@raynaud.fr',actor:'admin'},
+    {timestamp:new Date(Date.now()-86400000*3).toISOString(),action:'Rotation clé maître',target:'master_key',actor:'admin'}
+  ].map(l=>`<div class="log-item"><span class="log-time">${new Date(l.timestamp).toLocaleString('fr-FR')}</span> <span class="log-action">${esc(l.action)}</span> <span>${esc(l.target)}</span> <span style="color:var(--gris)">par ${esc(l.actor)}</span></div>`).join('');
+  if(typeof renderGuideConfig==='function')renderGuideConfig();
+  toast('Mode démo — données fictives chargées','ok');
+  // Bandeau démo
+  const banner=document.createElement('div');
+  banner.style.cssText='position:fixed;top:48px;left:50%;transform:translateX(-50%);background:#f39c12;color:#333;font-weight:900;font-size:.65rem;padding:.15rem 1rem;border-radius:0 0 6px 6px;z-index:300;letter-spacing:1px;';
+  banner.textContent='MODE DÉMO';
+  document.body.appendChild(banner);
+}
+
+/* ── Auto-login depuis sessionStorage ── */
 window.onload=function(){
+  const params=new URLSearchParams(window.location.search);
+  if(params.get('demo')==='1'){
+    loadAdminDemo();
+    return;
+  }
   const savedKey=sessionStorage.getItem('admin_key');
   if(savedKey){
     document.getElementById('adminKey').value=savedKey;
@@ -379,7 +616,7 @@ window.onload=function(){
   }
 };
 
-/* ═══ TABS ═══ */
+/* ── Navigation par onglets ── */
 function switchTab(id){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
@@ -387,33 +624,36 @@ function switchTab(id){
   document.getElementById('tab-'+id).classList.add('active');
 }
 
-/* ═══ USERS ═══ */
+/* ═══════════════════════════════════════════════════════════
+   GESTION DES UTILISATEURS
+   ═══════════════════════════════════════════════════════════ */
 function renderUsers(){
   const tb=document.getElementById('usersTable');
   let admins=0,profs=0,lecture=0;
-  
+
   tb.innerHTML=users.map(u=>{
     if(u.role==='ADMIN')admins++;
     else if(u.role==='ENSEIGNANT')profs++;
     else lecture++;
-    
+
     const roleBadge=u.role==='ADMIN'?'b-admin':(u.role==='ENSEIGNANT'?'b-prof':'b-lecture');
     const statutBadge=u.actif!==false?'b-actif':'b-inactif';
-    const classes=u.classes?(typeof u.classes==='string'?JSON.parse(u.classes):u.classes).join(', '):'—';
-    
+    const classes=parseClasses(u.classes).join(', ')||'—';
+    const uid=esc(u.id);
+
     return `<tr>
-      <td><strong>${u.nom||''}</strong> ${u.prenom||''}</td>
-      <td>${u.email||'—'}</td>
-      <td><span class="badge ${roleBadge}">${u.role||'LECTURE'}</span></td>
-      <td>${classes}</td>
+      <td><strong>${esc(u.nom)}</strong> ${esc(u.prenom)}</td>
+      <td>${esc(u.email||'—')}</td>
+      <td><span class="badge ${roleBadge}">${esc(u.role||'LECTURE')}</span></td>
+      <td>${esc(classes)}</td>
       <td><span class="badge ${statutBadge}">${u.actif!==false?'Actif':'Inactif'}</span></td>
       <td>
-        <button class="btn btn-ghost btn-sm" onclick="editUser('${u.id}')">✏️</button>
-        ${u.actif!==false?`<button class="btn btn-rouge btn-sm" onclick="deleteUser('${u.id}')">🗑️</button>`:''}
+        <button class="btn btn-ghost btn-sm" onclick="editUser('${uid}')">✏️</button>
+        ${u.actif!==false?`<button class="btn btn-rouge btn-sm" onclick="deleteUser('${uid}')">🗑️</button>`:''}
       </td>
     </tr>`;
   }).join('');
-  
+
   document.getElementById('statAdmins').textContent=admins;
   document.getElementById('statProfs').textContent=profs;
   document.getElementById('statLecture').textContent=lecture;
@@ -426,8 +666,9 @@ function openUserModal(user=null){
   document.getElementById('userPrenom').value=user?.prenom||'';
   document.getElementById('userEmail').value=user?.email||'';
   document.getElementById('userRole').value=user?.role||'LECTURE';
-  const classes=user?.classes?(typeof user.classes==='string'?JSON.parse(user.classes):user.classes).join(', '):'';
-  document.getElementById('userClasses').value=classes;
+  // Cocher les checkboxes classes
+  const userCls=parseClasses(user?.classes);
+  document.querySelectorAll('.cls-cb').forEach(cb=>{cb.checked=userCls.includes(cb.value);});
   document.getElementById('userModal').classList.add('open');
 }
 
@@ -447,84 +688,57 @@ async function saveUser(){
     prenom:document.getElementById('userPrenom').value.trim(),
     email:document.getElementById('userEmail').value.trim(),
     role:document.getElementById('userRole').value,
-    classes:document.getElementById('userClasses').value.split(',').map(c=>c.trim()).filter(Boolean)
+    classes:[...document.querySelectorAll('.cls-cb:checked')].map(cb=>cb.value)
   };
-  
+
   if(!data.nom||!data.email){toast('Nom et email requis','err');return;}
-  
-  showSpinner();
-  try{
-    const action=id?'updateUser':'addUser';
-    const p=new URLSearchParams({action,key:ADMIN_KEY,data:JSON.stringify(data)});
-    if(id)p.set('userId',id);
-    const r=await fetch(`${API_URL}?${p}`,{redirect:'follow'});
-    const d=await r.json();
-    if(d.error){toast(d.error,'err');}
-    else{
-      toast(id?'Utilisateur modifié':'Utilisateur créé','ok');
-      closeUserModal();
-      await refreshUsers();
-    }
-  }catch(e){toast('Erreur','err');}
-  hideSpinner();
+
+  const action=id?'updateUser':'addUser';
+  const extra={data:JSON.stringify(data)};
+  if(id)extra.userId=id;
+  const d=await apiCall(action,extra);
+  if(d){
+    toast(id?'Utilisateur modifié':'Utilisateur créé','ok');
+    closeUserModal();
+    await refreshUsers();
+  }
 }
 
 async function deleteUser(id){
   if(!confirm('Désactiver cet utilisateur ?'))return;
-  showSpinner();
-  try{
-    const p=new URLSearchParams({action:'deleteUser',key:ADMIN_KEY,userId:id});
-    const r=await fetch(`${API_URL}?${p}`,{redirect:'follow'});
-    const d=await r.json();
-    if(d.error){toast(d.error,'err');}
-    else{
-      toast('Utilisateur désactivé','ok');
-      await refreshUsers();
-    }
-  }catch(e){toast('Erreur','err');}
-  hideSpinner();
+  const d=await apiCall('deleteUser',{userId:id});
+  if(d){toast('Utilisateur désactivé','ok');await refreshUsers();}
 }
 
 async function refreshUsers(){
-  try{
-    const p=new URLSearchParams({action:'getUsers',key:ADMIN_KEY});
-    const r=await fetch(`${API_URL}?${p}`,{redirect:'follow'});
-    users=await r.json();
-    renderUsers();
-  }catch(e){}
+  const d=await apiCall('getUsers',{},{silent:true});
+  if(d){users=d;renderUsers();}
 }
 
-/* ═══ TOKENS ═══ */
+/* ═══════════════════════════════════════════════════════════
+   TOKENS ÉLÈVES / TUTEURS
+   ═══════════════════════════════════════════════════════════ */
 async function loadEleves(){
-  try{
-    const p=new URLSearchParams({action:'getDashboard',key:ADMIN_KEY});
-    const r=await fetch(`${API_URL}?${p}`,{redirect:'follow'});
-    eleves=await r.json();
-    const sel=document.getElementById('tokenEleve');
-    sel.innerHTML='<option value="">— Sélectionner un élève —</option>'+
-      eleves.map(e=>`<option value="${e.code}">${e.nom} ${e.prenom} (${e.code})</option>`).join('');
-  }catch(e){}
+  const d=await apiCall('getDashboard',{},{silent:true});
+  if(!d)return;
+  eleves=d;
+  const sel=document.getElementById('tokenEleve');
+  sel.innerHTML='<option value="">— Sélectionner un élève —</option>'+
+    eleves.map(e=>`<option value="${esc(e.code)}">${esc(e.nom)} ${esc(e.prenom)} (${esc(e.code)})</option>`).join('');
 }
 
 async function generateTokens(){
   const code=document.getElementById('tokenEleve').value;
   if(!code){toast('Sélectionner un élève','err');return;}
   if(!confirm('Générer de nouveaux tokens ? Les anciens seront invalidés.'))return;
-  
-  showSpinner();
-  try{
-    const p=new URLSearchParams({action:'generateTokens',key:ADMIN_KEY,eleve:code});
-    const r=await fetch(`${API_URL}?${p}`,{redirect:'follow'});
-    const d=await r.json();
-    if(d.error){toast(d.error,'err');}
-    else{
-      document.getElementById('newTokenEleve').textContent=d.token_eleve;
-      document.getElementById('newTokenTuteur').textContent=d.token_tuteur;
-      document.getElementById('tokenResult').style.display='block';
-      toast('Tokens générés','ok');
-    }
-  }catch(e){toast('Erreur','err');}
-  hideSpinner();
+
+  const d=await apiCall('generateTokens',{eleve:code});
+  if(d){
+    document.getElementById('newTokenEleve').textContent=d.token_eleve;
+    document.getElementById('newTokenTuteur').textContent=d.token_tuteur;
+    document.getElementById('tokenResult').style.display='block';
+    toast('Tokens générés','ok');
+  }
 }
 
 function copyTokens(){
@@ -534,15 +748,76 @@ function copyTokens(){
   navigator.clipboard.writeText(txt).then(()=>toast('Copié !','ok'));
 }
 
+/** Génération PDF/HTML des identifiants élèves */
 function exportIdentifiants(){
-  toast('Export PDF en cours de développement','inf');
+  if(!users||!users.length){toast('Aucun utilisateur à exporter','warn');return;}
+  // Filtrer les utilisateurs avec tokens
+  const liste=users.filter(u=>u.token_eleve||u.token_tuteur);
+  if(!liste.length){toast('Aucun identifiant à exporter','warn');return;}
+
+  if(window.jspdf && window.jspdf.jsPDF){
+    // Génération PDF avec jsPDF
+    const doc=new window.jspdf.jsPDF();
+    doc.setFontSize(16);
+    doc.text('Identifiants élèves — inerWeb TT FE',14,20);
+    doc.setFontSize(10);
+    doc.text('Généré le '+new Date().toLocaleDateString('fr-FR'),14,28);
+    let y=40;
+    doc.setFontSize(9);
+    liste.forEach((u,i)=>{
+      if(y>270){doc.addPage();y=20;}
+      doc.setFont(undefined,'bold');
+      doc.text(`${u.nom||''} ${u.prenom||''}`,14,y);
+      doc.setFont(undefined,'normal');
+      doc.text(`Token élève : ${u.token_eleve||'—'}`,20,y+5);
+      doc.text(`Token tuteur : ${u.token_tuteur||'—'}`,20,y+10);
+      doc.text(`Code : ${u.code||u.id||'—'}`,20,y+15);
+      y+=22;
+    });
+    doc.save('identifiants_inerweb.pdf');
+    toast('PDF généré','ok');
+  } else {
+    // Fallback : tableau HTML imprimable
+    const w=window.open('','_blank');
+    w.document.write(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+      <title>Identifiants élèves</title>
+      <style>body{font-family:Arial,sans-serif;padding:20px;}
+      table{width:100%;border-collapse:collapse;margin-top:16px;}
+      th,td{border:1px solid #ccc;padding:6px 10px;text-align:left;font-size:13px;}
+      th{background:#1b3a63;color:#fff;}
+      h1{font-size:18px;color:#1b3a63;}
+      .date{color:#888;font-size:12px;}
+      @media print{button{display:none;}}</style></head><body>
+      <h1>Identifiants élèves — inerWeb TT FE</h1>
+      <p class="date">Généré le ${new Date().toLocaleDateString('fr-FR')}</p>
+      <button onclick="window.print()">🖨️ Imprimer</button>
+      <table><thead><tr><th>Nom</th><th>Prénom</th><th>Code</th><th>Token élève</th><th>Token tuteur</th></tr></thead><tbody>`);
+    liste.forEach(u=>{
+      w.document.write(`<tr><td>${u.nom||'—'}</td><td>${u.prenom||'—'}</td><td>${u.code||u.id||'—'}</td><td>${u.token_eleve||'—'}</td><td>${u.token_tuteur||'—'}</td></tr>`);
+    });
+    w.document.write('</tbody></table></body></html>');
+    w.document.close();
+    toast('Tableau imprimable ouvert','ok');
+  }
 }
 
-/* ═══ KEYS ═══ */
-function showKey(type){
+/* ═══════════════════════════════════════════════════════════
+   GESTION DES CLÉS SYSTÈME
+   ═══════════════════════════════════════════════════════════ */
+
+/** Récupère et affiche la clé via l'API */
+async function showKey(type){
   const el=document.getElementById(type+'KeyDisplay');
   if(el.textContent.includes('•')){
-    // Afficher la clé (on ne l'a pas côté client, on montre juste un message)
+    try{
+      const d=await apiCall('getKey',{keyType:type},{silent:true});
+      if(d&&d.key){
+        el.textContent=d.key;
+        toast('Clé récupérée','ok');
+        return;
+      }
+    }catch(e){}
+    // Fallback : redirection vers le Sheet
     toast('Consultez le Sheet CONFIG pour voir la clé','inf');
   }
 }
@@ -552,45 +827,38 @@ async function rotateKey(type){
     ?'⚠️ ATTENTION: Vous serez déconnecté après la rotation de la clé admin. Continuer ?'
     :'Générer une nouvelle clé maître ? Les anciennes seront invalidées.';
   if(!confirm(msg))return;
-  
-  showSpinner();
-  try{
-    const p=new URLSearchParams({action:'rotateKey',key:ADMIN_KEY,keyType:type});
-    const r=await fetch(`${API_URL}?${p}`,{redirect:'follow'});
-    const d=await r.json();
-    if(d.error){toast(d.error,'err');}
-    else{
-      toast('Clé renouvelée: '+d.newKey,'ok');
-      document.getElementById(type+'KeyDisplay').textContent=d.newKey;
-      if(type==='admin'){
-        sessionStorage.removeItem('admin_key');
-        setTimeout(()=>location.reload(),2000);
-      }
+
+  const d=await apiCall('rotateKey',{keyType:type});
+  if(d){
+    toast('Clé renouvelée','ok');
+    document.getElementById(type+'KeyDisplay').textContent=d.newKey;
+    if(type==='admin'){
+      sessionStorage.removeItem('admin_key');
+      setTimeout(()=>location.reload(),2000);
     }
-  }catch(e){toast('Erreur','err');}
-  hideSpinner();
+  }
 }
 
-/* ═══ LOG ═══ */
+/* ═══════════════════════════════════════════════════════════
+   JOURNAL D'ADMINISTRATION
+   ═══════════════════════════════════════════════════════════ */
 async function loadLog(){
-  try{
-    const p=new URLSearchParams({action:'getAdminLog',key:ADMIN_KEY});
-    const r=await fetch(`${API_URL}?${p}`,{redirect:'follow'});
-    const logs=await r.json();
-    if(logs.error)return;
-    
-    document.getElementById('logList').innerHTML=logs.map(l=>`
-      <div class="log-item">
-        <span class="log-time">${new Date(l.timestamp).toLocaleString('fr-FR')}</span>
-        <span class="log-action">${l.action}</span>
-        <span>${l.target||''}</span>
-        <span style="color:var(--gris)">par ${l.actor||'?'}</span>
-      </div>
-    `).join('')||'<p style="color:var(--gris);text-align:center;padding:2rem">Aucune entrée</p>';
-  }catch(e){}
+  const logs=await apiCall('getAdminLog',{},{silent:true});
+  if(!logs||!Array.isArray(logs))return;
+
+  document.getElementById('logList').innerHTML=logs.map(l=>`
+    <div class="log-item">
+      <span class="log-time">${new Date(l.timestamp).toLocaleString('fr-FR')}</span>
+      <span class="log-action">${esc(l.action)}</span>
+      <span>${esc(l.target)}</span>
+      <span style="color:var(--gris)">par ${esc(l.actor||'?')}</span>
+    </div>
+  `).join('')||'<p style="color:var(--gris);text-align:center;padding:2rem">Aucune entrée</p>';
 }
 
-/* ═══ UTILS ═══ */
+/* ═══════════════════════════════════════════════════════════
+   UI : spinner, toast
+   ═══════════════════════════════════════════════════════════ */
 function showSpinner(){document.getElementById('spinOv').classList.add('open');}
 function hideSpinner(){document.getElementById('spinOv').classList.remove('open');}
 function toast(msg,type='inf'){
@@ -598,6 +866,49 @@ function toast(msg,type='inf'){
   t.className=`toast ${type}`;t.textContent=msg;c.appendChild(t);
   setTimeout(()=>t.remove(),3500);
 }
+
+/* ═══════════════════════════════════════════════════════════
+   CONFIGURATION DU GUIDE INTERACTIF
+   ═══════════════════════════════════════════════════════════ */
+function loadGuideConfigAdmin() {
+  try {
+    const raw = localStorage.getItem('inerweb-tt-fe-guide-cfg');
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return { enabled: true, forceDemo: false, roles: { prof: ['all'], tuteur: ['all'], eleve: ['all'], admin: ['all'] } };
+}
+
+function renderGuideConfig() {
+  const cfg = loadGuideConfigAdmin();
+  document.getElementById('guideEnabled').checked = cfg.enabled !== false;
+  document.getElementById('guideForceDemo').checked = cfg.forceDemo === true;
+
+  document.querySelectorAll('.guide-perm').forEach(cb => {
+    const role = cb.dataset.role;
+    const pages = cfg.roles && cfg.roles[role] ? cfg.roles[role] : ['all'];
+    cb.checked = pages.includes('all');
+  });
+}
+
+function updateGuideConfig() {
+  const cfg = {
+    enabled: document.getElementById('guideEnabled').checked,
+    forceDemo: document.getElementById('guideForceDemo').checked,
+    roles: {}
+  };
+
+  document.querySelectorAll('.guide-perm').forEach(cb => {
+    const role = cb.dataset.role;
+    cfg.roles[role] = cb.checked ? ['all'] : [];
+  });
+
+  localStorage.setItem('inerweb-tt-fe-guide-cfg', JSON.stringify(cfg));
+  toast('Configuration du guide sauvegardée', 'ok');
+}
 </script>
+<!-- Bouton aide flottant -->
+<a href="aide.html#admin" target="_blank" rel="noopener noreferrer" title="Guide d'utilisation — Administration" style="position:fixed;bottom:1.5rem;right:1.5rem;width:52px;height:52px;background:#ff6b35;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:900;text-decoration:none;box-shadow:0 4px 20px rgba(255,107,53,.4);z-index:9999;transition:transform .2s,box-shadow .2s;font-family:'Nunito',sans-serif;" onmouseover="this.style.transform='scale(1.1)';this.style.boxShadow='0 6px 28px rgba(255,107,53,.5)'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 20px rgba(255,107,53,.4)'">?</a>
+
+<script src="js/demo-guide.js" defer></script>
 </body>
 </html>

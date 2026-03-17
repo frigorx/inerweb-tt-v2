@@ -342,10 +342,11 @@
       if (!photo) { window.toast('Photo introuvable', 'err'); return; }
 
       if (photo.type === 'pdf') {
-        // Ouvrir le PDF dans un nouvel onglet
+        // Ouvrir le PDF dans un nouvel onglet (échappement sécurisé)
+        var _safeName = (photo.filename || 'Document PDF').replace(/[<>"'&]/g, '');
         var win = window.open('', '_blank');
         if (win) {
-          win.document.write('<html><head><title>' + (photo.filename || 'Document PDF') + '</title></head>'
+          win.document.write('<!DOCTYPE html><html><head><title>' + _safeName + '</title></head>'
             + '<body style="margin:0"><embed src="' + photo.data + '" type="application/pdf" width="100%" height="100%" style="position:absolute;top:0;left:0;width:100%;height:100%"></body></html>');
           win.document.close();
         } else {

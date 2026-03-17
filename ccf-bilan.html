@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><script>
+(function(){if(sessionStorage.getItem('iw_purged'))return;if('serviceWorker' in navigator){caches.keys().then(function(k){k.forEach(function(c){caches.delete(c)})});navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(sw){sw.unregister()})});}sessionStorage.setItem('iw_purged','1');setTimeout(function(){location.reload(true)},500);})();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bilan CCF — INERWEB</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:'Nunito',sans-serif;
+  color:#1a2332;
+  background:#f0f2f5;
+  padding:1.5rem;
+}
+
+.bilan {
+  max-width:800px;
+  margin:0 auto;
+  background:#fff;
+  border-radius:12px;
+  padding:2.5rem;
+  box-shadow:0 4px 20px rgba(0,0,0,.1);
+}
+
+.bilan-header {
+  text-align:center;
+  border-bottom:3px solid #1B3A63;
+  padding-bottom:1.5rem;
+  margin-bottom:1.5rem;
+}
+.bilan-header h1 {
+  font-size:1.6rem;
+  color:#1B3A63;
+  font-weight:900;
+}
+.bilan-header .etablissement {
+  font-size:.85rem;
+  color:#666;
+  margin-top:.25rem;
+}
+.bilan-header .formation-badge {
+  display:inline-block;
+  background:#1B3A63;
+  color:#fff;
+  padding:.25rem 1rem;
+  border-radius:20px;
+  font-size:.8rem;
+  font-weight:700;
+  margin-top:.75rem;
+}
+
+.bilan-eleve {
+  background:#f8f9fa;
+  border-radius:10px;
+  padding:1rem 1.5rem;
+  margin-bottom:1.5rem;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:.5rem;
+  font-size:.88rem;
+}
+.bilan-eleve strong { color:#1B3A63; }
+
+.epreuve {
+  margin-bottom:1.5rem;
+  border:2px solid #e0e0e0;
+  border-radius:10px;
+  overflow:hidden;
+}
+.epreuve-header {
+  background:#1B3A63;
+  color:#fff;
+  padding:.75rem 1.25rem;
+  font-weight:800;
+  font-size:.95rem;
+}
+.epreuve table {
+  width:100%;
+  border-collapse:collapse;
+  font-size:.82rem;
+}
+.epreuve th {
+  background:#e8f0f8;
+  color:#1B3A63;
+  padding:.5rem .75rem;
+  text-align:left;
+  font-weight:700;
+}
+.epreuve td {
+  padding:.5rem .75rem;
+  border-bottom:1px solid #eee;
+}
+.epreuve .niveau-cell {
+  font-weight:700;
+  text-align:center;
+}
+.epreuve .valide-cell {
+  text-align:center;
+  font-size:1rem;
+}
+.epreuve-note {
+  background:#f8f9fa;
+  padding:.75rem 1.25rem;
+  text-align:right;
+  font-weight:800;
+  font-size:1rem;
+  color:#1B3A63;
+  border-top:2px solid #e0e0e0;
+}
+
+.bilan-synthese {
+  background:#1B3A63;
+  color:#fff;
+  border-radius:10px;
+  padding:1.25rem 1.5rem;
+  margin:1.5rem 0;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.bilan-synthese .note-globale {
+  font-size:1.8rem;
+  font-weight:900;
+}
+.bilan-synthese .avis {
+  font-size:1.1rem;
+  font-weight:800;
+  padding:.4rem 1.2rem;
+  border-radius:20px;
+}
+.avis-favorable { background:#27ae60; }
+.avis-defavorable { background:#e74c3c; }
+
+.bilan-footer {
+  margin-top:2rem;
+  padding-top:1.5rem;
+  border-top:2px solid #e0e0e0;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:1rem;
+  font-size:.82rem;
+  color:#666;
+}
+.signature-line {
+  margin-top:2rem;
+  border-top:1px solid #999;
+  width:200px;
+  padding-top:.25rem;
+  font-size:.75rem;
+  color:#999;
+}
+
+.no-print {
+  text-align:center;
+  margin-bottom:1.5rem;
+}
+.btn-print {
+  padding:.6rem 1.5rem;
+  background:#1B3A63;
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  font-size:.9rem;
+  font-weight:700;
+  cursor:pointer;
+  font-family:inherit;
+}
+.btn-print:hover { background:#2d5a8c; }
+.btn-retour {
+  padding:.6rem 1.5rem;
+  background:#f0f0f0;
+  color:#333;
+  border:none;
+  border-radius:8px;
+  font-size:.9rem;
+  font-weight:700;
+  cursor:pointer;
+  font-family:inherit;
+  margin-left:.5rem;
+}
+
+.bilan-vide {
+  text-align:center;
+  padding:3rem;
+  color:#999;
+  font-size:1.1rem;
+}
+
+@media print {
+  body { padding:0; background:#fff; }
+  .bilan { box-shadow:none; border-radius:0; padding:1.5cm; max-width:100%; }
+  .no-print { display:none !important; }
+  .epreuve { page-break-inside:avoid; }
+}
+</style>
+</head>
+<body>
+
+<div class="no-print">
+  <button class="btn-print" onclick="window.print()">🖨️ Imprimer</button>
+  <button class="btn-print" onclick="downloadPdf()" style="background:#e67e22">📄 PDF</button>
+  <button class="btn-retour" onclick="window.close()">← Fermer</button>
+</div>
+
+<div class="bilan" id="bilan-container">
+  <div class="bilan-vide" id="bilan-loading">Chargement du bilan CCF...</div>
+</div>
+
+<!-- Modules CORE -->
+<script src="js/core/events.js"></script>
+<script src="js/shared/levels-registry.js"></script>
+<script src="js/shared/student-registry.js"></script>
+<script src="js/eval/eval-projections.js"></script>
+<script src="js/eval/eval-exports.js"></script>
+<script src="js/export/pdf-export.js"></script>
+
+<script>
+function downloadPdf(){
+  var params = new URLSearchParams(window.location.search);
+  var eleveId = params.get('eleve');
+  var formation = params.get('formation') || 'CAP_IFCA';
+  if(eleveId && window.iwPdfExport){
+    window.iwPdfExport.bilanCcf(eleveId, formation);
+  }
+}
+</script>
+
+<script>
+(function(){
+  'use strict';
+
+  var params = new URLSearchParams(window.location.search);
+  var eleveId = params.get('eleve');
+  var formation = params.get('formation') || 'CAP_IFCA';
+
+  if(!eleveId){
+    document.getElementById('bilan-loading').innerHTML = 'Param\u00e8tre \u00e9l\u00e8ve manquant.<br><small>Usage : ccf-bilan.html?eleve=CODE&formation=CAP_IFCA</small>';
+    return;
+  }
+
+  // Charger formations.json pour les données de référence
+  fetch('data/formations.json')
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      window.CFG = window.CFG || {};
+      window.CFG.formations = data.formations || [];
+      initBilan();
+    })
+    .catch(function(){
+      initBilan(); // Fallback sans formations.json
+    });
+
+  function initBilan(){
+    // Attendre que les projections soient prêtes
+    if(window.iwEvalProjections && window.iwEvents){
+      window.iwEvalProjections.rebuild().then(function(){
+        renderBilan();
+      }).catch(function(){
+        renderBilan();
+      });
+    } else {
+      renderBilan();
+    }
+  }
+
+  function renderBilan(){
+    if(!window.iwEvalExports || !window.iwEvalExports.generateCcfBilan){
+      document.getElementById('bilan-loading').textContent = 'Module d\'export non disponible.';
+      return;
+    }
+
+    var bilan = window.iwEvalExports.generateCcfBilan(eleveId, formation);
+    if(!bilan){
+      document.getElementById('bilan-loading').textContent = 'Impossible de g\u00e9n\u00e9rer le bilan pour cette formation.';
+      return;
+    }
+
+    var html = '';
+
+    // En-tête
+    html += '<div class="bilan-header">';
+    html += '<h1>BILAN CCF</h1>';
+    html += '<div class="etablissement">' + esc(bilan.etablissement) + '</div>';
+    html += '<div class="formation-badge">' + esc(bilan.formationNom) + '</div>';
+    html += '</div>';
+
+    // Infos élève
+    html += '<div class="bilan-eleve">';
+    html += '<div><strong>\u00c9l\u00e8ve :</strong> ' + esc(bilan.eleve.nom) + ' ' + esc(bilan.eleve.prenom) + '</div>';
+    html += '<div><strong>Code :</strong> ' + esc(bilan.eleve.code) + '</div>';
+    html += '<div><strong>Classe :</strong> ' + esc(bilan.eleve.classe || '\u2014') + '</div>';
+    html += '<div><strong>Ann\u00e9e :</strong> ' + esc(bilan.anneeScolaire) + '</div>';
+    html += '</div>';
+
+    // Épreuves
+    bilan.epreuves.forEach(function(ep){
+      html += '<div class="epreuve">';
+      html += '<div class="epreuve-header">' + esc(ep.code) + ' \u2014 ' + esc(ep.libelle) + '</div>';
+      html += '<table><thead><tr>';
+      html += '<th>Code</th><th>Comp\u00e9tence</th><th style="text-align:center">Niveau</th><th style="text-align:center">Valid\u00e9</th>';
+      html += '</tr></thead><tbody>';
+
+      ep.competences.forEach(function(c){
+        html += '<tr>';
+        html += '<td><strong>' + esc(c.code) + '</strong></td>';
+        html += '<td>' + esc(c.libelle) + '</td>';
+        html += '<td class="niveau-cell" style="color:' + c.color + '">' + esc(c.niveauLabel) + '</td>';
+        html += '<td class="valide-cell">' + (c.valide ? '\u2705' : (c.niveau > 0 ? '\u274c' : '\u2014')) + '</td>';
+        html += '</tr>';
+      });
+
+      html += '</tbody></table>';
+      html += '<div class="epreuve-note">Note ' + esc(ep.code) + ' : <span style="font-size:1.2rem">' + ep.note.toFixed(1) + ' / 20</span> (coef ' + ep.coef + ')</div>';
+      html += '</div>';
+    });
+
+    // Synthèse
+    var avisClass = bilan.avis === 'FAVORABLE' ? 'avis-favorable' : 'avis-defavorable';
+    html += '<div class="bilan-synthese">';
+    html += '<div><div style="font-size:.75rem;opacity:.7">NOTE GLOBALE CCF</div><div class="note-globale">' + bilan.noteGlobale.toFixed(1) + ' / 20</div></div>';
+    html += '<div class="avis ' + avisClass + '">' + bilan.avis + '</div>';
+    html += '</div>';
+
+    // Pied de page
+    html += '<div class="bilan-footer">';
+    html += '<div>';
+    html += '<strong>Date :</strong> ' + formatDate(bilan.dateGeneration);
+    html += '<div class="signature-line">Signature enseignant</div>';
+    html += '</div>';
+    html += '<div style="text-align:right">';
+    html += '<strong>Document g\u00e9n\u00e9r\u00e9 par INERWEB</strong>';
+    html += '<div class="signature-line" style="margin-left:auto">Visa direction</div>';
+    html += '</div>';
+    html += '</div>';
+
+    document.getElementById('bilan-container').innerHTML = html;
+    document.title = 'Bilan CCF \u2014 ' + bilan.eleve.nom + ' ' + bilan.eleve.prenom;
+  }
+
+  function esc(s){
+    var d = document.createElement('div');
+    d.textContent = s || '';
+    return d.innerHTML;
+  }
+
+  function formatDate(d){
+    if(!d) return '\u2014';
+    var p = d.substring(0, 10).split('-');
+    return p[2] + '/' + p[1] + '/' + p[0];
+  }
+})();
+</script>
+
+</body>
+</html>

@@ -1,43 +1,101 @@
 /**
- * Module de signatures numériques canvas pour le CCF
- * Permet au tuteur et au candidat de signer sur écran tactile ou souris
+ * signatures.js — Module de signatures numériques canvas pour le CCF
+ *
+ * Permet au tuteur, au prof évaluateur et au candidat de signer
+ * sur écran tactile ou souris. Les signatures sont stockées en
+ * data:image/png dans pfmpData[code].signatures.
+ *
+ * Globales attendues : pfmpData, saveLocal()
+ * Globale optionnelle : toast()
+ * Expose : window.sigModule { init, render, save, clear, get, hasSignature }
  */
 window.sigModule = (function () {
   'use strict';
 
+  /* ── Types de signature autorisés ─────────────────────────── */
+  /* FIX #8 : liste blanche pour éviter la pollution de l'objet  */
+  var TYPES_VALIDES = [
+    'tuteur_pfmp1',
+    'tuteur_pfmp2',
+    'prof_evaluateur',
+    'candidat'
+  ];
+
+  /* Seuil de pixels non-blancs pour considérer qu'un trait a été dessiné.
+   * Un canvas vierge (fond blanc) a 0 pixel non-blanc.
+   * Un simple point ou trait court dépasse largement ce seuil.
+   * FIX #6 : empêche la sauvegarde d'une signature vide. */
+  var SEUIL_PIXELS_MIN = 50;
+
+  /* ── Helpers défensifs ────────────────────────────────────── */
+
+  /** Accès sécurisé à pfmpData (FIX #3) */
+  function _pfmp() {
+    return window.pfmpData || {};
+  }
+
+  /** Appel sécurisé à saveLocal (FIX #7) */
+  function _saveLocal() {
+    if (typeof saveLocal === 'function') saveLocal();
+  }
+
+  /** Appel sécurisé à toast (FIX #7) */
+  function _toast(msg, type) {
+    if (typeof toast === 'function') toast(msg, type);
+  }
+
+  /** Vérifie que le type est dans la liste blanche (FIX #8) */
+  function _typeValide(type) {
+    return TYPES_VALIDES.indexOf(type) !== -1;
+  }
+
+  /* ── Structure de données ─────────────────────────────────── */
+
   /**
-   * Initialise la structure signatures pour un code donné
+   * Initialise la structure signatures pour un code donné.
+   * Crée pfmpData[code] si absent, puis la sous-structure signatures.
+   * FIX #1/#2/#3 : ne fait plus de return silencieux.
    * @param {string} code - Identifiant du candidat
    */
   function init(code) {
-    if (!pfmpData[code]) return;
-    if (!pfmpData[code].signatures) {
-      pfmpData[code].signatures = {
+    var data = _pfmp();
+
+    // Créer l'entrée élève si absente (évite le crash)
+    if (!data[code]) {
+      data[code] = {};
+    }
+
+    // Créer la sous-structure signatures si absente
+    if (!data[code].signatures) {
+      data[code].signatures = {
         tuteur_pfmp1: null,
         tuteur_pfmp2: null,
         prof_evaluateur: null,
         candidat: null
       };
     }
-    // Migration : ajouter prof_evaluateur si manquant
-    if (!pfmpData[code].signatures.hasOwnProperty('prof_evaluateur')) {
-      pfmpData[code].signatures.prof_evaluateur = null;
+
+    // Migration : ajouter prof_evaluateur si manquant (ancien format)
+    if (!data[code].signatures.hasOwnProperty('prof_evaluateur')) {
+      data[code].signatures.prof_evaluateur = null;
     }
   }
 
   /**
-   * Retourne le data:image/png ou null
+   * Retourne le data:image/png ou null.
+   * FIX #1 : ne crash plus si pfmpData[code] est absent.
    * @param {string} code
-   * @param {string} type - 'tuteur_pfmp1', 'tuteur_pfmp2' ou 'candidat'
+   * @param {string} type - 'tuteur_pfmp1', 'tuteur_pfmp2', 'prof_evaluateur' ou 'candidat'
    * @returns {string|null}
    */
   function get(code, type) {
+    if (!_typeValide(type)) return null;
     init(code);
-    return pfmpData[code].signatures[type] || null;
+    return _pfmp()[code].signatures[type] || null;
   }
 
   /**
-   * Vérifie si une signature existe
+   * Vérifie si une signature existe (non nulle)
    * @param {string} code
    * @param {string} type
    * @returns {boolean}
@@ -47,41 +105,105 @@ window.sigModule = (function () {
   }
 
   /**
-   * Convertit le canvas en data:image/png et stocke la signature
+   * Convertit le canvas en data:image/png et stocke la signature.
+   * FIX #5 : try/catch autour de toDataURL (SecurityError possible).
+   * FIX #6 : détecte le canvas vierge et refuse l'enregistrement.
    * @param {string} code
    * @param {string} type
    * @param {HTMLCanvasElement} canvas
+   * @returns {boolean} true si la signature a été enregistrée
    */
   function save(code, type, canvas) {
+    if (!_typeValide(type)) {
+      _toast('Type de signature non reconnu', 'err');
+      return false;
+    }
+
+    // FIX #6 : vérifier que le canvas contient un vrai tracé
+    if (!_aDessin(canvas)) {
+      _toast('Veuillez signer avant de valider', 'warn');
+      return false;
+    }
+
     init(code);
-    pfmpData[code].signatures[type] = canvas.toDataURL('image/png');
-    saveLocal();
-    toast('Signature enregistrée');
+
+    // FIX #5 : protection contre SecurityError (canvas tainted)
+    var dataUrl;
+    try {
+      dataUrl = canvas.toDataURL('image/png');
+    } catch (err) {
+      console.error('[signatures] Erreur toDataURL :', err);
+      _toast('Erreur lors de la capture de la signature', 'err');
+      return false;
+    }
+
+    _pfmp()[code].signatures[type] = dataUrl;
+    _saveLocal();
+    _toast('Signature enregistrée');
+    return true;
   }
 
   /**
-   * Efface la signature stockée
+   * Efface la signature stockée.
+   * FIX #2 : ne crash plus si pfmpData[code] est absent.
    * @param {string} code
    * @param {string} type
    */
   function clear(code, type) {
+    if (!_typeValide(type)) return;
     init(code);
-    pfmpData[code].signatures[type] = null;
-    saveLocal();
+    _pfmp()[code].signatures[type] = null;
+    _saveLocal();
   }
 
+  /* ── Détection de canvas vierge ──────────────────────────── */
+
   /**
-   * Attache les événements de dessin (souris + tactile) au canvas
+   * Analyse les pixels du canvas pour détecter si un trait a été dessiné.
+   * Compte les pixels qui ne sont pas blancs (255,255,255).
+   * FIX #6 : empêche la sauvegarde d'un canvas vierge.
+   * @param {HTMLCanvasElement} canvas
+   * @returns {boolean}
+   */
+  function _aDessin(canvas) {
+    try {
+      var ctx = canvas.getContext('2d');
+      var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      var pixels = imageData.data; // RGBA, 4 valeurs par pixel
+      var nbNonBlancs = 0;
+
+      // Échantillonnage : vérifier 1 pixel sur 4 pour la performance
+      // (un canvas 600×150 = 90000 pixels → 22500 vérifications)
+      for (var i = 0; i < pixels.length; i += 16) {
+        var r = pixels[i], g = pixels[i + 1], b = pixels[i + 2];
+        if (r < 250 || g < 250 || b < 250) {
+          nbNonBlancs++;
+          if (nbNonBlancs >= SEUIL_PIXELS_MIN) return true; // court-circuit rapide
+        }
+      }
+      return false;
+    } catch (e) {
+      // En cas d'erreur (canvas tainted, etc.), on autorise la sauvegarde
+      // pour ne pas bloquer le workflow
+      console.warn('[signatures] Impossible de vérifier le canvas :', e.message);
+      return true;
+    }
+  }
+
+  /* ── Dessin sur canvas ───────────────────────────────────── */
+
+  /**
+   * Attache les événements de dessin (souris + tactile) au canvas.
    * @param {HTMLCanvasElement} canvas
    * @param {CanvasRenderingContext2D} ctx
    */
   function attachDessin(canvas, ctx) {
     var enCours = false;
 
-    /** Récupère les coordonnées relatives au canvas */
+    /** Récupère les coordonnées relatives au canvas (souris ou tactile) */
     function coords(e) {
       var rect = canvas.getBoundingClientRect();
-      var src = e.touches ? e.touches[0] : e;
+      var src = e.touches && e.touches.length > 0 ? e.touches[0] : e;
       return {
         x: (src.clientX - rect.left) * (canvas.width / rect.width),
         y: (src.clientY - rect.top) * (canvas.height / rect.height)
@@ -121,7 +243,7 @@ window.sigModule = (function () {
   }
 
   /**
-   * Prépare le contexte du canvas (fond blanc, trait noir 2px)
+   * Prépare le contexte du canvas (fond blanc, trait noir 2px).
    * @param {HTMLCanvasElement} canvas
    * @returns {CanvasRenderingContext2D}
    */
@@ -136,8 +258,10 @@ window.sigModule = (function () {
     return ctx;
   }
 
+  /* ── Rendu UI ────────────────────────────────────────────── */
+
   /**
-   * Affiche le mode édition (canvas + boutons Effacer/Valider)
+   * Affiche le mode édition (canvas + boutons Effacer/Valider).
    * @param {string} code
    * @param {string} type
    * @param {HTMLElement} container
@@ -173,8 +297,11 @@ window.sigModule = (function () {
     btnValider.textContent = 'Valider';
     btnValider.className = 'btn btn-sm btn-primary';
     btnValider.addEventListener('click', function () {
-      save(code, type, canvas);
-      render(code, type, container);
+      // FIX #6 : save() retourne false si le canvas est vierge
+      var ok = save(code, type, canvas);
+      if (ok) {
+        render(code, type, container);
+      }
     });
 
     barre.appendChild(btnEffacer);
@@ -183,7 +310,7 @@ window.sigModule = (function () {
   }
 
   /**
-   * Affiche le mode lecture (image + bouton Modifier)
+   * Affiche le mode lecture (image + bouton Modifier).
    * @param {string} code
    * @param {string} type
    * @param {HTMLElement} container
@@ -191,8 +318,15 @@ window.sigModule = (function () {
   function afficherApercu(code, type, container) {
     container.innerHTML = '';
 
+    var sigData = get(code, type);
+    if (!sigData) {
+      // Donnée corrompue ou disparue → repasser en mode édition
+      afficherEditeur(code, type, container);
+      return;
+    }
+
     var img = document.createElement('img');
-    img.src = get(code, type);
+    img.src = sigData;
     img.alt = 'Signature';
     img.style.cssText = 'width:100%;height:150px;border:1px solid #ccc;' +
       'border-radius:4px;object-fit:contain;background:#fff;';
@@ -215,12 +349,16 @@ window.sigModule = (function () {
   }
 
   /**
-   * Affiche un canvas de signature ou l'aperçu dans le conteneur
+   * Point d'entrée du rendu : affiche l'éditeur ou l'aperçu.
    * @param {string} code
-   * @param {string} type - 'tuteur_pfmp1', 'tuteur_pfmp2' ou 'candidat'
+   * @param {string} type - 'tuteur_pfmp1', 'tuteur_pfmp2', 'prof_evaluateur' ou 'candidat'
    * @param {HTMLElement} container - Élément DOM conteneur
    */
   function render(code, type, container) {
+    if (!container) {
+      console.warn('[signatures] render() appelé sans conteneur DOM');
+      return;
+    }
     init(code);
     if (hasSignature(code, type)) {
       afficherApercu(code, type, container);
@@ -229,14 +367,12 @@ window.sigModule = (function () {
     }
   }
 
-  // API publique
+  /* ── API publique ────────────────────────────────────────── */
+  /* FIX #4 : le save public expose la vraie fonction interne   */
   return {
     init: init,
     render: render,
-    save: function (code, type) {
-      // Sauvegarde externe (le canvas doit être passé via render/valider)
-      return get(code, type);
-    },
+    save: save,
     clear: clear,
     get: get,
     hasSignature: hasSignature

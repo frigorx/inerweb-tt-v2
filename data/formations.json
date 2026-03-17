@@ -1,0 +1,895 @@
+{
+  "version": "5.3",
+  "date": "2026-03-13",
+  "niveaux_mapping": {
+    "edu_to_prog": { "1": "NA", "2": "EC", "3": "M", "4": "PM", "NE": "NE", "ABS": "NE" },
+    "prog_to_edu": { "NA": "1", "EC": "2", "M": "3", "PM": "4", "NE": "NE" }
+  },
+  "formations": [
+    {
+      "id": "CAP_IFCA",
+      "nom": "CAP Installateur en Froid et Conditionnement d'Air",
+      "niveau": "CAP",
+      "duree": "2 ans",
+      "aliases_classes": {
+        "CAP IFCA 1": "CAP1 IFCA",
+        "CAP IFCA 2": "CAP2 IFCA",
+        "CAP1 IFCA": "CAP IFCA 1",
+        "CAP2 IFCA": "CAP IFCA 2"
+      },
+      "sequences": {
+        "CAP1 IFCA": [
+          { "id": "S1", "nom": "Sécurité et environnement pro", "comps": ["CC1.1", "CC1.2"] },
+          { "id": "S2", "nom": "Mise en service", "comps": ["CC2.1", "CC2.3"] },
+          { "id": "S3", "nom": "Maintenance préventive", "comps": ["CC3.1", "CC3.2"] },
+          { "id": "S4", "nom": "Brasage et raccordement", "comps": ["CC3.4", "CC3.5"] }
+        ],
+        "CAP2 IFCA": [
+          { "id": "S1", "nom": "Diagnostic et dépannage", "comps": ["CC4.1", "CC4.2"] },
+          { "id": "S2", "nom": "Mise en service avancée", "comps": ["CC2.1", "CC2.3", "CC5.1"] }
+        ],
+        "CAP IFCA 1": [
+          { "id": "S1", "nom": "Sécurité et environnement pro", "comps": ["CC1.1", "CC1.2"] },
+          { "id": "S2", "nom": "Mise en service", "comps": ["CC2.1", "CC2.3"] },
+          { "id": "S3", "nom": "Maintenance préventive", "comps": ["CC3.1", "CC3.2"] },
+          { "id": "S4", "nom": "Brasage et raccordement", "comps": ["CC3.4", "CC3.5"] }
+        ],
+        "CAP IFCA 2": [
+          { "id": "S1", "nom": "Diagnostic et dépannage", "comps": ["CC4.1", "CC4.2"] },
+          { "id": "S2", "nom": "Mise en service avancée", "comps": ["CC2.1", "CC2.3", "CC5.1"] }
+        ]
+      },
+      "epreuves": [
+        {
+          "code": "EP2",
+          "nom": "Réalisation d'une installation (CCF, coeff 4)",
+          "competences": [
+            {
+              "code": "C1.2",
+              "nom": "Communiquer",
+              "full": "Communiquer avec les différents acteurs",
+              "obligatoire": false,
+              "poids": 1,
+              "lieux": ["dossier"],
+              "criteres": {
+                "atelier": [],
+                "pfmp1": ["Identifier les différents acteurs"],
+                "pfmp2": ["Identifier les différents acteurs"],
+                "dossier": ["Qualité de restitution orale", "Vocabulaire technique adapté"]
+              }
+            },
+            {
+              "code": "C3.1",
+              "nom": "Organisation",
+              "full": "Organiser le poste de travail",
+              "obligatoire": true,
+              "poids": 1.5,
+              "lieux": ["atelier", "pfmp1", "pfmp2"],
+              "criteres": {
+                "atelier": ["Zone sécurisée", "Outillage adapté", "Zone rangée et propre"],
+                "pfmp1": ["Zone sécurisée", "Outillage correctement utilisé", "Zone rangée"],
+                "pfmp2": ["Zone sécurisée", "Outillage correctement utilisé", "Zone rangée"],
+                "dossier": []
+              }
+            },
+            {
+              "code": "C3.2",
+              "nom": "Identifier réseaux",
+              "full": "Identifier sur site les réseaux d'alimentation",
+              "obligatoire": true,
+              "poids": 1.5,
+              "lieux": ["atelier", "pfmp1", "pfmp2"],
+              "criteres": {
+                "atelier": ["Réseaux repérés", "Sens de circulation identifiés"],
+                "pfmp1": ["Réseaux repérés et étiquetés", "Sens identifiés"],
+                "pfmp2": ["Réseaux repérés et étiquetés", "Sens identifiés"],
+                "dossier": []
+              }
+            },
+            {
+              "code": "C3.3",
+              "nom": "Implanter, fixer",
+              "full": "Implanter, manutentionner, fixer les supportages",
+              "obligatoire": true,
+              "poids": 2,
+              "lieux": ["atelier", "pfmp1", "pfmp2"],
+              "criteres": {
+                "atelier": ["Implantation conforme", "Supports correctement posés"],
+                "pfmp1": ["Tracés conformes", "Implantation conforme", "Gestes adaptés"],
+                "pfmp2": ["Tracés conformes", "Implantation conforme", "Gestes adaptés"],
+                "dossier": []
+              }
+            },
+            {
+              "code": "C3.4",
+              "nom": "Façonner, raccorder",
+              "full": "Façonner, raccorder, assembler, isoler les circuits",
+              "obligatoire": true,
+              "poids": 5,
+              "lieux": ["atelier", "pfmp1", "pfmp2"],
+              "criteres": {
+                "atelier": ["Brasage fort étanche", "Dudgeon/Flare conformes", "Cintrage correct", "Isolation continue"],
+                "pfmp1": ["Raccordements conformes", "Isolation continue"],
+                "pfmp2": ["Raccordements conformes", "Isolation continue"],
+                "dossier": []
+              }
+            },
+            {
+              "code": "C3.5",
+              "nom": "Soudure/PER",
+              "full": "Soudage acier et raccorder le PER",
+              "obligatoire": false,
+              "poids": 1.5,
+              "lieux": ["atelier"],
+              "criteres": {
+                "atelier": ["Appareil réglé", "Alignement/pointage", "Métal d'apport adapté", "Sertissage PER"],
+                "pfmp1": [],
+                "pfmp2": [],
+                "dossier": []
+              }
+            },
+            {
+              "code": "C3.6",
+              "nom": "Câbler, connecter",
+              "full": "Câbler, repérer, connecter les liaisons électriques",
+              "obligatoire": true,
+              "poids": 3,
+              "lieux": ["atelier", "pfmp1", "pfmp2"],
+              "criteres": {
+                "atelier": ["Conducteurs identifiés", "Câblage puissance", "Câblage commande", "Câbles rangés et repérés"],
+                "pfmp1": ["Connexions conformes", "Éléments repérés"],
+                "pfmp2": ["Connexions conformes", "Éléments repérés"],
+                "dossier": []
+              }
+            },
+            {
+              "code": "C3.7",
+              "nom": "Contrôles",
+              "full": "Contrôler la mise en œuvre des équipements",
+              "obligatoire": true,
+              "poids": 2,
+              "lieux": ["atelier", "pfmp1", "pfmp2"],
+              "criteres": {
+                "atelier": ["Vérif. fluidique", "Vérif. électrique"],
+                "pfmp1": ["Vérif. fluidique", "Vérif. électrique", "Mise en service validée"],
+                "pfmp2": ["Vérif. fluidique", "Vérif. électrique", "Mise en service validée"],
+                "dossier": []
+              }
+            },
+            {
+              "code": "C3.8",
+              "nom": "Tri déchets",
+              "full": "Trier, valoriser les déchets",
+              "obligatoire": true,
+              "poids": 1,
+              "lieux": ["atelier", "pfmp1", "pfmp2"],
+              "criteres": {
+                "atelier": ["Déchets stockés réglementairement"],
+                "pfmp1": ["Déchets stockés", "Documents transmis"],
+                "pfmp2": ["Déchets stockés", "Documents transmis"],
+                "dossier": []
+              }
+            },
+            {
+              "code": "C3.9",
+              "nom": "Étanchéité",
+              "full": "Vérifier l'étanchéité avant mise en service",
+              "obligatoire": true,
+              "poids": 2.5,
+              "lieux": ["atelier", "pfmp1", "pfmp2"],
+              "criteres": {
+                "atelier": ["Épreuve pression gaz", "Étanchéité frigorifique"],
+                "pfmp1": ["Épreuve pression gaz", "Étanchéité frigorifique", "Étanchéité hydraulique"],
+                "pfmp2": ["Épreuve pression gaz", "Étanchéité frigorifique", "Étanchéité hydraulique"],
+                "dossier": []
+              }
+            }
+          ]
+        },
+        {
+          "code": "EP3",
+          "nom": "Mise en service et maintenance (CCF, coeff 4)",
+          "situations": {
+            "A": {"nom": "Mise en service", "duree": "40 min", "competences_ref": ["C4.1", "C4.2", "C4.3", "C4.5", "C4.6", "C4.7", "C5.1"]},
+            "B": {"nom": "Maintenance / Dépannage", "duree": "20 min", "competences_ref": ["C4.3", "C4.4", "C4.5", "C4.6"]},
+            "C": {"nom": "Communication / Documents", "duree": "20 min", "competences_ref": ["C1.1"]}
+          },
+          "competences": [
+            {
+              "code": "C4.1",
+              "nom": "Tirer au vide",
+              "full": "Tirer au vide le circuit frigorifique",
+              "obligatoire": true,
+              "poids": 2.5,
+              "situations": ["A"],
+              "criteres": {
+                "A": ["Groupe de tirage connecté correctement", "Vide atteint (< 200 µm Hg)", "Durée de pompage respectée"],
+                "B": [],
+                "C": []
+              }
+            },
+            {
+              "code": "C4.2",
+              "nom": "Manipuler fluide",
+              "full": "Manipuler le fluide frigorigène et les huiles",
+              "obligatoire": true,
+              "poids": 2.5,
+              "situations": ["A"],
+              "criteres": {
+                "A": ["EPI mis en place", "Récupération fluide réalisée", "Charge en phase liquide correcte"],
+                "B": [],
+                "C": []
+              }
+            },
+            {
+              "code": "C4.3",
+              "nom": "Étanchéité",
+              "full": "Contrôler l'étanchéité d'un circuit",
+              "obligatoire": true,
+              "poids": 2,
+              "situations": ["A", "B"],
+              "criteres": {
+                "A": ["Test d'étanchéité réalisé", "Absence de fuite confirmée", "Méthode conforme"],
+                "B": ["Détecteur utilisé correctement", "Fuite localisée"],
+                "C": []
+              }
+            },
+            {
+              "code": "C4.4",
+              "nom": "Identifier panne",
+              "full": "Identifier la panne",
+              "obligatoire": false,
+              "poids": 1,
+              "situations": ["B"],
+              "criteres": {
+                "A": [],
+                "B": ["Symptômes identifiés", "Composant défectueux localisé", "Cause racine déterminée"],
+                "C": []
+              }
+            },
+            {
+              "code": "C4.5",
+              "nom": "Mesurer",
+              "full": "Mesurer et comparer des grandeurs",
+              "obligatoire": true,
+              "poids": 2.5,
+              "situations": ["A", "B"],
+              "criteres": {
+                "A": ["Appareils de mesure connectés", "Mesures relevées et consignées", "Valeurs comparées aux données fabricant"],
+                "B": ["Mesures pertinentes relevées", "Comparaison à la norme"],
+                "C": []
+              }
+            },
+            {
+              "code": "C4.6",
+              "nom": "Régler",
+              "full": "Régler les organes de régulation",
+              "obligatoire": true,
+              "poids": 2,
+              "situations": ["A", "B"],
+              "criteres": {
+                "A": ["Paramètres de régulation vérifiés", "Réglages conformes"],
+                "B": ["Paramètres ajustés après diagnostic"],
+                "C": []
+              }
+            },
+            {
+              "code": "C4.7",
+              "nom": "Raccorder",
+              "full": "Raccorder les équipements de charge et mesure",
+              "obligatoire": true,
+              "poids": 2,
+              "situations": ["A"],
+              "criteres": {
+                "A": ["Manomètres connectés correctement", "Absence de fuite aux raccords", "Déconnexion sans perte de fluide"],
+                "B": [],
+                "C": []
+              }
+            },
+            {
+              "code": "C5.1",
+              "nom": "Remplacer",
+              "full": "Remplacer un composant",
+              "obligatoire": true,
+              "poids": 2,
+              "situations": ["A"],
+              "criteres": {
+                "A": ["Composant remplacé correctement", "Test de fonctionnement réalisé", "Remise en service conforme"],
+                "B": [],
+                "C": []
+              }
+            },
+            {
+              "code": "C1.1",
+              "nom": "Compléter docs",
+              "full": "Compléter et transmettre des documents",
+              "obligatoire": true,
+              "poids": 1.5,
+              "situations": ["C"],
+              "criteres": {
+                "A": [],
+                "B": [],
+                "C": ["Documents complétés correctement", "Informations transmises au client", "Vocabulaire technique adapté"]
+              }
+            }
+          ]
+        }
+      ],
+      "periodes": [
+        {"id": "P1", "nom": "Période 1 — 1ère année", "type": "formatif"},
+        {"id": "P2", "nom": "Période 2 — 2ème année", "type": "certificatif"}
+      ]
+    },
+    {
+      "id": "BAC_MFER",
+      "nom": "Bac Pro Métiers du Froid et des Énergies Renouvelables",
+      "niveau": "Bac Pro",
+      "duree": "3 ans",
+      "aliases_classes": {
+        "Term MFER": "TMFER",
+        "TMFER": "Term MFER"
+      },
+      "sequences": {
+        "TMFER": [
+          { "id": "S1", "nom": "Systèmes thermodynamiques", "comps": ["C1.1", "C1.3"] },
+          { "id": "S2", "nom": "Énergies renouvelables — PAC", "comps": ["C2.1", "C2.2", "C5.1"] },
+          { "id": "S3", "nom": "Régulation et pilotage", "comps": ["C3.1", "C4.1"] }
+        ],
+        "Term MFER": [
+          { "id": "S1", "nom": "Systèmes thermodynamiques", "comps": ["C1.1", "C1.3"] },
+          { "id": "S2", "nom": "Énergies renouvelables — PAC", "comps": ["C2.1", "C2.2", "C5.1"] },
+          { "id": "S3", "nom": "Régulation et pilotage", "comps": ["C3.1", "C4.1"] }
+        ]
+      },
+      "epreuves": [
+        {
+          "code": "E31",
+          "nom": "Réalisation et mise en service d'une installation (CCF, coeff 3)",
+          "competences": [
+            {
+              "code": "C3.1",
+              "nom": "Organiser poste",
+              "full": "Organiser le poste de travail et la zone d'intervention",
+              "obligatoire": true,
+              "poids": 1.5,
+              "lieux": ["atelier", "pfmp1", "pfmp2"],
+              "criteres": {
+                "atelier": ["Zone sécurisée", "EPI portés", "Outillage adapté", "Zone rangée et propre"],
+                "pfmp1": ["Zone sécurisée", "Outillage correctement utilisé", "Zone rangée"],
+                "pfmp2": ["Zone sécurisée", "Outillage correctement utilisé", "Zone rangée"],
+                "dossier": []
+              }
+            },
+            {
+              "code": "C3.2",
+              "nom": "Implanter",
+              "full": "Implanter les équipements et supportages",
+              "obligatoire": true,
+              "poids": 2,
+              "lieux": ["atelier", "pfmp1", "pfmp2"],
+              "criteres": {
+                "atelier": ["Implantation conforme au plan", "Supports correctement fixés", "Niveaux et aplombs"],
+                "pfmp1": ["Tracés conformes", "Implantation conforme", "Gestes adaptés"],
+                "pfmp2": ["Tracés conformes", "Implantation conforme", "Gestes adaptés"],
+                "dossier": []
+              }
+            },
+            {
+              "code": "C3.3",
+              "nom": "Façonner tubes",
+              "full": "Façonner les réseaux de tubes (cuivre, acier, PER)",
+              "obligatoire": true,
+              "poids": 4,
+              "lieux": ["atelier", "pfmp1", "pfmp2"],
+              "criteres": {
+                "atelier": ["Cintrage correct", "Évasement conforme", "Coupes d'équerre", "Ébavurage"],
+                "pfmp1": ["Façonnage conforme", "Tubes non détériorés"],
+                "pfmp2": ["Façonnage conforme", "Tubes non détériorés"],
+                "dossier": []
+              }
+            },
+            {
+              "code": "C3.4",
+              "nom": "Raccorder fluides",
+              "full": "Raccorder les circuits fluidiques (brasure, dudgeon, flare)",
+              "obligatoire": true,
+              "poids": 4,
+              "lieux": ["atelier", "pfmp1", "pfmp2"],
+              "criteres": {
+                "atelier": ["Brasage fort étanche", "Dudgeon/Flare conformes", "Raccords serrés au couple", "Isolation continue"],
+                "pfmp1": ["Raccordements conformes", "Isolation continue"],
+                "pfmp2": ["Raccordements conformes", "Isolation continue"],
+                "dossier": []
+              }
+            },
+            {
+              "code": "C3.5",
+              "nom": "Raccorder élec.",
+              "full": "Raccorder les circuits électriques (puissance et commande)",
+              "obligatoire": true,
+              "poids": 3,
+              "lieux": ["atelier", "pfmp1", "pfmp2"],
+              "criteres": {
+                "atelier": ["Conducteurs identifiés", "Câblage puissance conforme", "Câblage commande conforme", "Câbles rangés et repérés"],
+                "pfmp1": ["Connexions conformes", "Éléments repérés"],
+                "pfmp2": ["Connexions conformes", "Éléments repérés"],
+                "dossier": []
+              }
+            },
+            {
+              "code": "C3.6",
+              "nom": "Isoler / protéger",
+              "full": "Poser l'isolation thermique et les protections",
+              "obligatoire": true,
+              "poids": 1.5,
+              "lieux": ["atelier", "pfmp1", "pfmp2"],
+              "criteres": {
+                "atelier": ["Isolation posée sans pont thermique", "Épaisseur conforme", "Finition propre"],
+                "pfmp1": ["Isolation continue", "Protection mécanique"],
+                "pfmp2": ["Isolation continue", "Protection mécanique"],
+                "dossier": []
+              }
+            },
+            {
+              "code": "C4.1",
+              "nom": "Tirer au vide",
+              "full": "Tirer au vide le circuit frigorifique",
+              "obligatoire": true,
+              "poids": 2.5,
+              "lieux": ["atelier", "pfmp1", "pfmp2"],
+              "criteres": {
+                "atelier": ["Groupe de tirage connecté correctement", "Vide atteint (< 270 Pa)", "Durée de pompage respectée", "Test de tenue au vide"],
+                "pfmp1": ["Tirage au vide conforme"],
+                "pfmp2": ["Tirage au vide conforme"],
+                "dossier": []
+              }
+            },
+            {
+              "code": "C4.2",
+              "nom": "Charger fluide",
+              "full": "Charger en fluide frigorigène",
+              "obligatoire": true,
+              "poids": 2.5,
+              "lieux": ["atelier", "pfmp1", "pfmp2"],
+              "criteres": {
+                "atelier": ["EPI mis en place", "Récupération fluide réalisée", "Charge conforme à la plaque", "Phase liquide correcte"],
+                "pfmp1": ["Charge conforme"],
+                "pfmp2": ["Charge conforme"],
+                "dossier": []
+              }
+            },
+            {
+              "code": "C4.3",
+              "nom": "Étanchéité",
+              "full": "Contrôler l'étanchéité du circuit",
+              "obligatoire": true,
+              "poids": 2,
+              "lieux": ["atelier", "pfmp1", "pfmp2"],
+              "criteres": {
+                "atelier": ["Test azote réalisé", "Détecteur électronique utilisé", "Absence de fuite confirmée"],
+                "pfmp1": ["Étanchéité vérifiée"],
+                "pfmp2": ["Étanchéité vérifiée"],
+                "dossier": []
+              }
+            },
+            {
+              "code": "C4.4",
+              "nom": "Mise en service",
+              "full": "Mettre en service l'installation",
+              "obligatoire": true,
+              "poids": 2.5,
+              "lieux": ["atelier", "pfmp1", "pfmp2"],
+              "criteres": {
+                "atelier": ["Procédure de mise en service suivie", "Paramètres vérifiés", "Fonctionnement nominal atteint"],
+                "pfmp1": ["Mise en service conforme"],
+                "pfmp2": ["Mise en service conforme"],
+                "dossier": []
+              }
+            },
+            {
+              "code": "C4.5",
+              "nom": "Mesures / réglages",
+              "full": "Effectuer les mesures et réglages de fonctionnement",
+              "obligatoire": true,
+              "poids": 2,
+              "lieux": ["atelier", "pfmp1", "pfmp2"],
+              "criteres": {
+                "atelier": ["Appareils de mesure connectés", "HP/BP relevées", "Surchauffe/sous-refroidissement calculés", "Valeurs conformes"],
+                "pfmp1": ["Mesures relevées", "Réglages effectués"],
+                "pfmp2": ["Mesures relevées", "Réglages effectués"],
+                "dossier": []
+              }
+            },
+            {
+              "code": "C3.8",
+              "nom": "Tri déchets",
+              "full": "Trier et valoriser les déchets",
+              "obligatoire": true,
+              "poids": 1,
+              "lieux": ["atelier", "pfmp1", "pfmp2"],
+              "criteres": {
+                "atelier": ["Déchets triés", "Fluides récupérés"],
+                "pfmp1": ["Déchets triés", "CERFA rempli"],
+                "pfmp2": ["Déchets triés", "CERFA rempli"],
+                "dossier": []
+              }
+            }
+          ]
+        },
+        {
+          "code": "E32",
+          "nom": "Diagnostic et maintenance (CCF, coeff 3)",
+          "situations": {
+            "A": {"nom": "Dépannage / Maintenance corrective", "duree": "40 min", "competences_ref": ["C5.1", "C5.2", "C4.3b", "C4.5b", "C1.2"]},
+            "B": {"nom": "Maintenance préventive", "duree": "30 min", "competences_ref": ["C5.3", "C5.1", "C4.3b", "C4.5b", "C1.2"]},
+            "C": {"nom": "Efficacité énergétique", "duree": "30 min", "competences_ref": ["C6.1", "C6.2", "C6.3", "C1.2"]}
+          },
+          "competences": [
+            {
+              "code": "C5.1",
+              "nom": "Diagnostiquer",
+              "full": "Diagnostiquer un dysfonctionnement",
+              "obligatoire": true,
+              "poids": 3,
+              "situations": ["A", "B"],
+              "criteres": {
+                "A": ["Symptômes identifiés", "Mesures pertinentes réalisées", "Composant défectueux localisé", "Cause racine déterminée"],
+                "B": ["Historique de maintenance consulté", "Anomalies repérées"],
+                "C": []
+              }
+            },
+            {
+              "code": "C5.2",
+              "nom": "Remplacer composant",
+              "full": "Remplacer un composant défectueux",
+              "obligatoire": true,
+              "poids": 2.5,
+              "situations": ["A"],
+              "criteres": {
+                "A": ["Fluide récupéré avant intervention", "Composant remplacé correctement", "Test de fonctionnement réalisé", "Remise en service conforme"],
+                "B": [],
+                "C": []
+              }
+            },
+            {
+              "code": "C5.3",
+              "nom": "Maintenance préventive",
+              "full": "Réaliser la maintenance préventive",
+              "obligatoire": true,
+              "poids": 2,
+              "situations": ["B"],
+              "criteres": {
+                "A": [],
+                "B": ["Gamme de maintenance suivie", "Points de contrôle vérifiés", "Nettoyage réalisé", "Pièces d'usure remplacées"],
+                "C": []
+              }
+            },
+            {
+              "code": "C4.3b",
+              "nom": "Étanchéité maint.",
+              "full": "Contrôler l'étanchéité en maintenance",
+              "obligatoire": true,
+              "poids": 2,
+              "situations": ["A", "B"],
+              "criteres": {
+                "A": ["Détecteur utilisé correctement", "Fuite localisée", "Réparation étanche"],
+                "B": ["Contrôle périodique réalisé", "Registre renseigné"],
+                "C": []
+              }
+            },
+            {
+              "code": "C4.5b",
+              "nom": "Mesurer maint.",
+              "full": "Effectuer les mesures de diagnostic",
+              "obligatoire": true,
+              "poids": 2.5,
+              "situations": ["A", "B"],
+              "criteres": {
+                "A": ["Pressions relevées", "Températures relevées", "Intensités mesurées", "Valeurs comparées aux données fabricant"],
+                "B": ["Mesures préventives relevées", "Comparaison aux valeurs de référence"],
+                "C": []
+              }
+            },
+            {
+              "code": "C6.1",
+              "nom": "Performance énergie",
+              "full": "Analyser les performances énergétiques",
+              "obligatoire": true,
+              "poids": 2,
+              "situations": ["C"],
+              "criteres": {
+                "A": [],
+                "B": [],
+                "C": ["COP/EER calculé", "Consommation analysée", "Écarts identifiés", "Bilan énergétique rédigé"]
+              }
+            },
+            {
+              "code": "C6.2",
+              "nom": "Proposer amélioration",
+              "full": "Proposer des solutions d'amélioration énergétique",
+              "obligatoire": false,
+              "poids": 1.5,
+              "situations": ["C"],
+              "criteres": {
+                "A": [],
+                "B": [],
+                "C": ["Solutions pertinentes proposées", "Chiffrage estimé", "Retour sur investissement évalué"]
+              }
+            },
+            {
+              "code": "C6.3",
+              "nom": "Conseiller client",
+              "full": "Conseiller le client sur l'efficacité énergétique",
+              "obligatoire": false,
+              "poids": 1,
+              "situations": ["C"],
+              "criteres": {
+                "A": [],
+                "B": [],
+                "C": ["Conseils adaptés au client", "Vocabulaire accessible", "Documentation remise"]
+              }
+            },
+            {
+              "code": "C1.2",
+              "nom": "Communiquer",
+              "full": "Rédiger les comptes rendus d'intervention",
+              "obligatoire": true,
+              "poids": 1.5,
+              "situations": ["A", "B", "C"],
+              "criteres": {
+                "A": ["Compte rendu complet", "Vocabulaire technique adapté"],
+                "B": ["Rapport de maintenance clair"],
+                "C": ["Communication professionnelle"]
+              }
+            }
+          ]
+        },
+        {
+          "code": "E33",
+          "nom": "Dossier professionnel et communication (CCF, coeff 2)",
+          "situations": {
+            "D": {"nom": "Dossier écrit", "duree": "Constitution sur l'année", "competences_ref": ["C1.1", "C1.3", "C2.1b", "C2.4b"]},
+            "E": {"nom": "Soutenance orale", "duree": "20 min", "competences_ref": ["C1.1", "C1.4", "C2.4b"]}
+          },
+          "competences": [
+            {
+              "code": "C1.1",
+              "nom": "Collecter données",
+              "full": "Collecter et exploiter des données techniques",
+              "obligatoire": true,
+              "poids": 2.5,
+              "situations": ["D", "E"],
+              "criteres": {
+                "D": ["Données techniques pertinentes", "Documents exploités correctement", "Schémas frigorifiques compris"],
+                "E": ["Exploitation à l'oral des données"]
+              }
+            },
+            {
+              "code": "C1.3",
+              "nom": "Rédiger dossier",
+              "full": "Rédiger un dossier professionnel structuré",
+              "obligatoire": true,
+              "poids": 3,
+              "situations": ["D"],
+              "criteres": {
+                "D": ["Structure claire", "Contenu technique pertinent", "Illustrations commentées", "Vocabulaire adapté"],
+                "E": []
+              }
+            },
+            {
+              "code": "C1.4",
+              "nom": "Présenter oral",
+              "full": "Présenter et argumenter à l'oral",
+              "obligatoire": true,
+              "poids": 3,
+              "situations": ["E"],
+              "criteres": {
+                "D": [],
+                "E": ["Exposé structuré", "Expression claire", "Argumentation pertinente", "Réponses aux questions"]
+              }
+            },
+            {
+              "code": "C2.1b",
+              "nom": "Analyser système",
+              "full": "Analyser le fonctionnement d'un système",
+              "obligatoire": true,
+              "poids": 2,
+              "situations": ["D"],
+              "criteres": {
+                "D": ["Principe de fonctionnement décrit", "Composants identifiés", "Cycle frigorifique analysé"],
+                "E": []
+              }
+            },
+            {
+              "code": "C2.4b",
+              "nom": "Sécurité / réglementation",
+              "full": "Appliquer les règles de sécurité et réglementation F-Gas",
+              "obligatoire": true,
+              "poids": 1.5,
+              "situations": ["D", "E"],
+              "criteres": {
+                "D": ["Réglementation F-Gas citée", "Risques identifiés", "CERFA référencé"],
+                "E": ["Connaissance réglementation à l'oral"]
+              }
+            }
+          ]
+        }
+      ],
+      "periodes": [
+        {"id": "P1", "nom": "Période 1 — 1ère", "type": "formatif"},
+        {"id": "P2", "nom": "Période 2 — 1ère", "type": "formatif"},
+        {"id": "P3", "nom": "Période 3 — Terminale", "type": "certificatif"},
+        {"id": "P4", "nom": "Période 4 — Terminale", "type": "certificatif"}
+      ]
+    },
+    {
+      "id": "TNE",
+      "nom": "2nde Transitions Numérique et Énergétique",
+      "niveau": "2nde",
+      "duree": "1 an",
+      "aliases_classes": {
+        "2nde TNE": "2TNE",
+        "2TNE": "2nde TNE"
+      },
+      "sequences": {
+        "2TNE": [
+          { "id": "S1", "nom": "Découverte installations frigorifiques", "comps": ["C1.1", "C1.2"] },
+          { "id": "S2", "nom": "Les fluides frigorigènes", "comps": ["C2.1", "C2.3"] },
+          { "id": "S3", "nom": "Circuit frigorifique simple", "comps": ["C3.1", "C3.2", "C5.1"] },
+          { "id": "S4", "nom": "Lecture de schémas", "comps": ["C1.2", "C4.1"] }
+        ],
+        "2nde TNE": [
+          { "id": "S1", "nom": "Découverte installations frigorifiques", "comps": ["C1.1", "C1.2"] },
+          { "id": "S2", "nom": "Les fluides frigorigènes", "comps": ["C2.1", "C2.3"] },
+          { "id": "S3", "nom": "Circuit frigorifique simple", "comps": ["C3.1", "C3.2", "C5.1"] },
+          { "id": "S4", "nom": "Lecture de schémas", "comps": ["C1.2", "C4.1"] }
+        ]
+      },
+      "epreuves": [
+        {
+          "code": "CT",
+          "nom": "Compétences transversales de découverte",
+          "competences": [
+            {
+              "code": "CT.1",
+              "nom": "Découvrir métiers",
+              "full": "Découvrir les métiers du froid et de l'énergie",
+              "obligatoire": true,
+              "poids": 1,
+              "criteres": []
+            },
+            {
+              "code": "CT.2",
+              "nom": "Sécurité",
+              "full": "Appliquer les règles de sécurité de base",
+              "obligatoire": true,
+              "poids": 1.5,
+              "criteres": []
+            },
+            {
+              "code": "CT.3",
+              "nom": "Outillage",
+              "full": "Identifier et utiliser l'outillage courant",
+              "obligatoire": true,
+              "poids": 1,
+              "criteres": []
+            },
+            {
+              "code": "CT.4",
+              "nom": "Mesures de base",
+              "full": "Réaliser des mesures simples (tension, pression, température)",
+              "obligatoire": true,
+              "poids": 1.5,
+              "criteres": []
+            },
+            {
+              "code": "CT.5",
+              "nom": "Lecture de plans",
+              "full": "Lire un plan ou schéma simple",
+              "obligatoire": true,
+              "poids": 1,
+              "criteres": []
+            },
+            {
+              "code": "CT.6",
+              "nom": "Travail en équipe",
+              "full": "Travailler en équipe et communiquer",
+              "obligatoire": true,
+              "poids": 1,
+              "criteres": []
+            },
+            {
+              "code": "CT.7",
+              "nom": "Gestes de base",
+              "full": "Réaliser des gestes techniques élémentaires (coupe, cintrage, raccordement)",
+              "obligatoire": true,
+              "poids": 1.5,
+              "criteres": []
+            },
+            {
+              "code": "CT.8",
+              "nom": "Comportement pro",
+              "full": "Adopter un comportement professionnel",
+              "obligatoire": true,
+              "poids": 1.5,
+              "criteres": []
+            }
+          ]
+        }
+      ],
+      "periodes": [
+        {"id": "P1", "nom": "Période 1 — Semestre 1", "type": "formatif"},
+        {"id": "P2", "nom": "Période 2 — Semestre 2", "type": "formatif"}
+      ]
+    },
+    {
+      "id": "CFA_ETAM",
+      "nom": "CFA Étanchéité à l'Air et Membranes",
+      "niveau": "CFA",
+      "duree": "2 ans",
+      "aliases_classes": {},
+      "sequences": {
+        "CFA ÉTAM 1A": [
+          { "id": "S1", "nom": "Étanchéité à l'air", "comps": ["C1.1", "C2.1"] },
+          { "id": "S2", "nom": "Pose de membranes", "comps": ["C2.2", "C3.1"] }
+        ],
+        "CFA ÉTAM 2A": [
+          { "id": "S1", "nom": "Étanchéité — perfectionnement", "comps": ["C1.1", "C2.1", "C3.1"] }
+        ]
+      },
+      "epreuves": [],
+      "periodes": [
+        {"id": "P1", "nom": "Période 1 — 1ère année", "type": "formatif"},
+        {"id": "P2", "nom": "Période 2 — 2ème année", "type": "formatif"}
+      ]
+    },
+    {
+      "id": "CFA_MPI",
+      "nom": "CFA Monteur en Installations du Génie Climatique et Sanitaire",
+      "niveau": "CFA",
+      "duree": "2 ans",
+      "aliases_classes": {},
+      "sequences": {
+        "CFA MPI 1A": [
+          { "id": "S1", "nom": "Réseaux sanitaires", "comps": ["C1.1", "C1.2"] },
+          { "id": "S2", "nom": "Installation thermique", "comps": ["C2.1", "C3.1"] }
+        ],
+        "CFA MPI 2A": [
+          { "id": "S1", "nom": "Réseaux — perfectionnement", "comps": ["C1.1", "C1.2", "C3.1"] }
+        ]
+      },
+      "epreuves": [],
+      "periodes": [
+        {"id": "P1", "nom": "Période 1 — 1ère année", "type": "formatif"},
+        {"id": "P2", "nom": "Période 2 — 2ème année", "type": "formatif"}
+      ]
+    },
+    {
+      "id": "TP_SUP_CVC",
+      "nom": "TP Supérieur CVC",
+      "niveau": "TP Sup",
+      "duree": "1 an",
+      "aliases_classes": {},
+      "sequences": {
+        "TP Sup CVC": [
+          { "id": "S1", "nom": "Lecture de plans CVC", "comps": ["C1.2", "C4.1"] }
+        ]
+      },
+      "epreuves": [],
+      "periodes": [
+        {"id": "P1", "nom": "Période 1 — Année complète", "type": "formatif"}
+      ]
+    }
+  ],
+  "niveaux": {
+    "NE": {"label": "Non Évalué", "valeur": 0, "couleur": "#999"},
+    "NA": {"label": "Non Acquis", "valeur": 1, "couleur": "#e74c3c"},
+    "EC": {"label": "En Cours", "valeur": 2, "couleur": "#f39c12"},
+    "M": {"label": "Maîtrisé", "valeur": 3, "couleur": "#27ae60"},
+    "PM": {"label": "Parfaitement Maîtrisé", "valeur": 4, "couleur": "#2196F3"}
+  },
+  "structure": {
+    "hierarchie": "Filière → Formation → Année → Période → Séquence → Activité → Compétence",
+    "description": "Modèle pédagogique CCF multi-filière"
+  }
+}

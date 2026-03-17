@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><script>
+(function(){if(sessionStorage.getItem('iw_purged'))return;if('serviceWorker' in navigator){caches.keys().then(function(k){k.forEach(function(c){caches.delete(c)})});navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(sw){sw.unregister()})});}sessionStorage.setItem('iw_purged','1');setTimeout(function(){location.reload(true)},500);})();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>INERWEB PROG+ — Progression</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bleu:#1b3a63; --bleu2:#2d5a8c; --bleu3:#e8f0f8;
+  --orange:#ff6b35; --vert:#27ae60; --vert2:#d4f4e2;
+  --rouge:#e74c3c; --rouge2:#fde8e6;
+  --jaune:#f39c12; --jaune2:#fef9e7;
+  --teal:#16a085; --teal2:#d0f0ea;
+  --violet:#8e44ad; --violet2:#f3e5f5;
+  --gris:#6c757d; --gris2:#f0f2f5; --gris3:#dee2e6;
+  --texte:#1a2332;
+  --e31:#2d5a8c; --e32:#8e44ad; --e33:#6c3483;
+  --r:14px; --r2:8px;
+  --ombre:0 4px 24px rgba(27,58,99,.12);
+  --ombre2:0 2px 8px rgba(27,58,99,.08);
+  --t:all .2s cubic-bezier(.4,0,.2,1);
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { -webkit-text-size-adjust:100%; }
+body { font-family:'Nunito',sans-serif; color:var(--texte); background:var(--gris2); min-height:100dvh; padding-bottom:2rem; }
+input, select, textarea, button { font-family:inherit; }
+
+.app-header {
+  background:linear-gradient(135deg, var(--bleu) 0%, var(--bleu2) 100%);
+  color:#fff; padding:.75rem 1rem; display:flex; align-items:center; justify-content:space-between;
+  position:sticky; top:0; z-index:100; box-shadow:0 2px 12px rgba(27,58,99,.2);
+}
+.app-header h1 { font-size:1rem; font-weight:800; }
+.app-header h1 span { color:var(--orange); }
+.app-header .subtitle { font-size:.7rem; opacity:.8; font-weight:600; }
+.back-link { color:#fff; text-decoration:none; font-size:.85rem; font-weight:700; opacity:.9; transition:opacity .2s; }
+.back-link:hover { opacity:1; }
+
+.container { max-width:900px; margin:0 auto; padding:1rem; }
+
+.filter-bar {
+  display:flex; align-items:center; gap:.5rem; flex-wrap:wrap;
+  background:#fff; border-radius:var(--r); padding:.75rem 1rem;
+  box-shadow:var(--ombre2); margin-bottom:1rem;
+}
+.filter-bar label { font-weight:700; color:var(--bleu); font-size:.85rem; }
+.filter-bar select {
+  padding:.4rem .6rem; border:2px solid var(--gris3); border-radius:var(--r2);
+  font-weight:700; font-size:.85rem; background:#fff; color:var(--texte);
+  cursor:pointer; transition:var(--t);
+}
+.filter-bar select:focus { border-color:var(--bleu2); outline:none; }
+
+.empty-state {
+  text-align:center; padding:3rem 1rem; color:var(--gris);
+}
+.empty-state .ei { font-size:3rem; margin-bottom:.5rem; }
+
+/* Arborescence */
+.tree-year {
+  background:#fff; border-radius:var(--r); box-shadow:var(--ombre2);
+  margin-bottom:.75rem; overflow:hidden;
+}
+.tree-year-header {
+  display:flex; align-items:center; gap:.5rem; padding:.75rem 1rem;
+  background:linear-gradient(135deg, var(--bleu) 0%, var(--bleu2) 100%);
+  color:#fff; cursor:pointer; user-select:none; font-weight:800; font-size:.9rem;
+  transition:var(--t);
+}
+.tree-year-header:hover { filter:brightness(1.1); }
+.tree-year-header .chevron { transition:transform .2s; font-size:.7rem; }
+.tree-year-header.open .chevron { transform:rotate(90deg); }
+.tree-year-body { display:none; }
+.tree-year-header.open + .tree-year-body { display:block; }
+
+.tree-periode {
+  border-bottom:1px solid var(--gris3);
+}
+.tree-periode:last-child { border-bottom:none; }
+.tree-periode-header {
+  display:flex; align-items:center; gap:.5rem; padding:.6rem 1rem .6rem 1.5rem;
+  cursor:pointer; user-select:none; font-weight:700; font-size:.85rem;
+  color:var(--bleu2); transition:var(--t); background:var(--bleu3);
+}
+.tree-periode-header:hover { background:#dce8f5; }
+.tree-periode-header .chevron { transition:transform .2s; font-size:.65rem; }
+.tree-periode-header.open .chevron { transform:rotate(90deg); }
+.tree-periode-body { display:none; }
+.tree-periode-header.open + .tree-periode-body { display:block; }
+
+.tree-sequence {
+  border-top:1px solid #eef2f7;
+}
+.tree-sequence-header {
+  display:flex; align-items:center; gap:.5rem; padding:.5rem 1rem .5rem 2.5rem;
+  cursor:pointer; user-select:none; font-weight:600; font-size:.82rem;
+  color:var(--texte); transition:var(--t);
+}
+.tree-sequence-header:hover { background:var(--gris2); }
+.tree-sequence-header .chevron { transition:transform .2s; font-size:.6rem; }
+.tree-sequence-header.open .chevron { transform:rotate(90deg); }
+.tree-sequence-body { display:none; padding:0 1rem .5rem 3rem; }
+.tree-sequence-header.open + .tree-sequence-body { display:block; }
+
+.comp-list { list-style:none; padding:0; }
+.comp-item {
+  display:flex; align-items:center; gap:.5rem; padding:.35rem .5rem;
+  border-radius:var(--r2); font-size:.78rem; margin-bottom:.2rem;
+  transition:var(--t);
+}
+.comp-item:hover { background:var(--gris2); }
+.comp-code {
+  font-weight:800; color:var(--bleu2); min-width:3.5rem; font-size:.75rem;
+}
+.comp-nom { flex:1; }
+.comp-obl {
+  font-size:.65rem; font-weight:700; padding:1px 5px; border-radius:4px;
+  background:var(--orange); color:#fff;
+}
+.comp-poids {
+  font-size:.65rem; font-weight:700; color:var(--gris); min-width:2.5rem; text-align:right;
+}
+
+.tp-item {
+  display:flex; align-items:center; gap:.4rem; padding:.3rem .5rem;
+  font-size:.78rem; color:var(--teal); font-weight:600;
+}
+.tp-item::before { content:"🔧"; font-size:.7rem; }
+
+.badge-ep {
+  font-size:.65rem; font-weight:800; padding:2px 6px; border-radius:4px;
+  color:#fff; display:inline-block;
+}
+
+.filiere-badge {
+  font-size:.7rem; font-weight:800; padding:2px 8px; border-radius:6px;
+  color:#fff; margin-left:auto;
+}
+
+.info-bar {
+  display:flex; align-items:center; gap:.5rem; flex-wrap:wrap;
+  background:#fff; border-radius:var(--r); padding:.5rem 1rem;
+  box-shadow:var(--ombre2); margin-bottom:.75rem; font-size:.8rem;
+}
+.info-bar .stat { font-weight:700; }
+
+/* Responsive */
+@media(max-width:600px){
+  .container { padding:.5rem; }
+  .tree-sequence-header { padding-left:1.5rem; }
+  .tree-sequence-body { padding-left:1.8rem; }
+  .tree-periode-header { padding-left:1rem; }
+}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div>
+    <h1>INERWEB <span>PROG+</span> — Progression</h1>
+    <div class="subtitle">Filiere Energetique — Vue arborescence</div>
+  </div>
+  <a href="inerweb_prof.html" class="back-link">← Retour prof</a>
+</header>
+
+<main class="container" id="main-content">
+  <div class="filter-bar">
+    <label for="classeFilter">📚 Classe :</label>
+    <select id="classeFilter" aria-label="Classe">
+      <option value="all">Toutes les classes</option>
+    </select>
+    <label for="filiereFilter" style="margin-left:.5rem">📋 Filiere :</label>
+    <select id="filiereFilter" aria-label="Filiere">
+      <option value="all">Toutes filieres</option>
+    </select>
+  </div>
+  <div class="info-bar" id="infoBar">
+    <span>📊 Chargement...</span>
+  </div>
+  <div id="progressionTree"></div>
+</main>
+
+<div class="toast-c" id="toastC" aria-live="polite" style="position:fixed;top:1rem;right:1rem;z-index:99999;display:flex;flex-direction:column;gap:.3rem;pointer-events:none"></div>
+
+<script src="js/core/core.js"></script>
+<script src="js/core/state.js"></script>
+<script>
+/* ═══════════════════════════════════════════════
+   PROGRESSION.HTML — Page autonome arborescence
+   ═══════════════════════════════════════════════ */
+;(function(){
+'use strict';
+
+/* ─── REFERENTIELS (copie locale simplifiee) ─── */
+var COMP_EP2=[
+  {code:"C1.1",nom:"Compléter dossier",full:"Compléter le dossier de réalisation",obl:true,poids:2},
+  {code:"C1.2",nom:"Décoder documents",full:"Décoder les documents techniques et réglementaires",obl:true,poids:2},
+  {code:"C3.1",nom:"Organiser poste",full:"Organiser le poste de travail",obl:true,poids:1.5},
+  {code:"C3.2",nom:"Implanter",full:"Implanter les équipements",obl:true,poids:2},
+  {code:"C3.3",nom:"Façonner tubes",full:"Façonner les réseaux de tubes",obl:true,poids:4},
+  {code:"C3.4",nom:"Raccorder fluides",full:"Raccorder les circuits fluidiques",obl:true,poids:4},
+  {code:"C3.5",nom:"Raccorder élec.",full:"Raccorder les circuits électriques",obl:true,poids:3},
+  {code:"C3.6",nom:"Isoler",full:"Poser l'isolation thermique",obl:true,poids:1.5},
+  {code:"C3.8",nom:"Tri déchets",full:"Trier et valoriser les déchets",obl:false,poids:1}
+];
+var COMP_EP3=[
+  {code:"C4.1",nom:"Tirer au vide",full:"Tirer au vide le circuit",obl:true,poids:2.5},
+  {code:"C4.2",nom:"Charger fluide",full:"Charger en fluide frigorigène",obl:true,poids:2.5},
+  {code:"C4.3",nom:"Étanchéité",full:"Contrôler l'étanchéité",obl:true,poids:2},
+  {code:"C4.4",nom:"Mise en service",full:"Mettre en service l'installation",obl:true,poids:2.5},
+  {code:"C4.5",nom:"Mesures/réglages",full:"Effectuer les mesures et réglages",obl:true,poids:2},
+  {code:"C5.1",nom:"Diagnostiquer",full:"Diagnostiquer une panne",obl:true,poids:3},
+  {code:"C5.2",nom:"Dépanner",full:"Remplacer/réparer un composant",obl:true,poids:2.5},
+  {code:"C5.3",nom:"Maintenance prév.",full:"Réaliser la maintenance préventive",obl:true,poids:2},
+  {code:"C6.1",nom:"Communiquer",full:"Communiquer avec le client/hiérarchie",obl:false,poids:1.5}
+];
+var COMP_E31=[
+  {code:"C3.1",nom:"Organiser poste",full:"Organiser le poste de travail et la zone d'intervention",obl:true,poids:1.5},
+  {code:"C3.2",nom:"Implanter",full:"Implanter les équipements et supportages",obl:true,poids:2},
+  {code:"C3.3",nom:"Façonner tubes",full:"Façonner les réseaux de tubes (cuivre, acier, PER)",obl:true,poids:4},
+  {code:"C3.4",nom:"Raccorder fluides",full:"Raccorder les circuits fluidiques",obl:true,poids:4},
+  {code:"C3.5",nom:"Raccorder élec.",full:"Raccorder les circuits électriques",obl:true,poids:3},
+  {code:"C3.6",nom:"Isoler/protéger",full:"Poser l'isolation thermique et les protections",obl:true,poids:1.5},
+  {code:"C4.1",nom:"Tirer au vide",full:"Tirer au vide le circuit frigorifique",obl:true,poids:2.5},
+  {code:"C4.2",nom:"Charger fluide",full:"Charger en fluide frigorigène",obl:true,poids:2.5},
+  {code:"C4.3",nom:"Étanchéité",full:"Contrôler l'étanchéité du circuit",obl:true,poids:2},
+  {code:"C4.4",nom:"Mise en service",full:"Mettre en service l'installation",obl:true,poids:2.5},
+  {code:"C4.5",nom:"Mesures/réglages",full:"Effectuer les mesures et réglages",obl:true,poids:2},
+  {code:"C3.8",nom:"Tri déchets",full:"Trier et valoriser les déchets",obl:true,poids:1}
+];
+var COMP_E32=[
+  {code:"C1.1",nom:"Compléter dossier",full:"Compléter le dossier de réalisation",obl:true,poids:2},
+  {code:"C1.2",nom:"Décoder documents",full:"Décoder les documents techniques",obl:true,poids:2},
+  {code:"C2.1",nom:"Analyser système",full:"Analyser le fonctionnement d'un système",obl:true,poids:3},
+  {code:"C2.2",nom:"Choisir matériels",full:"Choisir les matériels et outillages",obl:true,poids:2},
+  {code:"C2.3",nom:"Planifier",full:"Planifier une intervention",obl:true,poids:2},
+  {code:"C6.1",nom:"Communiquer oral",full:"Communiquer à l'oral",obl:true,poids:2},
+  {code:"C6.2",nom:"Rédiger/compléter",full:"Rédiger/compléter les documents",obl:true,poids:2}
+];
+var COMP_E33=[
+  {code:"C5.1",nom:"Diagnostiquer",full:"Diagnostiquer une panne ou dysfonctionnement",obl:true,poids:3},
+  {code:"C5.2",nom:"Dépanner",full:"Remplacer ou réparer un composant défaillant",obl:true,poids:2.5},
+  {code:"C5.3",nom:"Maintenance prév.",full:"Réaliser la maintenance préventive",obl:true,poids:2},
+  {code:"C5.4",nom:"Contrôle fluides",full:"Contrôler le circuit de fluide frigorigène",obl:true,poids:2},
+  {code:"C4.5b",nom:"Mesures fonct.",full:"Effectuer les mesures de fonctionnement",obl:true,poids:2},
+  {code:"C6.1b",nom:"Communiquer",full:"Communiquer avec le client/hiérarchie",obl:false,poids:1.5}
+];
+var COMP_TNE=[
+  {code:"CT1",nom:"Culture métier",full:"Découvrir la culture professionnelle du secteur",obl:false,poids:1},
+  {code:"CT2",nom:"Analyse système",full:"Analyser un système technique simple",obl:false,poids:1},
+  {code:"CT3",nom:"Gestes pro",full:"Réaliser des gestes professionnels de base",obl:false,poids:1},
+  {code:"CT4",nom:"Sécurité",full:"Appliquer les règles de sécurité",obl:false,poids:1},
+  {code:"CT5",nom:"Communication",full:"Communiquer dans un contexte professionnel",obl:false,poids:1}
+];
+
+var FILIERES={
+  'CAP_IFCA':{
+    nom:'CAP Installateur en Froid et Conditionnement d\'Air',
+    abrege:'CAP IFCA',
+    classes:['CAP IFCA 1','CAP IFCA 2'],
+    epreuves:['EP2','EP3'],
+    couleur:'#2d5a8c',
+    comps:{EP2:COMP_EP2,EP3:COMP_EP3}
+  },
+  'BAC_MFER':{
+    nom:'Bac Pro Métiers du Froid et des Énergies Renouvelables',
+    abrege:'Bac Pro MFER',
+    classes:['1ère MFER','Term MFER'],
+    epreuves:['E31','E32','E33'],
+    couleur:'#8e44ad',
+    comps:{E31:COMP_E31,E32:COMP_E32,E33:COMP_E33}
+  },
+  'TNE':{
+    nom:'2nde Transitions Numérique et Énergétique',
+    abrege:'2nde TNE',
+    classes:['2nde TNE'],
+    epreuves:[],
+    couleur:'#16a085',
+    comps:{modules:COMP_TNE}
+  }
+};
+
+/* ─── STRUCTURE PAR DEFAUT DE LA PROGRESSION ─── */
+var PROGRESSION_DEFAUT={
+  'CAP_IFCA':{
+    annees:[
+      {
+        nom:'1ère année — CAP IFCA',
+        periodes:[
+          {
+            nom:'Période 1 — Installation de base',
+            sequences:[
+              {nom:'S1 — Découverte du poste de travail',epreuve:'EP2',
+               comps:['C1.1','C1.2','C3.1'],
+               tp:['TP1 — Organisation poste froid','TP2 — Lecture de plans']},
+              {nom:'S2 — Tuyauterie cuivre',epreuve:'EP2',
+               comps:['C3.3','C3.4'],
+               tp:['TP3 — Cintrage cuivre','TP4 — Brasure cuivre']},
+              {nom:'S3 — Implantation',epreuve:'EP2',
+               comps:['C3.2','C3.6'],
+               tp:['TP5 — Fixation supportages','TP6 — Isolation calorifuge']}
+            ]
+          },
+          {
+            nom:'Période 2 — Raccordements',
+            sequences:[
+              {nom:'S4 — Raccordements fluidiques',epreuve:'EP2',
+               comps:['C3.4','C3.5'],
+               tp:['TP7 — Raccord dudgeon','TP8 — Câblage puissance']},
+              {nom:'S5 — Mise en service simple',epreuve:'EP3',
+               comps:['C4.1','C4.2','C4.3'],
+               tp:['TP9 — Tirage au vide','TP10 — Charge R-449A']},
+              {nom:'S6 — Tri et valorisation',epreuve:'EP2',
+               comps:['C3.8'],
+               tp:['TP11 — Gestion déchets chantier']}
+            ]
+          },
+          {
+            nom:'PFMP 1 — Stage en entreprise',
+            sequences:[
+              {nom:'PFMP 1 — Observation et participation',epreuve:'EP2',
+               comps:['C3.1','C3.3','C3.4'],
+               tp:['Activités entreprise — Installation']}
+            ]
+          }
+        ]
+      },
+      {
+        nom:'2ème année — CAP IFCA',
+        periodes:[
+          {
+            nom:'Période 3 — Mise en service',
+            sequences:[
+              {nom:'S7 — Mise en service complète',epreuve:'EP3',
+               comps:['C4.4','C4.5'],
+               tp:['TP12 — MES chambre froide','TP13 — Relevé mesures']},
+              {nom:'S8 — Diagnostic',epreuve:'EP3',
+               comps:['C5.1','C5.2'],
+               tp:['TP14 — Panne HP','TP15 — Remplacement détendeur']}
+            ]
+          },
+          {
+            nom:'Période 4 — Maintenance',
+            sequences:[
+              {nom:'S9 — Maintenance préventive',epreuve:'EP3',
+               comps:['C5.3','C6.1'],
+               tp:['TP16 — Fiche maintenance','TP17 — Compte-rendu client']},
+              {nom:'S10 — Évaluation CCF EP2',epreuve:'EP2',
+               comps:['C1.1','C3.1','C3.2','C3.3','C3.4','C3.5','C3.6','C3.8'],
+               tp:['CCF EP2 — Situation en centre']},
+              {nom:'S11 — Évaluation CCF EP3',epreuve:'EP3',
+               comps:['C4.1','C4.2','C4.3','C4.4','C4.5','C5.1','C5.2','C5.3'],
+               tp:['CCF EP3 — Situation en centre']}
+            ]
+          },
+          {
+            nom:'PFMP 2 — Stage en entreprise',
+            sequences:[
+              {nom:'PFMP 2 — Autonomie',epreuve:'EP3',
+               comps:['C4.4','C4.5','C5.1','C5.3'],
+               tp:['Activités entreprise — Maintenance']}
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  'BAC_MFER':{
+    annees:[
+      {
+        nom:'1ère — Bac Pro MFER',
+        periodes:[
+          {
+            nom:'Période 1 — Réalisation',
+            sequences:[
+              {nom:'S1 — Organisation et implantation',epreuve:'E31',
+               comps:['C3.1','C3.2'],
+               tp:['TP1 — Poste de travail','TP2 — Implantation PAC']},
+              {nom:'S2 — Tuyauterie et raccordements',epreuve:'E31',
+               comps:['C3.3','C3.4','C3.5','C3.6'],
+               tp:['TP3 — Tuyauterie cuivre/acier','TP4 — Raccordement frigorifique','TP5 — Câblage électrique']},
+              {nom:'S3 — Mise en service',epreuve:'E31',
+               comps:['C4.1','C4.2','C4.3','C4.4','C4.5'],
+               tp:['TP6 — Tirage au vide + charge','TP7 — MES complète','TP8 — Relevé mesures']}
+            ]
+          },
+          {
+            nom:'Période 2 — Analyse et communication',
+            sequences:[
+              {nom:'S4 — Dossier technique',epreuve:'E32',
+               comps:['C1.1','C1.2','C2.1'],
+               tp:['TP9 — Analyse schéma frigorifique','TP10 — Dossier installation']},
+              {nom:'S5 — Planification',epreuve:'E32',
+               comps:['C2.2','C2.3','C6.1','C6.2'],
+               tp:['TP11 — Choix matériels','TP12 — Planning intervention']}
+            ]
+          },
+          {
+            nom:'PFMP 1 — Stage en entreprise',
+            sequences:[
+              {nom:'PFMP 1 — Installation en entreprise',epreuve:'E31',
+               comps:['C3.1','C3.3','C3.4','C3.5','C4.1','C4.2'],
+               tp:['Activités entreprise — Réalisation']}
+            ]
+          }
+        ]
+      },
+      {
+        nom:'Terminale — Bac Pro MFER',
+        periodes:[
+          {
+            nom:'Période 3 — Maintenance et diagnostic',
+            sequences:[
+              {nom:'S6 — Diagnostic de pannes',epreuve:'E33',
+               comps:['C5.1','C5.2'],
+               tp:['TP13 — Diagnostic HP/BP','TP14 — Remplacement compresseur']},
+              {nom:'S7 — Maintenance et contrôle',epreuve:'E33',
+               comps:['C5.3','C5.4','C4.5b'],
+               tp:['TP15 — Maintenance préventive','TP16 — Contrôle étanchéité réglementaire']}
+            ]
+          },
+          {
+            nom:'Période 4 — CCF',
+            sequences:[
+              {nom:'S8 — CCF E31 — Réalisation',epreuve:'E31',
+               comps:['C3.1','C3.2','C3.3','C3.4','C3.5','C3.6','C4.1','C4.2','C4.3','C4.4','C4.5','C3.8'],
+               tp:['CCF E31 — Situation en centre']},
+              {nom:'S9 — CCF E32 — Analyse',epreuve:'E32',
+               comps:['C1.1','C1.2','C2.1','C2.2','C2.3','C6.1','C6.2'],
+               tp:['CCF E32 — Situation en centre']},
+              {nom:'S10 — CCF E33 — Maintenance',epreuve:'E33',
+               comps:['C5.1','C5.2','C5.3','C5.4','C4.5b','C6.1b'],
+               tp:['CCF E33 — Situation en centre']}
+            ]
+          },
+          {
+            nom:'PFMP 2 — Stage en entreprise',
+            sequences:[
+              {nom:'PFMP 2 — Maintenance en entreprise',epreuve:'E33',
+               comps:['C5.1','C5.3','C5.4','C6.1b'],
+               tp:['Activités entreprise — Maintenance']}
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  'TNE':{
+    annees:[
+      {
+        nom:'2nde TNE',
+        periodes:[
+          {
+            nom:'Période 1 — Découverte',
+            sequences:[
+              {nom:'S1 — Culture métier',epreuve:'modules',
+               comps:['CT1','CT2'],
+               tp:['TP1 — Présentation filières','TP2 — Visite atelier']},
+              {nom:'S2 — Premiers gestes',epreuve:'modules',
+               comps:['CT3','CT4'],
+               tp:['TP3 — Sécurité atelier','TP4 — Gestes de base']}
+            ]
+          },
+          {
+            nom:'Période 2 — Approfondissement',
+            sequences:[
+              {nom:'S3 — Systèmes techniques',epreuve:'modules',
+               comps:['CT2','CT3'],
+               tp:['TP5 — Analyse système froid','TP6 — Mesures électriques']},
+              {nom:'S4 — Communication',epreuve:'modules',
+               comps:['CT5'],
+               tp:['TP7 — Exposé métier','TP8 — Rapport de stage']}
+            ]
+          },
+          {
+            nom:'PFMP — Stage découverte',
+            sequences:[
+              {nom:'PFMP — Observation',epreuve:'modules',
+               comps:['CT1','CT4','CT5'],
+               tp:['Activités entreprise — Découverte']}
+            ]
+          }
+        ]
+      }
+    ]
+  }
+};
+
+/* ─── COULEURS EPREUVES ─── */
+var EP_COLORS={
+  'EP2':'#2d5a8c','EP3':'#16a085',
+  'E31':'#2d5a8c','E32':'#8e44ad','E33':'#6c3483',
+  'modules':'#16a085'
+};
+
+/* ─── CHARGEMENT DONNEES LOCALSTORAGE ─── */
+var SK='inerweb-tt-fe-v1';
+var SCLASSES='inerweb-tt-fe-classes';
+var storedData=null;
+var storedClasses=null;
+
+function loadData(){
+  try{
+    var raw=localStorage.getItem(SK);
+    storedData=raw?JSON.parse(raw):null;
+  }catch(e){storedData=null;}
+  try{
+    var rc=localStorage.getItem(SCLASSES);
+    storedClasses=rc?JSON.parse(rc):null;
+  }catch(e){storedClasses=null;}
+}
+
+function getStudents(){
+  if(!storedData)return[];
+  // Format v1 : {students:[...], validations:{...}, ...}
+  if(Array.isArray(storedData.students))return storedData.students;
+  if(Array.isArray(storedData))return storedData;
+  return[];
+}
+
+function getValidations(){
+  if(!storedData)return{};
+  return storedData.validations||{};
+}
+
+function getFiliere(student){
+  if(student.referentiel&&FILIERES[student.referentiel])return student.referentiel;
+  var cl=(student.classe||'').toLowerCase();
+  if(cl.includes('cap')||cl.includes('ifca'))return'CAP_IFCA';
+  if(cl.includes('mfer')||cl.includes('bac'))return'BAC_MFER';
+  if(cl.includes('tne')||cl.includes('2nde'))return'TNE';
+  return'CAP_IFCA';
+}
+
+/* ─── CONSTRUCTION FILTRES ─── */
+function buildFilters(){
+  var students=getStudents();
+  var classeSet=new Set();
+  var filiereSet=new Set();
+
+  // Classes depuis les donnees
+  students.forEach(function(s){
+    if(s.classe)classeSet.add(s.classe);
+    filiereSet.add(getFiliere(s));
+  });
+  // Classes depuis la config
+  if(storedClasses&&Array.isArray(storedClasses)){
+    storedClasses.forEach(function(c){classeSet.add(c);});
+  }
+  // Classes par defaut des filieres
+  Object.keys(FILIERES).forEach(function(k){
+    FILIERES[k].classes.forEach(function(c){classeSet.add(c);});
+    filiereSet.add(k);
+  });
+
+  var selClasse=document.getElementById('classeFilter');
+  var selFiliere=document.getElementById('filiereFilter');
+
+  Array.from(classeSet).sort().forEach(function(c){
+    var o=document.createElement('option');
+    o.value=c;o.textContent=c;
+    selClasse.appendChild(o);
+  });
+
+  filiereSet.forEach(function(k){
+    var fil=FILIERES[k];
+    if(!fil)return;
+    var o=document.createElement('option');
+    o.value=k;o.textContent=fil.abrege;
+    selFiliere.appendChild(o);
+  });
+}
+
+/* ─── RENDU ARBORESCENCE ─── */
+function renderTree(){
+  var container=document.getElementById('progressionTree');
+  var classeVal=document.getElementById('classeFilter').value;
+  var filiereVal=document.getElementById('filiereFilter').value;
+  var students=getStudents();
+  var validations=getValidations();
+
+  // Determiner les filieres a afficher
+  var filieresToShow=[];
+  if(filiereVal!=='all'){
+    filieresToShow=[filiereVal];
+  } else if(classeVal!=='all'){
+    // Determiner la filiere de la classe
+    var fakeStudent={classe:classeVal};
+    filieresToShow=[getFiliere(fakeStudent)];
+  } else {
+    filieresToShow=Object.keys(FILIERES);
+  }
+
+  // Statistiques
+  var filteredStudents=students.filter(function(s){
+    if(classeVal!=='all'&&s.classe!==classeVal)return false;
+    if(filiereVal!=='all'&&getFiliere(s)!==filiereVal)return false;
+    return true;
+  });
+
+  var infoBar=document.getElementById('infoBar');
+  infoBar.innerHTML='<span class="stat">👥 '+filteredStudents.length+' eleve(s)</span>'
+    +'<span>|</span><span class="stat">📋 '+filieresToShow.length+' filiere(s)</span>';
+
+  if(!filieresToShow.length){
+    container.innerHTML='<div class="empty-state"><div class="ei">📭</div><p>Aucune donnee a afficher</p></div>';
+    return;
+  }
+
+  var html='';
+
+  filieresToShow.forEach(function(filKey){
+    var fil=FILIERES[filKey];
+    var prog=PROGRESSION_DEFAUT[filKey];
+    if(!fil||!prog)return;
+
+    prog.annees.forEach(function(annee,ai){
+      html+='<div class="tree-year">';
+      html+='<div class="tree-year-header open" data-toggle="year">';
+      html+='<span class="chevron">▶</span>';
+      html+='<span>'+esc(annee.nom)+'</span>';
+      html+='<span class="filiere-badge" style="background:'+fil.couleur+'">'+esc(fil.abrege)+'</span>';
+      html+='</div>';
+      html+='<div class="tree-year-body" style="display:block">';
+
+      annee.periodes.forEach(function(periode,pi){
+        html+='<div class="tree-periode">';
+        html+='<div class="tree-periode-header'+(pi===0?' open':'')+'" data-toggle="periode">';
+        html+='<span class="chevron">▶</span>';
+        html+='<span>'+esc(periode.nom)+'</span>';
+        html+='</div>';
+        html+='<div class="tree-periode-body"'+(pi===0?' style="display:block"':'')+'>';
+
+        periode.sequences.forEach(function(seq,si){
+          var epColor=EP_COLORS[seq.epreuve]||'var(--gris)';
+          html+='<div class="tree-sequence">';
+          html+='<div class="tree-sequence-header" data-toggle="sequence">';
+          html+='<span class="chevron">▶</span>';
+          html+='<span class="badge-ep" style="background:'+epColor+'">'+esc(seq.epreuve||'—')+'</span>';
+          html+='<span>'+esc(seq.nom)+'</span>';
+          html+='</div>';
+          html+='<div class="tree-sequence-body">';
+
+          // TP
+          if(seq.tp&&seq.tp.length){
+            seq.tp.forEach(function(tp){
+              html+='<div class="tp-item">'+esc(tp)+'</div>';
+            });
+          }
+
+          // Competences
+          var allComps=(fil.comps||{})[seq.epreuve]||[];
+          var seqComps=seq.comps||[];
+          if(seqComps.length){
+            html+='<ul class="comp-list">';
+            seqComps.forEach(function(compCode){
+              var comp=allComps.find(function(c){return c.code===compCode;});
+              if(!comp)return;
+              html+='<li class="comp-item">';
+              html+='<span class="comp-code">'+esc(comp.code)+'</span>';
+              html+='<span class="comp-nom" title="'+esc(comp.full||comp.nom)+'">'+esc(comp.full||comp.nom)+'</span>';
+              if(comp.obl)html+='<span class="comp-obl">OBL</span>';
+              html+='<span class="comp-poids">×'+comp.poids+'</span>';
+              html+='</li>';
+            });
+            html+='</ul>';
+          }
+
+          html+='</div></div>'; // .tree-sequence-body + .tree-sequence
+        });
+
+        html+='</div></div>'; // .tree-periode-body + .tree-periode
+      });
+
+      html+='</div></div>'; // .tree-year-body + .tree-year
+    });
+  });
+
+  container.innerHTML=html;
+}
+
+function esc(s){
+  if(s==null)return'';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ─── EVENT LISTENERS DELEGUES ─── */
+// Filtres
+document.getElementById('main-content').addEventListener('change',function(e){
+  var sel=e.target.closest('select');
+  if(sel&&(sel.id==='classeFilter'||sel.id==='filiereFilter')){
+    renderTree();
+  }
+});
+
+// Toggle arborescence (delegation)
+document.getElementById('progressionTree').addEventListener('click',function(e){
+  var header=e.target.closest('[data-toggle]');
+  if(!header)return;
+  header.classList.toggle('open');
+  var body=header.nextElementSibling;
+  if(body){
+    body.style.display=body.style.display==='none'?'block':'none';
+  }
+});
+
+/* ─── INIT ─── */
+loadData();
+buildFilters();
+renderTree();
+
+})();
+</script>
+</body>
+</html>
