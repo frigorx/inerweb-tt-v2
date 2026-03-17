@@ -232,15 +232,18 @@ async function validerInscription(){
   try{
     var url=new URL(apiUrl);
     url.searchParams.set('action','updateEleveProfil');
-    await fetch(url.toString(),{
+    var resp=await fetch(url.toString(),{
       method:'POST',
       redirect:'follow',
       headers:{'Content-Type':'text/plain'},
       body:JSON.stringify({key:apiKey,code:selectedStudent.code,telephone:tel,email:email})
     });
-  }catch(e){console.warn('Erreur enregistrement:',e);}
-
-  goStep('step-done');
+    if(!resp.ok)throw new Error('Erreur serveur '+resp.status);
+    goStep('step-done');
+  }catch(e){
+    console.warn('Erreur enregistrement:',e);
+    alert('Erreur lors de l\'inscription. Vérifie ta connexion internet et réessaie.');
+  }
 }
 
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
