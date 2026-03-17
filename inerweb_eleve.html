@@ -2,9 +2,9 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8"><script>
-(function(){if(sessionStorage.getItem('iw_purged'))return;if('serviceWorker' in navigator){caches.keys().then(function(k){k.forEach(function(c){caches.delete(c)})});navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(sw){sw.unregister()})});}sessionStorage.setItem('iw_purged','1');setTimeout(function(){location.reload(true)},500);})();
+(function(){try{if(sessionStorage.getItem('iw_purged'))return;}catch(e){return;}if('serviceWorker' in navigator){caches.keys().then(function(k){k.forEach(function(c){caches.delete(c)})});navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(sw){sw.unregister()})});}try{sessionStorage.setItem('iw_purged','1');}catch(e){}setTimeout(function(){location.reload(true)},500);})();
 </script>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <title>INERWEB PROG+ — Mon espace élève</title>
 <script src="js/core/inerweb.config.js"></script>
@@ -324,6 +324,7 @@ input, select, textarea, button { font-family:inherit; }
       <div class="hdr-class" id="hdrClass">—</div>
     </div>
     <button class="hdr-sync" id="btnSync" onclick="syncCloud()" title="Synchroniser" aria-label="Synchroniser">🔄</button>
+    <button onclick="doLogout()" title="Déconnexion" aria-label="Déconnexion" style="background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer;padding:4px 8px;opacity:.7">🚪</button>
   </header>
 
   <div class="page active" id="page-home">

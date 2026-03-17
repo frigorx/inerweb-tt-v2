@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8"><script>
-(function(){if(sessionStorage.getItem('iw_purged'))return;if('serviceWorker' in navigator){caches.keys().then(function(k){k.forEach(function(c){caches.delete(c)})});navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(sw){sw.unregister()})});}sessionStorage.setItem('iw_purged','1');setTimeout(function(){location.reload(true)},500);})();
+(function(){try{if(sessionStorage.getItem('iw_purged'))return;}catch(e){return;}if('serviceWorker' in navigator){caches.keys().then(function(k){k.forEach(function(c){caches.delete(c)})});navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(sw){sw.unregister()})});}try{sessionStorage.setItem('iw_purged','1');}catch(e){}setTimeout(function(){location.reload(true)},500);})();
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -252,7 +252,7 @@ body {
     </div>
   </div>
 
-  <span class="version-badge">v7.3 — Plateforme unifiée</span>
+  <span class="version-badge">v7.8 — Plateforme unifiée</span>
 
   <p class="subtitle">
     Pilotage pédagogique, suivi CCF, agenda & évaluation<br>
@@ -290,7 +290,7 @@ body {
       <div class="role-info">
         <h2>Classroom</h2>
         <p>Partager des fichiers avec la classe — PDF, videos, TP, images...</p>
-        <p style="font-size:.68rem;color:var(--gris);margin-top:.3rem;font-style:italic;">Necessite le serveur local (LANCER.bat)</p>
+        <p style="font-size:.68rem;color:var(--gris);margin-top:.3rem;font-style:italic;">Nécessite le serveur local (LANCER.bat)</p>
       </div>
     </a>
 
