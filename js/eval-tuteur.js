@@ -341,14 +341,98 @@
       validee: true
     };
 
-    // Sauvegarde
+    // Sauvegarde locale (pfmpData)
     var et = _ensurePfmpData(studentCode);
     et['pfmp' + pfmpNum] = evalObj;
 
+    // ═══ AUSSI injecter dans validations pour que afficherEvalTuteur() puisse les voir ═══
+    if (typeof window.validations === 'object') {
+      if (!window.validations[studentCode]) window.validations[studentCode] = [];
+      // Entrée globale avec le payload complet
+      var obsEntry = {
+        epreuve: 'EP2', competence: '__obs_tuteur__', critere: '',
+        niveau: appreciation ? 'OBS' : '—',
+        observation: appreciation,
+        evaluateur: tuteurNom || ((window.cfg && window.cfg.nomProf) || 'Prof'),
+        entreprise: '',
+        contexte: 'pfmp' + pfmpNum,
+        phase: 'tuteur',
+        timestamp: new Date().toISOString(),
+        _tuteurPayload: { competences: competences, comportement: criteres, observation: appreciation },
+        source: 'prof_interface'
+      };
+      // Éviter les doublons
+      var isDup = window.validations[studentCode].some(function (v) {
+        return v.competence === '__obs_tuteur__' && v.contexte === 'pfmp' + pfmpNum && v.source === 'prof_interface'
+          && v.timestamp && obsEntry.timestamp && v.timestamp.slice(0, 10) === obsEntry.timestamp.slice(0, 10);
+      });
+      if (!isDup) window.validations[studentCode].push(obsEntry);
+      // Entrées individuelles par compétence
+      Object.keys(competences).forEach(function (compCode) {
+        var niv = competences[compCode];
+        if (!niv || niv === 'NE') return;
+        var compEntry = {
+          epreuve: 'EP2', competence: compCode, critere: '', niveau: niv,
+          contexte: 'pfmp' + pfmpNum, phase: 'tuteur',
+          evaluateur: obsEntry.evaluateur, timestamp: obsEntry.timestamp, source: 'prof_interface'
+        };
+        var isDup2 = window.validations[studentCode].some(function (v) {
+          return v.phase === 'tuteur' && v.competence === compCode && v.contexte === 'pfmp' + pfmpNum
+            && v.timestamp && compEntry.timestamp && v.timestamp.slice(0, 10) === compEntry.timestamp.slice(0, 10);
+        });
+        if (!isDup2) window.validations[studentCode].push(compEntry);
+      });
+    }
+
     if (typeof window.saveLocal === 'function') window.saveLocal();
 
-    if (typeof toast === 'function') {
-      toast('Évaluation tuteur PFMP' + pfmpNum + ' enregistrée (' + nbEvalues + ' comp.)', 'ok');
+    // ═══ SYNC SERVEUR — envoi immédiat + queue pending anti-perte ═══
+    var payload = {
+      eleve: studentCode,
+      pfmp: pfmpNum,
+      competences: competences,
+      observations: observations,
+      appreciation: appreciation,
+      criteres: criteres,
+      tuteurNom: tuteurNom,
+      date: evalObj.date,
+      evaluateur: (window.cfg && window.cfg.nomProf) || 'Prof',
+      source: 'prof_interface'
+    };
+
+    // Toujours sauvegarder en pending AVANT de tenter l'envoi
+    var PENDING_KEY = 'inerweb-prof-pending-evalTuteur';
+    var pending = [];
+    try { pending = JSON.parse(localStorage.getItem(PENDING_KEY) || '[]'); } catch (e) {}
+    var pendingItem = { eleve: studentCode, pfmp: pfmpNum, payload: payload, ts: Date.now() };
+    pending.push(pendingItem);
+    localStorage.setItem(PENDING_KEY, JSON.stringify(pending));
+
+    if (typeof window.apiCall === 'function') {
+      window.apiCall({
+        action: 'saveEvalTuteur',
+        eleve: studentCode,
+        tuteur: 'PROF_' + ((window.cfg && window.cfg.nomProf) || 'inconnu'),
+        data: JSON.stringify(payload)
+      }).then(function () {
+        // Succès → retirer du pending
+        var p = [];
+        try { p = JSON.parse(localStorage.getItem(PENDING_KEY) || '[]'); } catch (e) {}
+        p = p.filter(function (x) { return x.ts !== pendingItem.ts; });
+        localStorage.setItem(PENDING_KEY, JSON.stringify(p));
+        if (typeof toast === 'function') {
+          toast('✅ Éval tuteur PFMP' + pfmpNum + ' enregistrée ET synchronisée (' + nbEvalues + ' comp.)', 'ok');
+        }
+      }).catch(function (err) {
+        console.warn('[evalTuteur] sync échoué:', err.message || err);
+        if (typeof toast === 'function') {
+          toast('⚠️ Éval tuteur sauvegardée localement — sync en attente', 'warn');
+        }
+      });
+    } else {
+      if (typeof toast === 'function') {
+        toast('Évaluation tuteur PFMP' + pfmpNum + ' enregistrée localement (' + nbEvalues + ' comp.)', 'ok');
+      }
     }
   }
 
@@ -500,6 +584,42 @@
     }
   }
 
+  // ══════════════════════════════════════════════════════════════
+  // 5. retryPending — Renvoie les évaluations tuteur en attente
+  // ══════════════════════════════════════════════════════════════
+
+  function retryPendingEvalTuteur() {
+    var PENDING_KEY = 'inerweb-prof-pending-evalTuteur';
+    var pending = [];
+    try { pending = JSON.parse(localStorage.getItem(PENDING_KEY) || '[]'); } catch (e) {}
+    if (!pending.length || typeof window.apiCall !== 'function') return;
+
+    var restant = pending.slice();
+    var sent = 0;
+
+    pending.forEach(function (item) {
+      window.apiCall({
+        action: 'saveEvalTuteur',
+        eleve: item.eleve || item.payload.eleve,
+        tuteur: 'PROF_' + ((window.cfg && window.cfg.nomProf) || 'inconnu'),
+        data: JSON.stringify(item.payload)
+      }).then(function () {
+        restant = restant.filter(function (x) { return x.ts !== item.ts; });
+        localStorage.setItem(PENDING_KEY, JSON.stringify(restant));
+        sent++;
+        if (typeof toast === 'function' && sent === 1) {
+          toast('✅ Éval(s) tuteur en attente synchronisée(s)', 'ok');
+        }
+      }).catch(function () {});
+    });
+  }
+
+  // Retry automatique au chargement et quand la connexion revient
+  if (typeof window.addEventListener === 'function') {
+    window.addEventListener('online', retryPendingEvalTuteur);
+    setTimeout(retryPendingEvalTuteur, 5000);
+  }
+
   // ── Utilitaires d'échappement ──
 
   function _escHtml(str) {
@@ -523,7 +643,8 @@
     renderForm: renderForm,
     save: save,
     renderBilan: renderBilan,
-    integrerDansGrille: integrerDansGrille
+    integrerDansGrille: integrerDansGrille,
+    retryPending: retryPendingEvalTuteur
   };
 
 })();

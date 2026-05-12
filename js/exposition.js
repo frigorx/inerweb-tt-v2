@@ -10,17 +10,22 @@ window.expoModule = (function () {
   /** Compte les critères évalués et totaux pour EP2 */
   function _compterEP2(code) {
     var done = 0, total = 0;
-    var v = (validations[code] && validations[code].ep2) || {};
+    if (typeof COMP_EP2 === 'undefined' || typeof CRIT_EP2 === 'undefined') return { done: 0, total: 0 };
+    // validations[code] est un TABLEAU (pas un objet) — on compte directement
+    var vals = (validations[code] && Array.isArray(validations[code])) ? validations[code] : [];
     COMP_EP2.forEach(function (comp) {
       var ctx = comp.lieux || [];
       ctx.forEach(function (lieu) {
-        var crits = (CRIT2[comp.code] && CRIT2[comp.code][lieu]) || {};
-        var cles = Object.keys(crits);
+        var crits = (CRIT_EP2[comp.code] && CRIT_EP2[comp.code][lieu]) || [];
+        var cles = Array.isArray(crits) ? crits : Object.keys(crits);
         total += cles.length;
-        var vc = (v[comp.code]) || {};
         cles.forEach(function (c) {
-          var niv = vc[c];
-          if (niv && niv !== 'NE') done++;
+          var key = typeof c === 'string' ? c : '';
+          var has = vals.some(function (v) {
+            return v.epreuve === 'EP2' && v.competence === comp.code &&
+              (v.critere === key || v.contexte === lieu) && v.niveau && v.niveau !== 'NE';
+          });
+          if (has) done++;
         });
       });
     });
@@ -30,17 +35,21 @@ window.expoModule = (function () {
   /** Compte les critères évalués et totaux pour EP3 */
   function _compterEP3(code) {
     var done = 0, total = 0;
-    var v = (validations[code] && validations[code].ep3) || {};
+    if (typeof COMP_EP3 === 'undefined' || typeof CRIT_EP3 === 'undefined') return { done: 0, total: 0 };
+    var vals = (validations[code] && Array.isArray(validations[code])) ? validations[code] : [];
     COMP_EP3.forEach(function (comp) {
       var sits = comp.sits || [];
       sits.forEach(function (sit) {
-        var crits = (CRIT3[comp.code] && CRIT3[comp.code][sit]) || {};
-        var cles = Object.keys(crits);
+        var crits = (CRIT_EP3[comp.code] && CRIT_EP3[comp.code][sit]) || [];
+        var cles = Array.isArray(crits) ? crits : Object.keys(crits);
         total += cles.length;
-        var vc = (v[comp.code]) || {};
         cles.forEach(function (c) {
-          var niv = vc[c];
-          if (niv && niv !== 'NE') done++;
+          var key = typeof c === 'string' ? c : '';
+          var has = vals.some(function (v) {
+            return v.epreuve === 'EP3' && v.competence === comp.code &&
+              (v.critere === key || v.contexte === sit) && v.niveau && v.niveau !== 'NE';
+          });
+          if (has) done++;
         });
       });
     });
@@ -84,48 +93,37 @@ window.expoModule = (function () {
    * renderDetail(studentCode) — Tableau HTML détaillé par compétence
    */
   function renderDetail(studentCode) {
-    var v = validations[studentCode] || {};
+    if (typeof COMP_EP2 === 'undefined' || typeof CRIT_EP2 === 'undefined') return '';
+    var vals = (validations[studentCode] && Array.isArray(validations[studentCode])) ? validations[studentCode] : [];
     var html = '<table class="expo-detail" style="border-collapse:collapse;width:100%;font-size:13px">';
     html += '<tr><th style="border:1px solid #ccc;padding:4px">\u00c9preuve</th>' +
       '<th style="border:1px solid #ccc;padding:4px">Comp\u00e9tence</th>' +
       '<th style="border:1px solid #ccc;padding:4px">Contexte</th>' +
       '<th style="border:1px solid #ccc;padding:4px">\u00c9valu\u00e9s / Total</th></tr>';
 
-    /* Lignes EP2 */
-    COMP_EP2.forEach(function (comp) {
-      (comp.lieux || []).forEach(function (lieu) {
-        var crits = (CRIT2[comp.code] && CRIT2[comp.code][lieu]) || {};
-        var cles = Object.keys(crits);
-        var vc = ((v.ep2 || {})[comp.code]) || {};
+    function rowEP(ep, comp, ctxList, critTab) {
+      ctxList.forEach(function (ctx) {
+        var crits = (critTab[comp.code] && critTab[comp.code][ctx]) || [];
+        var cles = Array.isArray(crits) ? crits : Object.keys(crits);
         var ok = 0;
-        cles.forEach(function (c) { if (vc[c] && vc[c] !== 'NE') ok++; });
+        cles.forEach(function (c) {
+          var key = typeof c === 'string' ? c : '';
+          if (vals.some(function (v) { return v.epreuve === ep && v.competence === comp.code && (v.critere === key || v.contexte === ctx) && v.niveau && v.niveau !== 'NE'; })) ok++;
+        });
         var style = ok === cles.length && cles.length > 0
           ? 'background:#e8f5e9' : ok === 0 ? 'background:#ffebee' : 'background:#fff8e1';
         html += '<tr style="' + style + '">' +
-          '<td style="border:1px solid #ccc;padding:4px">EP2</td>' +
+          '<td style="border:1px solid #ccc;padding:4px">' + ep + '</td>' +
           '<td style="border:1px solid #ccc;padding:4px">' + comp.code + '</td>' +
-          '<td style="border:1px solid #ccc;padding:4px">' + lieu + '</td>' +
+          '<td style="border:1px solid #ccc;padding:4px">' + ctx + '</td>' +
           '<td style="border:1px solid #ccc;padding:4px;text-align:center">' + ok + ' / ' + cles.length + '</td></tr>';
       });
-    });
+    }
 
-    /* Lignes EP3 */
-    COMP_EP3.forEach(function (comp) {
-      (comp.sits || []).forEach(function (sit) {
-        var crits = (CRIT3[comp.code] && CRIT3[comp.code][sit]) || {};
-        var cles = Object.keys(crits);
-        var vc = ((v.ep3 || {})[comp.code]) || {};
-        var ok = 0;
-        cles.forEach(function (c) { if (vc[c] && vc[c] !== 'NE') ok++; });
-        var style = ok === cles.length && cles.length > 0
-          ? 'background:#e8f5e9' : ok === 0 ? 'background:#ffebee' : 'background:#fff8e1';
-        html += '<tr style="' + style + '">' +
-          '<td style="border:1px solid #ccc;padding:4px">EP3</td>' +
-          '<td style="border:1px solid #ccc;padding:4px">' + comp.code + '</td>' +
-          '<td style="border:1px solid #ccc;padding:4px">Sit. ' + sit + '</td>' +
-          '<td style="border:1px solid #ccc;padding:4px;text-align:center">' + ok + ' / ' + cles.length + '</td></tr>';
-      });
-    });
+    COMP_EP2.forEach(function (comp) { rowEP('EP2', comp, comp.lieux || [], CRIT_EP2); });
+    if (typeof COMP_EP3 !== 'undefined' && typeof CRIT_EP3 !== 'undefined') {
+      COMP_EP3.forEach(function (comp) { rowEP('EP3', comp, comp.sits || [], CRIT_EP3); });
+    }
 
     html += '</table>';
     return html;

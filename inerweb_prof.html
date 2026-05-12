@@ -2,6 +2,28 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8"><script>
+// ENVIRONNEMENT DEV — auto-config API DEV
+window.INERWEB_MODE='dev';
+window.INERWEB_DEV_API='https://script.google.com/macros/s/AKfycbz_yzn-iH41ExbZXBtCT_sF_mckfNFjg_0bEtlNNUJoLwngCbVGcWfgo_3GSZLlro-T2Q/exec';
+window.INERWEB_PROD_API='https://script.google.com/macros/s/AKfycbzVvXZRi4975OM4P8AJeoDWvnTbFSfTpVUDErzrNk2R2knfxBxCw-A-kLmKaNzmW35V1A/exec';
+window.INERWEB_DEV_SHEET_ID='1WCMZ1oY5Nm882O4u5JnBNxD7Y01qx1iSl6NT6-gArHM';
+(function(){
+  // Si pas de config existante (premier accès), on injecte la config DEV
+  try{
+    var existing=localStorage.getItem('inerweb-tt-fe-cfg');
+    var needSet=!existing;
+    if(existing){
+      try{var c=JSON.parse(existing);if(!c.apiUrl||c.apiUrl.indexOf(window.INERWEB_PROD_API.split('/macros/s/')[1].split('/')[0])>-1)needSet=true;}catch(e){needSet=true;}
+    }
+    if(needSet){
+      var devCfg={apiUrl:window.INERWEB_DEV_API,apiKey:'inerWeb2026fh',nomProf:'DEV',baseUrl:'https://frigorx.github.io/inerweb-tt-v2/'};
+      localStorage.setItem('inerweb-tt-fe-cfg',JSON.stringify(devCfg));
+    }
+  }catch(e){}
+})();
+// Auto-connect via #cfg= (raccourci bureau/telephone) — override possible
+(function(){var h=location.hash;if(h.indexOf('#cfg=')===0){try{var d=JSON.parse(atob(decodeURIComponent(h.substring(5))));if(d.apiUrl&&d.apiKey){localStorage.setItem('inerweb-tt-fe-cfg',JSON.stringify(d));history.replaceState(null,'',location.pathname+location.search);}}catch(e){}}})();
+// Purge cache service worker
 (function(){try{if(sessionStorage.getItem('iw_purged'))return;}catch(e){return;}if('serviceWorker' in navigator){caches.keys().then(function(k){k.forEach(function(c){caches.delete(c)})});navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(sw){sw.unregister()})});}try{sessionStorage.setItem('iw_purged','1');}catch(e){}setTimeout(function(){location.reload(true)},500);})();
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
@@ -113,6 +135,63 @@ body.show-app #screen-app{display:flex;}
 .main-content{flex:1;overflow-y:auto;padding-bottom:1rem;}
 .tab-pane{display:none;}.tab-pane.active{display:block;}
 .tab-inner{max-width:900px;margin:0 auto;padding:1.25rem 1rem;}
+/* Rapport de stage : layout large + 2 colonnes côte à côte (>=1100px) */
+#tab-rapport .tab-inner{max-width:1600px;}
+.rapport-2col{display:grid;grid-template-columns:1fr;gap:.75rem;margin-bottom:.6rem;}
+@media (min-width:1100px){.rapport-2col{grid-template-columns:5fr 7fr;align-items:start;}}
+.rapport-2col>.card{margin-bottom:0;}
+/* Bloc composition du jury */
+.jury-grid{display:grid;grid-template-columns:1fr;gap:.55rem}
+@media(min-width:900px){.jury-grid{grid-template-columns:1fr 1fr 1fr}}
+.jury-card{border-radius:var(--r2);padding:.5rem .65rem;border-left:3px solid #d4a017;background:#fff8e1}
+.jury-card.jury-pro{border-left-color:#2d5a8c;background:#e8f0f8}
+.jury-card.jury-fr{border-left-color:#8e44ad;background:#f3e8f9}
+.jury-card.jury-3{border-left-color:#d4a017;background:#fff8e1}
+.jury-card label{font-size:.82rem;font-weight:800;display:block;margin-bottom:.3rem;color:#222}
+.jury-card input{width:100%;padding:.42rem .55rem;border:2px solid #ccc;border-radius:var(--r2);font-size:.88rem;margin-bottom:.3rem;background:#fff}
+.jury-card input:last-child{margin-bottom:0}
+.jury-card input:focus{border-color:#1b3a63;outline:none}
+#juryCompFolded span{display:inline-block;margin-right:1rem;padding:.2rem .55rem;border-radius:var(--r2);font-weight:700}
+#juryCompFolded .pro{background:#e8f0f8;color:#2d5a8c}
+#juryCompFolded .fr{background:#f3e8f9;color:#8e44ad}
+#juryCompFolded .j3{background:#fff8e1;color:#a07e00}
+/* Partie français : 3 colonnes COM | ARG | LING sur grand écran */
+.rapport-fr-grid{display:grid;grid-template-columns:1fr;gap:.55rem;margin-bottom:.6rem;}
+@media (min-width:900px){.rapport-fr-grid{grid-template-columns:5fr 5fr 3fr;align-items:start;}}
+.cat-fr{margin-bottom:0!important}
+/* Note finale + observation en bas, côte à côte */
+.rapport-fr-bottom{display:grid;grid-template-columns:1fr;gap:.75rem;margin-top:.4rem;align-items:stretch}
+@media (min-width:700px){.rapport-fr-bottom{grid-template-columns:auto 1fr}}
+.rapport-fr-note{border-radius:var(--r2);padding:.6rem 1.1rem;text-align:center;display:flex;flex-direction:column;justify-content:center;min-width:140px}
+/* Bloc Compétences EP2 — compact + tâches toujours visibles */
+.ep2-row{background:#fff;border-radius:var(--r2);margin-bottom:.4rem;border-left:3px solid #ddd;padding:.3rem .35rem .35rem}
+.ep2-row-main{display:grid;grid-template-columns:46px 1fr 90px auto;gap:.35rem;align-items:center;margin-bottom:.25rem}
+.ep2-code{font-size:.74rem;font-weight:900;color:var(--bleu);white-space:nowrap}
+.ep2-obl{color:#c0392b;font-size:.7rem}
+.ep2-extra{color:#a07e00;font-size:.65rem;font-weight:700;background:#fff8e1;padding:0 .25rem;border-radius:6px}
+.ep2-nom{font-size:.74rem;font-weight:700;color:#222;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ep2-tut{display:flex;justify-content:center}
+.ep2-tut-cell{font-size:.7rem;font-weight:900;padding:.18rem .4rem;border-radius:var(--r2);cursor:pointer;white-space:nowrap;border:2px solid #d4a017;background:#fff8e1;color:#a07e00;line-height:1.2;transition:transform .12s}
+.ep2-tut-cell:hover{transform:scale(1.05)}
+.ep2-tut-empty{font-size:.7rem;color:#bbb;padding:.18rem .4rem}
+.ep2-niv-btns{display:flex;gap:.15rem}
+.ep2-niv-btn{padding:.22rem .3rem;border:2px solid transparent;border-radius:var(--r2);font-weight:900;font-size:.7rem;cursor:pointer;min-width:1.9rem;line-height:1.1;position:relative;transition:transform .1s}
+.ep2-niv-btn:hover{transform:scale(1.08)}
+.ep2-diff{position:absolute;top:-4px;right:-4px;font-size:.5rem;background:#fff;color:#c0392b;border-radius:50%;width:11px;height:11px;line-height:11px;text-align:center;border:1px solid #c0392b}
+.ep2-taches{display:flex;flex-wrap:wrap;gap:.2rem;margin:.2rem 0 .3rem;padding-left:46px}
+.ep2-tache{display:inline-flex;align-items:center;gap:.3rem;padding:.15rem .4rem;border-radius:var(--r2);font-size:.66rem;font-weight:600;cursor:pointer;border:2px solid transparent;position:relative}
+.ep2-tache.taok{background:#d4f4e2;border-color:#27ae60}
+.ep2-tache.taerr{background:#fde8e6;border-color:#c0392b}
+.ep2-tache.tana{background:#f7f7f7;border-color:#ddd}
+.ep2-tache-ic{font-size:.85rem}
+.ep2-tache-txt{line-height:1.2}
+.ep2-tache-tut{font-size:.7rem;margin-left:.15rem}
+.ep2-obs-input{width:100%;padding:.22rem .45rem;border:1px solid var(--gris3);border-radius:var(--r2);font-size:.68rem}
+@media (max-width:900px){
+  .ep2-row-main{grid-template-columns:38px 1fr 70px auto;gap:.25rem}
+  .ep2-niv-btn{padding:.18rem .2rem;font-size:.65rem;min-width:1.5rem}
+  .ep2-taches{padding-left:0}
+}
 
 /* [4] Header + nav bas */
 .app-header{background:var(--bleu);color:#fff;padding:.6rem 1rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;gap:.5rem;box-shadow:0 2px 8px rgba(0,0,0,.2);}
@@ -128,6 +207,7 @@ body.show-app #screen-app{display:flex;}
 .sync-dot.offline{background:var(--rouge);}
 .sync-dot.syncing{background:var(--jaune);animation:pulse 1s infinite;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes pendingPulse{0%,100%{opacity:1}50%{opacity:.5}}
 .top-nav{background:#fff;border-bottom:2px solid var(--gris3);display:flex;box-shadow:0 4px 16px rgba(0,0,0,.08);overflow-x:auto;scrollbar-width:none;}
 .top-nav::-webkit-scrollbar{display:none;}
 .top-nav{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 12px,#000 calc(100% - 12px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 12px,#000 calc(100% - 12px),transparent 100%);}
@@ -406,8 +486,49 @@ body.demo-mode::after{content:'MODE DÉMO';position:fixed;top:56px;left:50%;tran
 .classe-stats{display:flex;justify-content:space-between;font-size:.85rem;color:var(--gris);margin-top:1rem;padding-top:1rem;border-top:1px solid var(--gris3);font-weight:600;}
 </style>
 </head>
-<body class="show-config">
+<body class="show-config dev-mode">
 <a href="#main-content" class="skip-link">Aller au contenu principal</a>
+
+<!-- BANNIÈRE DEV -->
+<div id="devBanner" style="position:sticky;top:0;z-index:9999;background:linear-gradient(90deg,#ff6b35,#e85d26);color:#fff;padding:.4rem .8rem;text-align:center;font-weight:900;font-size:.85rem;box-shadow:0 2px 8px rgba(0,0,0,.25);letter-spacing:.5px">
+  🧪 ENVIRONNEMENT DE DÉVELOPPEMENT — Sheet DEV (1WCMZ1...) — Non production
+  <button onclick="document.getElementById('devTools').style.display=document.getElementById('devTools').style.display==='none'?'block':'none'" style="margin-left:.7rem;background:rgba(255,255,255,.25);border:none;color:#fff;padding:.18rem .55rem;border-radius:6px;cursor:pointer;font-weight:700;font-size:.78rem">🛠️ Outils DEV</button>
+</div>
+<div id="devTools" style="display:none;background:#fff8e1;border-bottom:2px solid #ff6b35;padding:.5rem .8rem;font-size:.8rem">
+  <strong>Actions DEV :</strong>
+  <button onclick="devReinitFromProd()" style="margin-left:.5rem;padding:.3rem .65rem;background:#1b3a63;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700">🔄 Réinitialiser DEV depuis PROD</button>
+  <button onclick="devSnapshot()" style="margin-left:.4rem;padding:.3rem .65rem;background:#27ae60;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700">📸 Snapshot DEV</button>
+  <a href="https://docs.google.com/spreadsheets/d/1WCMZ1oY5Nm882O4u5JnBNxD7Y01qx1iSl6NT6-gArHM/edit" target="_blank" style="margin-left:.4rem;color:#1b3a63;font-weight:700;text-decoration:none;padding:.3rem .65rem;background:#fff;border-radius:6px;border:1px solid #1b3a63">📊 Ouvrir Sheet DEV</a>
+  <a href="https://frigorx.github.io/tt-ia/inerweb_prof.html" style="margin-left:.4rem;color:#c0390f;font-weight:700;text-decoration:none;padding:.3rem .65rem;background:#fff;border-radius:6px;border:1px solid #c0390f">↪ Basculer vers PROD</a>
+  <span id="devActionStatus" style="margin-left:.5rem;font-size:.75rem;color:#666"></span>
+</div>
+<script>
+async function devReinitFromProd(){
+  if(!confirm('⚠️ Réinitialiser le Sheet DEV avec un mirror de PROD ?\n\nToutes les données DEV actuelles seront ÉCRASÉES par celles de PROD.\n\nContinuer ?'))return;
+  const st=document.getElementById('devActionStatus');st.textContent='⏳ Sync en cours...';
+  try{
+    const u=window.INERWEB_PROD_API+'?action=adminSyncProdToDev';
+    const body={apiKey:'inerWeb2026fh',admin_key:'devSetup2026fh',dev_sheet_id:window.INERWEB_DEV_SHEET_ID};
+    const r=await fetch(u,{method:'POST',redirect:'follow',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)});
+    const d=await r.json();
+    if(d.success){st.textContent='✅ Sync OK : '+JSON.stringify(d.counts);setTimeout(()=>location.reload(),1500);}
+    else{st.textContent='❌ Erreur : '+(d.error||'inconnu');}
+  }catch(e){st.textContent='❌ '+e.message;}
+}
+async function devSnapshot(){
+  const st=document.getElementById('devActionStatus');st.textContent='📸 Snapshot en cours...';
+  try{
+    const u=window.INERWEB_DEV_API+'?action=adminBackupSheet';
+    const body={apiKey:'inerWeb2026fh',admin_key:'devSetup2026fh'};
+    const r=await fetch(u,{method:'POST',redirect:'follow',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)});
+    const d=await r.json();
+    if(d.success){st.textContent='✅ Snapshot OK : '+d.name;}
+    else{st.textContent='❌ '+(d.error||'erreur');}
+  }catch(e){st.textContent='❌ '+e.message;}
+}
+window.devReinitFromProd=devReinitFromProd;
+window.devSnapshot=devSnapshot;
+</script>
 
 <!-- ÉCRAN CONFIG -->
 <div id="screen-config">
@@ -480,7 +601,7 @@ body.demo-mode::after{content:'MODE DÉMO';position:fixed;top:56px;left:50%;tran
     <button class="nav-btn active" data-tab="dashboard"><span class="ni">🏠</span>Tableau</button>
     <button class="nav-btn" data-tab="eleves"><span class="ni">👥</span>Élèves</button>
     <div class="nav-sep"></div>
-    <button class="nav-btn" data-tab="ep2" style="display:none"><span class="ni">🔧</span>EP2</button>
+    <a class="nav-btn" data-tab="ep2" style="display:none;text-decoration:none" href="inerweb_ccf_ep2.html"><span class="ni">🔧</span>EP2</a>
     <button class="nav-btn" data-tab="ep3" style="display:none"><span class="ni">🔍</span>EP3</button>
     <button class="nav-btn" data-tab="modules" style="display:none"><span class="ni">📦</span>Modules</button>
     <button class="nav-btn" data-tab="activites"><span class="ni">📋</span>Activités</button>
@@ -577,6 +698,14 @@ body.demo-mode::after{content:'MODE DÉMO';position:fixed;top:56px;left:50%;tran
       <div class="eleves-tb" style="flex-wrap:wrap">
         <button class="btn btn-primary btn-sm" onclick="showAddEleve()">➕ Ajouter</button>
         <button class="btn btn-ghost btn-sm" onclick="contactClasse()">📣 Contacter la classe</button>
+        <button class="btn btn-ghost btn-sm" onclick="contactTuteurs()" style="color:var(--teal)">🏢 Contacter tuteurs</button>
+        <button class="btn btn-ghost btn-sm" onclick="showUploadDocs('annexe3','Annexes 3')" style="color:var(--orange)">📄 Annexes 3</button>
+        <button class="btn btn-ghost btn-sm" onclick="showUploadDocs('convention_vierge','Conventions vierges')" style="color:var(--orange)">📄 Conv. vierges</button>
+        <button class="btn btn-ghost btn-sm" onclick="showUploadDocs('convention_remplie','Conventions remplies')" style="color:var(--orange)">📄 Conv. remplies</button>
+        <button class="btn btn-ghost btn-sm" onclick="showUploadDocs('attestation','Attestations')" style="color:var(--orange)">📄 Attestations</button>
+        <button class="btn btn-ghost btn-sm" onclick="envoyerDocsTuteurs()" style="color:var(--orange)">📤 Envoyer docs aux tuteurs</button>
+        <button class="btn btn-sm" onclick="envoyerAttestations()" style="background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff;border:none;font-weight:800">📨 Envoyer attestations</button>
+        <button class="btn btn-sm" onclick="rappelInfosTuteur()" style="background:#25D366;color:#fff;border:none;font-weight:800">📱 Rappel infos tuteur</button>
         <button class="btn btn-ghost btn-sm" onclick="lienInscription()" style="color:var(--violet)">🎓 Lien inscription</button>
         <button class="btn btn-ghost btn-sm" onclick="pushStudentsToBackend(students)" style="color:var(--teal)">☁️ Envoyer au serveur</button>
         <button class="btn btn-ghost btn-sm" onclick="showImportModal()">📥 Import</button>
@@ -840,6 +969,7 @@ body.demo-mode::after{content:'MODE DÉMO';position:fixed;top:56px;left:50%;tran
       <div class="stage-tabs">
         <button class="stage-tab active" data-sp="suivi" onclick="switchStagePanel('suivi')">📓 Suivi élèves</button>
         <button class="stage-tab" data-sp="tuteurs" onclick="switchStagePanel('tuteurs')">🏢 Évals tuteurs</button>
+        <button class="stage-tab" data-sp="entreprises" onclick="switchStagePanel('entreprises')">🏭 Entreprises</button>
         <button class="stage-tab" data-sp="partenaires" onclick="switchStagePanel('partenaires')">📋 Partenaires</button>
         <button class="stage-tab" data-sp="comm" onclick="switchStagePanel('comm')">📣 Comm.</button>
         <button class="stage-tab" data-sp="docs" onclick="switchStagePanel('docs')">📁 Documents</button>
@@ -863,6 +993,12 @@ body.demo-mode::after{content:'MODE DÉMO';position:fixed;top:56px;left:50%;tran
           </select>
         </div>
         <div id="tuteurEvalContenu"><div class="empty"><div class="ei">🏢</div><p>Sélectionnez un élève</p></div></div>
+      </div>
+
+      <!-- PANEL ENTREPRISES -->
+      <div class="stage-panel" id="sp-entreprises">
+        <div style="font-weight:800;color:var(--bleu);font-size:.9rem;margin-bottom:.5rem;">🏭 Tableau de bord Entreprises / Tuteurs</div>
+        <div id="entreprisesTable"><div class="empty"><div class="ei">🏭</div><p>Chargement...</p></div></div>
       </div>
 
       <div class="stage-panel" id="sp-partenaires">
@@ -1042,6 +1178,44 @@ body.demo-mode::after{content:'MODE DÉMO';position:fixed;top:56px;left:50%;tran
 
     <!-- RAPPORT DE STAGE -->
     <div class="tab-pane" id="tab-rapport"><div class="tab-inner">
+
+      <!-- Composition du jury — saisie en amont (persistée localement) -->
+      <div class="card" id="juryComposition" style="border-top:3px solid var(--orange);margin-bottom:.75rem">
+        <div class="card-title" style="color:var(--orange);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem">
+          <span>👥 Composition du jury <span style="font-size:.7rem;color:var(--gris);font-weight:600">— à renseigner avant les évaluations</span></span>
+          <button class="btn btn-ghost btn-xs" onclick="toggleJuryComp()" id="btnToggleJury" style="font-size:.7rem">▼ Plier</button>
+        </div>
+        <div id="juryCompBody">
+          <div class="jury-grid">
+            <div class="jury-card jury-pro">
+              <label>🔧 Prof. de pro (technique) <span style="color:#c0392b">*</span></label>
+              <input id="juryNom_pro" placeholder="Nom Prénom" oninput="setJuryComp('pro','nom',this.value);refreshJuryHeader()">
+              <input id="juryFn_pro" placeholder="Fonction (ex: Prof. atelier froid)" oninput="setJuryComp('pro','fn',this.value)">
+            </div>
+            <div class="jury-card jury-fr">
+              <label>📖 Prof. de français <span style="color:#c0392b">*</span></label>
+              <input id="juryNom_fr" placeholder="Nom Prénom" oninput="setJuryComp('fr','nom',this.value);refreshJuryHeader()">
+              <input id="juryFn_fr" placeholder="Fonction (ex: Prof. lettres-histoire)" oninput="setJuryComp('fr','fn',this.value)">
+            </div>
+            <div class="jury-card jury-3">
+              <label>👤 3<sup>e</sup> jury (optionnel)</label>
+              <input id="juryNom_3" placeholder="Nom Prénom" oninput="setJuryComp('3','nom',this.value);refreshJuryHeader()">
+              <input id="juryFn_3" placeholder="Fonction (ex: Inspecteur, Tuteur)" oninput="setJuryComp('3','fn',this.value)">
+            </div>
+          </div>
+          <div style="display:flex;gap:.4rem;margin-top:.6rem;flex-wrap:wrap;align-items:center">
+            <button class="btn btn-orange btn-sm" onclick="validerJury()">✅ Valider et continuer</button>
+            <button class="btn btn-ghost btn-sm" onclick="effacerJury()">🗑️ Effacer</button>
+            <span id="juryStatus" style="font-size:.75rem;color:var(--gris)"></span>
+          </div>
+        </div>
+        <div id="juryCompFolded" style="display:none;font-size:.82rem;line-height:1.5">
+          <span id="juryHdrPro"></span>
+          <span id="juryHdrFr"></span>
+          <span id="juryHdr3"></span>
+        </div>
+      </div>
+
       <div class="eval-hdr" style="margin-bottom:.75rem;">
         <div class="eval-sel-wrap">
           <select id="selRapport" onchange="selectStudent(this.value,'rapport')" aria-label="Sélection élève rapport"></select>
@@ -1735,9 +1909,11 @@ function showConfigScreen(){
 /* apiCall → js/core/api.js (copie locale conservée pour rétro-compatibilité) */
 async function apiCall(params){
   if(!cfg.apiUrl){try{var _sc=JSON.parse(localStorage.getItem(SCFG)||'{}');if(_sc.apiUrl){cfg.apiUrl=_sc.apiUrl;cfg.apiKey=_sc.apiKey;}}catch(e){}}
+  if(!cfg.apiUrl&&window.INERWEB_CONFIG&&window.INERWEB_CONFIG.API_URL){cfg.apiUrl=window.INERWEB_CONFIG.API_URL;cfg.apiKey=window.INERWEB_CONFIG.API_KEY;}
+  if(!cfg.apiUrl){cfg.apiUrl='https://script.google.com/macros/s/AKfycbzVvXZRi4975OM4P8AJeoDWvnTbFSfTpVUDErzrNk2R2knfxBxCw-A-kLmKaNzmW35V1A/exec';cfg.apiKey='inerWeb2026fh';}
   if(!cfg.apiUrl) throw new Error('no url');
   params.key=cfg.apiKey;
-  const WRITE_ACTIONS=['saveValidation','addEleve','deleteEleve','cloturerEpreuve','addJournalEntry','saveConfig','addUser','deleteUser'];
+  const WRITE_ACTIONS=['saveValidation','addEleve','deleteEleve','cloturerEpreuve','addJournalEntry','saveConfig','addUser','deleteUser','sendAttestationEmails','uploadDocument','updateEleveProfil','saveEvalTuteur'];
   const isWrite=WRITE_ACTIONS.includes(params.action);
   let r;
   if(isWrite){
@@ -1887,6 +2063,87 @@ async function syncAll(){
         if(Array.isArray(jd)&&jd.length>0){if(!pfmpData[sc])pfmpData[sc]={journal:[]};pfmpData[sc].journal=jd;}
       }catch(ej){}
     }
+    // ═══ Récupérer TOUTES les évaluations EP2/EP3/E31/E32 depuis le Sheet (v7.13.3) ═══
+    // CRITIQUE : sans ça, le prof ne voit pas ses évaluations sur un autre poste
+    try{
+      var evUrl=new URL(_url);evUrl.searchParams.set('action','getEvaluations');evUrl.searchParams.set('key',_key);
+      var evR=await fetch(evUrl.toString(),{method:'GET',redirect:'follow'});
+      var evD=await evR.json();
+      var evList=Array.isArray(evD)?evD:(evD&&evD.evaluations?evD.evaluations:[]);
+      if(evList&&evList.length){
+        var nbCharged=0,nbSkip=0;
+        evList.forEach(function(ev){
+          var code=ev.eleveId||ev.eleveCode||ev.eleve;
+          if(!code)return;
+          if(!validations[code])validations[code]=[];
+          var rec={
+            epreuve:ev.epreuve||ev.epreuveCode||'',
+            competence:ev.competence||ev.competenceCode||'',
+            critere:ev.critere||'',
+            niveau:ev.niveau!=null?String(ev.niveau):'',
+            phase:ev.phase||'formatif',
+            source:ev.source||'',
+            contexte:ev.contexte||'',
+            evaluateur:ev.evaluateur||ev.enseignant||'',
+            timestamp:ev.timestamp||'',
+            observation:ev.observation||''
+          };
+          // Déduplication par clé composite
+          var key=rec.epreuve+'|'+rec.competence+'|'+rec.critere+'|'+rec.contexte+'|'+rec.phase+'|'+rec.evaluateur+'|'+rec.timestamp;
+          var dup=validations[code].some(function(x){
+            return (x.epreuve||'')+'|'+(x.competence||'')+'|'+(x.critere||'')+'|'+(x.contexte||'')+'|'+(x.phase||'')+'|'+(x.evaluateur||'')+'|'+(x.timestamp||'')===key;
+          });
+          if(!dup){validations[code].push(rec);nbCharged++;}
+          else{nbSkip++;}
+        });
+        if(nbCharged>0)console.log('[syncAll] '+nbCharged+' évaluation(s) chargée(s) depuis le Sheet ('+nbSkip+' déjà en local)');
+      }
+    }catch(eev){console.warn('[syncAll] getEvaluations:',eev.message||eev);}
+
+    // ═══ Récupérer les évaluations tuteur depuis le serveur ═══
+    try{
+      var etUrl=new URL(_url);etUrl.searchParams.set('action','getEvalTuteur');etUrl.searchParams.set('key',_key);
+      var etr=await fetch(etUrl.toString(),{method:'GET',redirect:'follow'});
+      var etdRaw=await etr.json();
+      // Le Sheet renvoie soit un tableau direct, soit { evaluations: [...] }
+      var etd=Array.isArray(etdRaw)?etdRaw:(etdRaw&&etdRaw.evaluations?etdRaw.evaluations:[]);
+      if(Array.isArray(etd)&&etd.length>0){
+        var nbET=0;
+        etd.forEach(function(ev){
+          // ATTENTION : le Sheet renvoie 'elevecode' tout en minuscules sur certaines feuilles
+          var code=ev.eleveCode||ev.elevecode||ev.eleve||ev.eleveId;
+          if(!code)return;
+          if(!validations[code])validations[code]=[];
+          // Parser les champs JSON (competences et comportement sont stockés en string JSON)
+          var comp={};try{comp=typeof ev.competences==='string'?JSON.parse(ev.competences):(ev.competences||{});}catch(e){}
+          var behav={};try{behav=typeof ev.comportement==='string'?JSON.parse(ev.comportement):(ev.comportement||{});}catch(e){}
+          var obsEntry={
+            epreuve:'EP2',competence:'__obs_tuteur__',critere:'',
+            niveau:ev.observation?'OBS':'—',
+            observation:ev.observation||'',
+            evaluateur:ev.tuteur||'Tuteur',
+            entreprise:ev.entreprise||'',
+            contexte:'pfmp'+(ev.periode||''),
+            phase:'tuteur',
+            timestamp:ev.timestamp||'',
+            _tuteurPayload:{competences:comp,comportement:behav,observation:ev.observation||''},
+            source:ev.source||'tuteur'
+          };
+          var isDup=validations[code].some(function(v){return v.competence==='__obs_tuteur__'&&v.timestamp===obsEntry.timestamp;});
+          if(!isDup){validations[code].push(obsEntry);nbET++;}
+          // Compétences individuelles
+          Object.keys(comp).forEach(function(compCode){
+            var cn=comp[compCode];
+            var niv=typeof cn==='object'?cn.niveau:cn;
+            if(!niv||niv==='NE')return;
+            var compEntry={epreuve:'EP2',competence:compCode,critere:'',niveau:niv,contexte:obsEntry.contexte,phase:'tuteur',evaluateur:obsEntry.evaluateur,timestamp:obsEntry.timestamp,source:obsEntry.source};
+            var isDup2=validations[code].some(function(v){return v.phase==='tuteur'&&v.competence===compCode&&v.timestamp===compEntry.timestamp;});
+            if(!isDup2)validations[code].push(compEntry);
+          });
+        });
+        if(nbET>0)console.log('[syncAll] '+nbET+' éval(s) tuteur récupérée(s) depuis le serveur');
+      }
+    }catch(ete){console.warn('[syncAll] getEvalTuteur:',ete.message||ete);}
     online=true;saveLocal();setSyncState('ok');updateAll();
     toast('✓ Synchronisé — '+students.length+' élève(s)','ok');
   }catch(e){
@@ -1906,15 +2163,87 @@ function setSyncState(s){
   else if(s==='syncing'){d.classList.add('syncing');l.textContent='Sauvegarde...';}
   else{l.textContent='✓ Sauvegardé';}
 }
-/* pushVal → js/core/utils.js (copie locale conservée) */
+/* pushVal — avec protection anti-perte (v7.13.2) */
 async function pushVal(data){
   const entry={...data,evaluateur:cfg.nomProf||'Prof',timestamp:new Date().toISOString(),phase:curPhase};
   if(!validations[cur]) validations[cur]=[];
   validations[cur].push(entry); saveLocal(); updateAll();
-  toast('✓ Enregistré','ok');
-  // Sync vers le backend en arrière-plan (silencieux)
-  try{await apiCall({action:'saveValidation',eleve:cur,data:entry});}catch(e){console.warn('[pushVal] sync:',e.message);}
+
+  // Toujours sauvegarder en pending AVANT de tenter l'envoi
+  var pendingKey='inerweb-prof-pending-validations';
+  var pending=[];try{pending=JSON.parse(localStorage.getItem(pendingKey)||'[]');}catch(e){}
+  var pendingItem={eleve:cur,data:entry,ts:Date.now()};
+  pending.push(pendingItem);
+  localStorage.setItem(pendingKey,JSON.stringify(pending));
+  _updateProfPendingUI();
+
+  try{
+    await apiCall({action:'saveValidation',eleve:cur,data:entry});
+    // Succès → retirer du pending
+    pending=[];try{pending=JSON.parse(localStorage.getItem(pendingKey)||'[]');}catch(e){}
+    pending=pending.filter(function(p){return p.ts!==pendingItem.ts;});
+    localStorage.setItem(pendingKey,JSON.stringify(pending));
+    _updateProfPendingUI();
+    toast('✅ Enregistré et synchronisé','ok');
+  }catch(e){
+    console.warn('[pushVal] sync échoué:',e.message);
+    _updateProfPendingUI();
+    toast('⚠️ Enregistré localement — sync en attente','warn');
+  }
 }
+
+/* ═══ PROTECTION ANTI-PERTE PROF ═══ */
+function _updateProfPendingUI(){
+  var pending=[];try{pending=JSON.parse(localStorage.getItem('inerweb-prof-pending-validations')||'[]');}catch(e){}
+  var n=pending.length;
+  var badge=document.getElementById('profPendingBadge');
+  if(!badge){
+    badge=document.createElement('span');
+    badge.id='profPendingBadge';
+    badge.style.cssText='display:none;background:#e74c3c;color:#fff;font-size:.6rem;font-weight:900;padding:.15rem .5rem;border-radius:12px;animation:pendingPulse 1.5s infinite;margin-left:.5rem;';
+    var hdr=document.querySelector('.app-header')||document.querySelector('header');
+    if(hdr)hdr.appendChild(badge);
+  }
+  badge.style.display=n>0?'inline':'none';
+  badge.textContent='⏳ '+n+' en attente';
+}
+async function _retryProfPending(){
+  var pendingKey='inerweb-prof-pending-validations';
+  var pending=[];try{pending=JSON.parse(localStorage.getItem(pendingKey)||'[]');}catch(e){}
+  if(!pending.length)return;
+  var restant=[];
+  for(var i=0;i<pending.length;i++){
+    try{
+      await apiCall({action:'saveValidation',eleve:pending[i].eleve,data:pending[i].data});
+    }catch(e){restant.push(pending[i]);}
+  }
+  localStorage.setItem(pendingKey,JSON.stringify(restant));
+  _updateProfPendingUI();
+  if(!restant.length&&pending.length)toast('✅ '+pending.length+' évaluation(s) synchronisée(s)','ok');
+  else if(restant.length)toast('⚠️ '+restant.length+' évaluation(s) encore en attente','warn');
+}
+window.addEventListener('online',function(){_retryProfPending();});
+window.addEventListener('focus',function(){_retryProfPending();});
+setInterval(function(){
+  var p=[];try{p=JSON.parse(localStorage.getItem('inerweb-prof-pending-validations')||'[]');}catch(e){}
+  if(p.length>0&&navigator.onLine)_retryProfPending();
+},15000);
+window.addEventListener('beforeunload',function(e){
+  var p=[];try{p=JSON.parse(localStorage.getItem('inerweb-prof-pending-validations')||'[]');}catch(e2){}
+  if(p.length>0){
+    if(navigator.sendBeacon){
+      p.forEach(function(item){
+        try{
+          var url=new URL(cfg.apiUrl||window.INERWEB_CONFIG.API_URL);
+          url.searchParams.set('action','saveValidation');
+          var blob=new Blob([JSON.stringify({key:cfg.apiKey||window.INERWEB_CONFIG.API_KEY,eleve:item.eleve,data:item.data})],{type:'text/plain'});
+          navigator.sendBeacon(url.toString(),blob);
+        }catch(ex){}
+      });
+    }
+    e.preventDefault();e.returnValue='Des évaluations n\'ont pas été synchronisées.';return e.returnValue;
+  }
+});
 
 /* ═══ [D0] PHASE 13 — NAVIGATION MULTI-CLASSE ═══ */
 window.iwState = {
@@ -2341,6 +2670,7 @@ function switchStagePanel(p){
   document.querySelectorAll('.stage-panel').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.stage-tab').forEach(t=>t.classList.toggle('active',t.dataset.sp===p));
   document.getElementById('sp-'+p)?.classList.add('active');
+  if(p==='entreprises')renderEntreprises();
   if(p==='partenaires')renderParts();
   if(p==='comm')renderComm();
   if(p==='docs')renderSharedDocs();
@@ -2827,6 +3157,37 @@ function stageTracking(code){
   }
   return{days:calcDaysSinceLastEntry(code),lastPhoto,lastComment,photosTotal,commentsTotal,streak,bar};
 }
+function renderEntreprises(){
+  var c=document.getElementById('entreprisesTable');if(!c)return;
+  if(!students.length){c.innerHTML='<div class="empty"><div class="ei">🏭</div><p>Aucun élève</p></div>';return;}
+  var h='<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:.78rem;background:#fff;border-radius:var(--r2);overflow:hidden;box-shadow:var(--ombre2);">';
+  h+='<thead><tr style="background:var(--bleu);color:#fff;font-size:.7rem;"><th style="padding:.4rem;text-align:left;">Élève</th><th style="padding:.4rem;text-align:left;">Classe</th><th style="padding:.4rem;text-align:left;">Entreprise</th><th style="padding:.4rem;text-align:left;">Tuteur</th><th style="padding:.4rem;text-align:left;">Tél</th><th style="padding:.4rem;text-align:center;">Éval</th></tr></thead><tbody>';
+  students.forEach(function(s,i){
+    var bg=i%2===0?'#fff':'#f9fafb';
+    var entNom=s.entreprise_nom||'';
+    var tutNom=s.tuteur_nom||'';
+    var tel=s.tel_tuteur||'';
+    var hasEval=false;
+    // Vérifier si éval tuteur reçue
+    var vals=validations[s.code]||[];
+    if(Array.isArray(vals))hasEval=vals.some(function(v){return v.phase==='tuteur';});
+    h+='<tr style="background:'+bg+';border-bottom:1px solid var(--gris3);">';
+    h+='<td style="padding:.35rem;font-weight:700;">'+esc(s.nom)+' '+esc(s.prenom||'')+'</td>';
+    h+='<td style="padding:.35rem;font-size:.7rem;color:var(--gris);">'+esc(s.classe||'')+'</td>';
+    h+='<td style="padding:.35rem;'+(entNom?'':'color:var(--rouge);font-style:italic;')+'">'+esc(entNom||'Non renseignée')+'</td>';
+    h+='<td style="padding:.35rem;'+(tutNom?'':'color:var(--gris);font-style:italic;')+'">'+esc(tutNom||'—')+'</td>';
+    h+='<td style="padding:.35rem;font-size:.72rem;">'+esc(tel||'—')+'</td>';
+    h+='<td style="padding:.35rem;text-align:center;">'+( hasEval?'<span style="color:var(--vert);font-weight:900;">✅</span>':'<span style="color:var(--rouge);font-size:.7rem;">—</span>')+'</td>';
+    h+='</tr>';
+  });
+  h+='</tbody></table></div>';
+  // Stats
+  var withEnt=students.filter(function(s){return s.entreprise_nom;}).length;
+  var withTut=students.filter(function(s){return s.tuteur_nom;}).length;
+  h='<div style="display:flex;gap:.4rem;margin-bottom:.5rem;flex-wrap:wrap;font-size:.75rem;font-weight:700;"><span style="background:var(--bleu3);padding:.3rem .6rem;border-radius:var(--r2);color:var(--bleu);">'+students.length+' élèves</span><span style="background:'+(withEnt>=students.length?'var(--vert2)':'var(--jaune2)')+';padding:.3rem .6rem;border-radius:var(--r2);">'+withEnt+' entreprises</span><span style="background:'+(withTut>=students.length?'var(--vert2)':'var(--jaune2)')+';padding:.3rem .6rem;border-radius:var(--r2);">'+withTut+' tuteurs</span></div>'+h;
+  c.innerHTML=h;
+}
+
 function renderSuivi(){
   const c=document.getElementById('stageList');
   if(!students.length){c.innerHTML='<div class="empty"><div class="ei">🏢</div><p>Aucun élève</p></div>';return;}
@@ -2894,7 +3255,7 @@ function renderSuivi(){
         <button class="btn btn-teal btn-xs" onclick="viewJournalDetail('${s.code}')">📓 Journal</button>
         <button class="btn btn-ghost btn-xs" onclick="viewStagePhotos('${s.code}')">📷 Photos</button>
         <button class="btn btn-ghost btn-xs" onclick="showQR('${s.code}')">📱 QR</button>
-        <button class="btn btn-orange btn-xs" onclick="voirEvalTuteur('${s.code}')">🏢 Éval tuteur</button>
+        <button class="btn btn-xs" onclick="voirEvalTuteur('${s.code}')" style="background:${s.hasEvalTuteur?'var(--vert)':'var(--orange)'};color:#fff;border:none">${s.hasEvalTuteur?'✅':'🏢'} Éval tuteur</button>
         <button class="btn btn-ghost btn-xs" onclick="previewPageEleve('${s.code}')" title="Voir ce que voit l'élève">👁️ Élève</button>
         <button class="btn btn-ghost btn-xs" onclick="previewPageTuteur('${s.code}')" title="Voir ce que voit le tuteur">👁️ Tuteur</button>
       </div>
@@ -2943,7 +3304,7 @@ async function viewStagePhotos(code){
     const photos=byDay[day];
     return `<div style="margin-bottom:.75rem"><div style="font-weight:700;font-size:.78rem;color:var(--bleu);margin-bottom:.3rem">📅 ${dateFR(day)} (${photos.length} photo${photos.length>1?'s':''})</div>
       <div style="display:flex;gap:.3rem;flex-wrap:wrap">${photos.map(p=>`<div style="position:relative">
-        <img src="${esc(p.src)}" style="width:70px;height:70px;object-fit:cover;border-radius:6px;border:1px solid #ddd;cursor:pointer" onclick="window.open(this.src,'_blank')" title="${esc(p.text)}">
+        <img src="${esc(fixDriveUrl(p.src))}" style="width:70px;height:70px;object-fit:cover;border-radius:6px;border:1px solid #ddd;cursor:pointer" onclick="window.open(this.src,'_blank')" title="${esc(p.text)}">
       </div>`).join('')}</div></div>`;
   }).join('');
   showModal(`📷 Photos stage — ${s.nom} ${s.prenom||''} (${allPhotos.length})`,captureHtml+`<div style="max-height:50vh;overflow-y:auto">${html}</div>`,'<button class="btn btn-ghost" onclick="closeModal()">Fermer</button>');
@@ -3032,7 +3393,7 @@ function viewJournalDetail(code){
       </div>
       <div style="padding:.75rem">
         ${entries.map(e=>{
-          const photosHtml=e.photos?.length?`<div style="display:flex;gap:.3rem;flex-wrap:wrap;margin-top:.5rem">${e.photos.map((p,i)=>`<img src="${esc(p)}" style="width:60px;height:60px;object-fit:cover;border-radius:4px;cursor:pointer" onclick="window.open(this.src,'_blank')" title="Clic pour agrandir">`).join('')}</div>`:'';
+          const photosHtml=e.photos?.length?`<div style="display:flex;gap:.3rem;flex-wrap:wrap;margin-top:.5rem">${e.photos.map((p,i)=>`<img src="${esc(fixDriveUrl(p))}" style="width:60px;height:60px;object-fit:cover;border-radius:4px;cursor:pointer" onclick="window.open(this.src,'_blank')" title="Clic pour agrandir">`).join('')}</div>`:'';
           return `<div style="padding:.5rem;background:#fff;border-radius:var(--r2);margin-bottom:.4rem;border-left:3px solid var(--violet)">
             <div style="font-size:.7rem;color:var(--gris)">${new Date(e.date||e.timestamp).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})} <span style="background:var(--violet2);color:var(--violet);padding:.1rem .3rem;border-radius:3px;font-weight:700">${TYPE_LBL[e.type]||esc(e.type||'—')}</span></div>
             ${e.text||e.description||e.activite?`<div style="font-size:.85rem;margin-top:.3rem">${esc(e.text||e.description||e.activite)}</div>`:''}
@@ -3651,8 +4012,9 @@ function renderRapport(){
     </div>`;
   }).join('');
 
-  /* Grille français — notation par points /20 */
+  /* Grille français — chips de niveaux convertis automatiquement en points /20 */
   if(!d.fr_pts)d.fr_pts={};
+  if(!d.fr_niv)d.fr_niv={};
   let totalFr=0,maxFr=CRIT_RAPPORT_FR.total;
   const catColors={COM:'#2d5a8c',ARG:'#8e44ad',LING:'#16a085'};
   const catBg={COM:'#e8f0f8',ARG:'#f3e8f9',LING:'#e8f8f4'};
@@ -3660,32 +4022,35 @@ function renderRapport(){
   const catBlocks=CRIT_RAPPORT_FR.categories.map(cat=>{
     let catTotal=0;
     const critsHtml=cat.criteres.map(cr=>{
+      const niv=d.fr_niv[cr.id]??-1;
       const val=d.fr_pts[cr.id]??'';
       const numVal=val===''?0:Number(val);
       catTotal+=numVal;
       totalFr+=numVal;
-      const ptsOpts=[];
-      for(let i=0;i<=cr.pts;i++)ptsOpts.push(`<option value="${i}" ${val===i||val===''+i?'selected':''}>${i}</option>`);
-      return `<div style="background:#fff;border-radius:var(--r2);padding:.6rem .7rem;margin-bottom:.35rem;border-left:3px solid ${catColors[cat.id]}">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem">
-          <div style="flex:1">
-            <div style="font-size:.8rem;font-weight:700;color:${catColors[cat.id]};margin-bottom:.1rem">${cr.id} — ${cr.lbl}</div>
-            ${cr.sub?`<div style="font-size:.7rem;color:var(--gris);line-height:1.3">${cr.sub}</div>`:''}
+      // 5 chips de niveau, conversion auto en points selon le barème du critère
+      const chips=NIVEAUX_R.map((n,i)=>`
+        <div onclick="setRapportFrNiv('${cr.id}',${i},${cr.pts})"
+          style="padding:.4rem .25rem;border-radius:var(--r2);background:${COULEURS_R[i]};cursor:pointer;border:2px solid ${niv===i?TCOULEURS_R[i]:'transparent'};transition:var(--t);text-align:center;min-height:42px;display:flex;flex-direction:column;justify-content:center">
+          <div style="font-size:.7rem;font-weight:900;color:${TCOULEURS_R[i]}">${i}</div>
+          <div style="font-size:.7rem;font-weight:700;line-height:1.15;color:${TCOULEURS_R[i]}">${n}</div>
+        </div>`).join('');
+      return `<div style="background:#fff;border-radius:var(--r2);padding:.5rem .55rem;margin-bottom:.45rem;border-left:3px solid ${catColors[cat.id]}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.4rem;margin-bottom:.35rem">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:.85rem;font-weight:700;color:${catColors[cat.id]};margin-bottom:.1rem;line-height:1.25">${cr.id} — ${cr.lbl}</div>
+            ${cr.sub?`<div style="font-size:.74rem;color:var(--gris);line-height:1.3">${cr.sub}</div>`:''}
           </div>
-          <div style="display:flex;align-items:center;gap:.3rem;flex-shrink:0">
-            <select onchange="setRapportPts('${cr.id}',this.value)" style="padding:.3rem .5rem;border:2px solid ${catColors[cat.id]};border-radius:var(--r2);font-weight:800;font-size:.9rem;color:${catColors[cat.id]};min-width:3rem;text-align:center">
-              <option value="" ${val===''?'selected':''}>—</option>
-              ${ptsOpts.join('')}
-            </select>
-            <span style="font-size:.75rem;font-weight:700;color:var(--gris)">/ ${cr.pts}</span>
+          <div style="font-size:1rem;font-weight:900;color:${catColors[cat.id]};white-space:nowrap">
+            ${val===''?'—':val} <span style="font-size:.75rem;color:var(--gris);font-weight:700">/ ${cr.pts}</span>
           </div>
         </div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:.18rem">${chips}</div>
       </div>`;
     }).join('');
-    return `<div style="background:${catBg[cat.id]};border-radius:var(--r2);padding:.7rem;margin-bottom:.6rem;border:1px solid ${catColors[cat.id]}22">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
-        <div style="font-size:.85rem;font-weight:900;color:${catColors[cat.id]};text-transform:uppercase;letter-spacing:.5px">${cat.nom}</div>
-        <div style="font-size:.9rem;font-weight:800;color:${catColors[cat.id]};background:#fff;padding:.2rem .6rem;border-radius:var(--r2)">${catTotal} / ${cat.pts_max}</div>
+    return `<div class="cat-fr cat-fr-${cat.id}" style="background:${catBg[cat.id]};border-radius:var(--r2);padding:.65rem;border:1px solid ${catColors[cat.id]}22">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.45rem">
+        <div style="font-size:.92rem;font-weight:900;color:${catColors[cat.id]};text-transform:uppercase;letter-spacing:.5px">${cat.nom}</div>
+        <div style="font-size:.95rem;font-weight:800;color:${catColors[cat.id]};background:#fff;padding:.25rem .65rem;border-radius:var(--r2)">${catTotal} / ${cat.pts_max}</div>
       </div>
       ${critsHtml}
     </div>`;
@@ -3695,6 +4060,7 @@ function renderRapport(){
   const noteColor=pctFr>=80?'#1a7d3e':pctFr>=50?'#a06e00':'#c0390f';
 
   c.innerHTML=`
+    <div class="rapport-2col">
     <div class="card" style="border-top:3px solid var(--bleu2)">
       <div class="card-title">🔧 Évaluation prof de pro — ${esc(s.nom)} ${esc(s.prenom||'')}</div>
       ${makeGridPro(CRIT_RAPPORT_PRO,'pro')}
@@ -3704,6 +4070,8 @@ function renderRapport(){
           placeholder="Points forts, axes d'amélioration..."
           oninput="rapportData['${cur}']['${pfmp}'].obs_pro=this.value">${esc(d.obs_pro||'')}</textarea>
       </div>
+    </div>
+    ${renderRapportEP2(d,pfmp,s)}
     </div>
     <div class="card" style="border-top:3px solid var(--violet)">
       <div class="card-title" style="color:var(--violet)">📖 Évaluation orale — Rapport de stage</div>
@@ -3717,19 +4085,308 @@ function renderRapport(){
           oninput="rapportData['${cur}']['${pfmp}'].jury=this.value"
           style="width:4rem;padding:.25rem .4rem;border:2px solid var(--gris3);border-radius:var(--r2);font-weight:700;font-size:.82rem;text-align:center">
       </div>
-      ${catBlocks}
-      <div style="background:linear-gradient(135deg,${noteColor}11,${noteColor}22);border:2px solid ${noteColor};border-radius:var(--r2);padding:.75rem;text-align:center;margin-top:.5rem">
-        <div style="font-size:.72rem;font-weight:700;color:${noteColor};text-transform:uppercase;letter-spacing:.5px;margin-bottom:.2rem">Note finale</div>
-        <div style="font-size:1.8rem;font-weight:900;color:${noteColor}">${totalFr} <span style="font-size:1rem;font-weight:700">/ ${maxFr}</span></div>
-      </div>
-      <div class="fr" style="margin-top:.75rem;margin-bottom:0">
-        <label>Observation prof de français</label>
-        <textarea id="obs_fr" rows="2" style="width:100%;padding:.5rem;border:2px solid var(--gris3);border-radius:var(--r2);font-size:.85rem"
-          placeholder="Expression, argumentation, qualité de la langue..."
-          oninput="rapportData['${cur}']['${pfmp}'].obs_fr=this.value">${esc(d.obs_fr||'')}</textarea>
+      <div class="rapport-fr-grid">${catBlocks}</div>
+      <div class="rapport-fr-bottom">
+        <div class="rapport-fr-note" style="background:linear-gradient(135deg,${noteColor}11,${noteColor}22);border:2px solid ${noteColor};color:${noteColor}">
+          <div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.2rem">Note finale</div>
+          <div style="font-size:2.1rem;font-weight:900;line-height:1">${totalFr} <span style="font-size:1.1rem;font-weight:700">/ ${maxFr}</span></div>
+        </div>
+        <div class="fr" style="margin:0;flex:1">
+          <label style="font-size:.82rem">Observation prof de français</label>
+          <textarea id="obs_fr" rows="4" style="width:100%;padding:.55rem;border:2px solid var(--gris3);border-radius:var(--r2);font-size:.92rem;line-height:1.4;resize:vertical;min-height:90px"
+            placeholder="Expression, argumentation, qualité de la langue, retour de l'élève sur son stage…"
+            oninput="rapportData['${cur}']['${pfmp}'].obs_fr=this.value">${esc(d.obs_fr||'')}</textarea>
+        </div>
       </div>
     </div>
     <button class="btn btn-teal" onclick="sauverRapport()" style="margin-bottom:1rem">💾 Enregistrer l'évaluation rapport</button>`;
+}
+
+/* ═══ Bloc Compétences EP2 (style tuteur — tâches + niveaux NE/NA/EC/M/PM) ═══ */
+const NIV_EP2=['NE','NA','EC','M','PM'];
+const NIV_EP2_LBL={NE:'Non évaluable',NA:'Non acquis',EC:'En cours',M:'Maîtrise',PM:'Pleine maîtrise'};
+const NIV_EP2_COL={NE:'#888',NA:'#c0392b',EC:'#e67e22',M:'#27ae60',PM:'#1b3a63'};
+const NIV_EP2_BG ={NE:'#f0f0f0',NA:'#fde8e6',EC:'#fff3ee',M:'#d4f4e2',PM:'#e8f0f8'};
+
+/* ═══ Composition du jury — saisie en amont, persistée localement ═══ */
+const LS_JURY='inerweb-rapport-jury-session';
+function getJuryComp(){try{return JSON.parse(localStorage.getItem(LS_JURY)||'{}');}catch(_){return{};}}
+function setJuryComp(role,field,value){
+  const j=getJuryComp();
+  if(!j[role])j[role]={nom:'',fn:''};
+  j[role][field]=value;
+  localStorage.setItem(LS_JURY,JSON.stringify(j));
+}
+function getJuryEvaluateur(role){
+  const j=getJuryComp();
+  const r=j[role];
+  if(!r||!r.nom)return (cfg&&cfg.nomProf)||'Évaluateur';
+  return r.fn?(r.nom+' ('+r.fn+')'):r.nom;
+}
+function fillJuryFromLS(){
+  const j=getJuryComp();
+  ['pro','fr','3'].forEach(r=>{
+    const elN=document.getElementById('juryNom_'+r);
+    const elF=document.getElementById('juryFn_'+r);
+    if(elN&&j[r])elN.value=j[r].nom||'';
+    if(elF&&j[r])elF.value=j[r].fn||'';
+  });
+  refreshJuryHeader();
+}
+function refreshJuryHeader(){
+  const j=getJuryComp();
+  const pro=j.pro&&j.pro.nom?j.pro.nom:'';
+  const fr=j.fr&&j.fr.nom?j.fr.nom:'';
+  const j3=j['3']&&j['3'].nom?j['3'].nom:'';
+  const ok=pro&&fr;
+  const status=document.getElementById('juryStatus');
+  if(status){
+    if(ok)status.innerHTML='<span style="color:#27ae60;font-weight:700">✓ Jury renseigné</span>';
+    else status.innerHTML='<span style="color:#c0392b">⚠ Au moins Prof pro + Prof fr requis</span>';
+  }
+  // Header replié
+  const ph=document.getElementById('juryHdrPro');
+  const fh=document.getElementById('juryHdrFr');
+  const th=document.getElementById('juryHdr3');
+  if(ph)ph.innerHTML=pro?`<span class="pro">🔧 ${esc(pro)}</span>`:'';
+  if(fh)fh.innerHTML=fr?`<span class="fr">📖 ${esc(fr)}</span>`:'';
+  if(th)th.innerHTML=j3?`<span class="j3">👤 ${esc(j3)}</span>`:'';
+}
+function toggleJuryComp(){
+  const body=document.getElementById('juryCompBody');
+  const folded=document.getElementById('juryCompFolded');
+  const btn=document.getElementById('btnToggleJury');
+  if(!body)return;
+  const isOpen=body.style.display!=='none';
+  if(isOpen){body.style.display='none';folded.style.display='block';if(btn)btn.textContent='▶ Modifier';}
+  else{body.style.display='block';folded.style.display='none';if(btn)btn.textContent='▼ Plier';}
+}
+function validerJury(){
+  const j=getJuryComp();
+  if(!(j.pro&&j.pro.nom)||!(j.fr&&j.fr.nom)){
+    toast('⚠ Renseignez au moins Prof pro et Prof français','warn');return;
+  }
+  refreshJuryHeader();
+  toggleJuryComp();
+  toast('✅ Jury enregistré : '+j.pro.nom+' + '+j.fr.nom,'ok');
+}
+function effacerJury(){
+  if(!confirm('Effacer la composition du jury ?'))return;
+  localStorage.removeItem(LS_JURY);
+  ['pro','fr','3'].forEach(r=>{
+    const elN=document.getElementById('juryNom_'+r);
+    const elF=document.getElementById('juryFn_'+r);
+    if(elN)elN.value='';if(elF)elF.value='';
+  });
+  refreshJuryHeader();
+}
+window.setJuryComp=setJuryComp;
+window.refreshJuryHeader=refreshJuryHeader;
+window.toggleJuryComp=toggleJuryComp;
+window.validerJury=validerJury;
+window.effacerJury=effacerJury;
+// Auto-remplir au chargement
+document.addEventListener('DOMContentLoaded',function(){setTimeout(fillJuryFromLS,300);});
+
+// Récupère l'évaluation tuteur la plus récente pour une compétence donnée
+function getTuteurEval(eleveCode,compCode,pfmp){
+  const vals=validations[eleveCode]||[];
+  // Contextes acceptés : exact, vide, 'pfmp' générique, ou pfmp inversé (au cas où)
+  const ctxOk=(c)=>{
+    if(!c)return true;
+    if(c===pfmp)return true;
+    if(c==='pfmp')return true;
+    return false;
+  };
+  const matches=vals.filter(v=>v.epreuve==='EP2'&&v.competence===compCode&&(v.phase==='tuteur'||v.source==='tuteur')&&ctxOk(v.contexte));
+  if(!matches.length)return null;
+  matches.sort((a,b)=>String(b.timestamp||'').localeCompare(String(a.timestamp||'')));
+  return matches[0];
+}
+// Récupère les tâches cochées par le tuteur pour une compétence (depuis le _tuteurPayload)
+function getTuteurTaches(eleveCode,compCode,pfmp){
+  const vals=validations[eleveCode]||[];
+  // Le bloc __obs_tuteur__ stocke les tâches complètes dans _tuteurPayload.comportement
+  const ctxOk=(c)=>!c||c===pfmp||c==='pfmp';
+  const obsRow=vals.filter(v=>v.epreuve==='EP2'&&v.competence==='__obs_tuteur__'&&ctxOk(v.contexte)).sort((a,b)=>String(b.timestamp||'').localeCompare(String(a.timestamp||'')))[0];
+  if(!obsRow||!obsRow._tuteurPayload)return null;
+  const compData=obsRow._tuteurPayload.competences&&obsRow._tuteurPayload.competences[compCode];
+  if(!compData)return null;
+  // Si l'objet contient un champ taches : {taches:{0:true,1:false}}
+  return (typeof compData==='object'&&compData.taches)?compData.taches:null;
+}
+// Récupère l'évaluation certificative existante (déjà sauvée par le prof)
+function getProfCertif(eleveCode,compCode,pfmp){
+  const vals=validations[eleveCode]||[];
+  const matches=vals.filter(v=>v.epreuve==='EP2'&&v.competence===compCode&&(v.source==='prof_stage_certif'||v.phase==='certificatif')&&(v.contexte===pfmp||!v.contexte));
+  if(!matches.length)return null;
+  matches.sort((a,b)=>String(b.timestamp||'').localeCompare(String(a.timestamp||'')));
+  return matches[0];
+}
+
+function renderRapportEP2(d,pfmp,s){
+  if(!d.ep2)d.ep2={};
+  // Compétences EP2 du référentiel filtrées pour ce pfmp
+  const lieux=[pfmp];
+  let comps=(typeof COMP_EP2!=='undefined'?COMP_EP2:[]).filter(c=>!c.lieux||c.lieux.some(l=>lieux.includes(l)));
+  // Ajouter aussi les compétences que le tuteur a évaluées mais qui ne sont pas dans la liste standard
+  const knownCodes=new Set(comps.map(c=>c.code));
+  const tuteurExtra=(validations[cur]||[]).filter(v=>v.epreuve==='EP2'&&(v.phase==='tuteur'||v.source==='tuteur')&&v.competence&&!knownCodes.has(v.competence));
+  const extraCodes=[...new Set(tuteurExtra.map(v=>v.competence))];
+  extraCodes.forEach(code=>{comps.push({code:code,nom:code,full:'Compétence évaluée par le tuteur (hors référentiel '+pfmp+')',obl:false,extra:true});});
+  if(!comps.length)return '';
+
+  const compsHtml=comps.map(c=>{
+    // Évaluation locale (en cours de saisie)
+    let ev=d.ep2[c.code]||{niveau:'',taches:{},obs:''};
+    if(!ev.niveau||ev.niveau==='NE'){
+      const certif=getProfCertif(cur,c.code,pfmp);
+      if(certif&&certif.niveau){ev.niveau=certif.niveau;d.ep2[c.code]=ev;}
+    }
+    const niv=ev.niveau||'';
+    const taches=(typeof CRIT_EP2!=='undefined'&&CRIT_EP2[c.code]&&CRIT_EP2[c.code][pfmp])||[];
+    const nbTachesValid=Object.values(ev.taches||{}).filter(v=>v===1).length;
+
+    // Évaluation tuteur
+    const tuteur=getTuteurEval(cur,c.code,pfmp);
+    const nivTuteur=tuteur?tuteur.niveau:null;
+
+    // Mes 5 boutons compacts
+    const nivBtns=NIV_EP2.map(n=>{
+      const sel=niv===n;
+      const diff=nivTuteur&&nivTuteur!==niv&&sel;
+      return `<button type="button" onclick="setEp2Lv('${c.code}','${n}')"
+        class="ep2-niv-btn${sel?' sel':''}"
+        style="background:${sel?NIV_EP2_COL[n]:NIV_EP2_BG[n]};color:${sel?'#fff':NIV_EP2_COL[n]};border-color:${sel?NIV_EP2_COL[n]:'transparent'}"
+        title="${NIV_EP2_LBL[n]}">${n}${diff?'<span class="ep2-diff">↻</span>':''}</button>`;
+    }).join('');
+
+    // Cellule tuteur — bien visible
+    const tuteurCell=nivTuteur?`
+      <button type="button" class="ep2-tut-cell" onclick="copierTuteur('${c.code}','${nivTuteur}')"
+        title="${tuteur.evaluateur?esc(tuteur.evaluateur):'Tuteur'}${tuteur.observation?' — '+esc(tuteur.observation).substring(0,100):''} (clic = copier)"
+        style="background:${NIV_EP2_BG[nivTuteur]||'#fff8e1'};color:${NIV_EP2_COL[nivTuteur]||'#a07e00'};border:2px solid ${NIV_EP2_COL[nivTuteur]||'#d4a017'}">
+        👷 ${nivTuteur}${tuteur.observation?' 💬':''}
+      </button>`:`<span class="ep2-tut-empty">—</span>`;
+
+    // Tâches du tuteur (si dispo)
+    const tachesTuteur=getTuteurTaches(cur,c.code,pfmp);
+    // Rendu des tâches : pour chacune, voir ce que le tuteur a coché + ma case
+    const tachesHtml=taches.map((t,i)=>{
+      const v=ev.taches?.[i];
+      const cls=v===1?'taok':v===0?'taerr':'tana';
+      const tutOk=tachesTuteur&&tachesTuteur[i];
+      const tutMarker=tutOk?`<span class="ep2-tache-tut" title="Coché par le tuteur">👷</span>`:'';
+      return `<div onclick="setEp2Tache('${c.code}',${i})" class="ep2-tache ${cls}">
+        <span class="ep2-tache-ic">${v===1?'✅':v===0?'❌':'⬜'}</span>
+        <span class="ep2-tache-txt">${esc(t)}</span>
+        ${tutMarker}
+      </div>`;
+    }).join('');
+
+    return `<div class="ep2-row" data-comp="${c.code}">
+      <div class="ep2-row-main">
+        <div class="ep2-code" title="${esc(c.full||'')}">${c.code}${c.obl?' <span class="ep2-obl">●</span>':''}${c.extra?' <span class="ep2-extra">+</span>':''}</div>
+        <div class="ep2-nom" title="${esc(c.full||'')}">${esc(c.nom)}</div>
+        <div class="ep2-tut">${tuteurCell}</div>
+        <div class="ep2-niv-btns">${nivBtns}</div>
+      </div>
+      ${taches.length?`<div class="ep2-taches">${tachesHtml}</div>`:''}
+      <input type="text" placeholder="Observation certificative…" value="${esc(ev.obs||'')}"
+        oninput="setEp2Obs('${c.code}',this.value)" class="ep2-obs-input">
+    </div>`;
+  }).join('');
+
+  // Compte le nombre de compétences évaluées par le tuteur sur ce pfmp
+  const nbTuteur=comps.filter(c=>getTuteurEval(cur,c.code,pfmp)).length;
+  const tuteurInfo=nbTuteur?`<span style="font-size:.7rem;background:#fff8e1;color:#a07e00;padding:.1rem .45rem;border-radius:10px;font-weight:700;margin-left:.5rem">👷 ${nbTuteur} éval tuteur</span>`:'<span style="font-size:.7rem;color:var(--gris);margin-left:.5rem">(aucune éval tuteur reçue)</span>';
+
+  return `<div class="card" style="border-top:3px solid var(--orange)">
+    <div class="card-title" style="color:var(--orange)">🛠️ Compétences EP2 — Décision certificative ${tuteurInfo}</div>
+    <div style="font-size:.7rem;color:var(--gris);margin-bottom:.55rem">L'avis du tuteur s'affiche en jaune. Vous attribuez votre niveau définitif (devient certificatif). Le badge <span style="color:#c0392b;font-weight:700">↻</span> signale une décision différente du tuteur.</div>
+    ${compsHtml}
+  </div>`;
+}
+
+function setEp2Lv(compCode,niv,force){
+  const pfmp=document.getElementById('selRapportPfmp')?.value||'pfmp1';
+  if(!rapportData[cur])rapportData[cur]={};
+  if(!rapportData[cur][pfmp])rapportData[cur][pfmp]={pro:{},fr:{},obs_pro:'',obs_fr:'',jury:''};
+  if(!rapportData[cur][pfmp].ep2)rapportData[cur][pfmp].ep2={};
+  if(!rapportData[cur][pfmp].ep2[compCode])rapportData[cur][pfmp].ep2[compCode]={niveau:'NE',taches:{},obs:''};
+  // Toggle (clic répété → NE) sauf si force=true
+  const cur_niv=rapportData[cur][pfmp].ep2[compCode].niveau;
+  rapportData[cur][pfmp].ep2[compCode].niveau=(!force&&cur_niv===niv?'NE':niv);
+  renderRapport();
+  // Envoi immédiat dans la file pending (synchronisé auto)
+  _ep2Push(compCode,'',rapportData[cur][pfmp].ep2[compCode].niveau,pfmp);
+}
+function setEp2Tache(compCode,idx){
+  const pfmp=document.getElementById('selRapportPfmp')?.value||'pfmp1';
+  if(!rapportData[cur])rapportData[cur]={};
+  if(!rapportData[cur][pfmp])rapportData[cur][pfmp]={pro:{},fr:{},obs_pro:'',obs_fr:'',jury:''};
+  if(!rapportData[cur][pfmp].ep2)rapportData[cur][pfmp].ep2={};
+  if(!rapportData[cur][pfmp].ep2[compCode])rapportData[cur][pfmp].ep2[compCode]={niveau:'NE',taches:{},obs:''};
+  const cur_v=rapportData[cur][pfmp].ep2[compCode].taches[idx];
+  // Cycle : indéfini → 1 (oui) → 0 (non) → indéfini
+  const next=cur_v==null?1:cur_v===1?0:undefined;
+  if(next===undefined)delete rapportData[cur][pfmp].ep2[compCode].taches[idx];
+  else rapportData[cur][pfmp].ep2[compCode].taches[idx]=next;
+  renderRapport();
+  // Envoi critère individuel
+  const taches=(typeof CRIT_EP2!=='undefined'&&CRIT_EP2[compCode]&&CRIT_EP2[compCode][pfmp])||[];
+  _ep2Push(compCode,taches[idx]||('tache_'+idx),next===1?'PM':next===0?'NA':'NE',pfmp);
+}
+function setEp2Obs(compCode,txt){
+  const pfmp=document.getElementById('selRapportPfmp')?.value||'pfmp1';
+  if(!rapportData[cur])rapportData[cur]={};
+  if(!rapportData[cur][pfmp])rapportData[cur][pfmp]={pro:{},fr:{},obs_pro:'',obs_fr:'',jury:''};
+  if(!rapportData[cur][pfmp].ep2)rapportData[cur][pfmp].ep2={};
+  if(!rapportData[cur][pfmp].ep2[compCode])rapportData[cur][pfmp].ep2[compCode]={niveau:'NE',taches:{},obs:''};
+  rapportData[cur][pfmp].ep2[compCode].obs=txt;
+}
+
+function toggleEp2Detail(compCode){
+  const el=document.getElementById('ep2-detail-'+compCode);
+  if(!el)return;
+  el.style.display=el.style.display==='none'?'block':'none';
+}
+window.toggleEp2Detail=toggleEp2Detail;
+
+function copierTuteur(compCode,niv){
+  // Reprendre l'avis du tuteur comme décision certificative (force=true, pas de toggle)
+  setEp2Lv(compCode,niv,true);
+  toast('Avis tuteur repris : '+compCode+' → '+niv,'ok');
+}
+window.copierTuteur=copierTuteur;
+
+function _ep2Push(compCode,critere,niveau,pfmp){
+  // Empiler dans la file pending standard (retry auto + sendBeacon)
+  const pendingKey='inerweb-prof-pending-validations';
+  let pending=[];try{pending=JSON.parse(localStorage.getItem(pendingKey)||'[]');}catch(_){}
+  const ts=new Date().toISOString();
+  // L'évaluateur EP2 = jury technique (prof de pro) — si pas saisi, fallback sur cfg.nomProf
+  const evaluateur=getJuryEvaluateur('pro');
+  const data={
+    epreuve:'EP2',
+    competence:compCode,
+    critere:critere||'',
+    niveau:String(niveau),
+    contexte:pfmp,
+    phase:'certificatif', // ← l'éval du prof retour de stage est certificative
+    source:'prof_stage_certif',
+    evaluateur:evaluateur,
+    date_jury:new Date().toISOString().slice(0,10),
+    observation:'',
+    timestamp:ts
+  };
+  pending.push({eleve:cur,data:data,ts:Date.now()+Math.random()});
+  localStorage.setItem(pendingKey,JSON.stringify(pending));
+  // Mettre aussi à jour validations[cur] localement pour que getProfCertif voit immédiatement le changement
+  if(!validations[cur])validations[cur]=[];
+  validations[cur].push(data);
+  if(typeof _updateProfPendingUI==='function')_updateProfPendingUI();
+  if(typeof _retryProfPending==='function'){setTimeout(()=>_retryProfPending(),100);}
 }
 
 function setRapportNiv(key,secteur,niv){
@@ -3748,15 +4405,130 @@ function setRapportPts(critId,val){
   rapportData[cur][pfmp].fr_pts[critId]=val===''?'':Number(val);
   renderRapport();
 }
-
-function sauverRapport(){
-  if(!cur)return;
+// Niveau qualitatif (5 chips) → conversion auto en points selon le barème
+function setRapportFrNiv(critId,niv,critMax){
   const pfmp=document.getElementById('selRapportPfmp')?.value||'pfmp1';
-  // Sauvegarder dans notes locales
+  if(!rapportData[cur])rapportData[cur]={};
+  if(!rapportData[cur][pfmp])rapportData[cur][pfmp]={pro:{},fr:{},obs_pro:'',obs_fr:'',jury:''};
+  if(!rapportData[cur][pfmp].fr_pts)rapportData[cur][pfmp].fr_pts={};
+  if(!rapportData[cur][pfmp].fr_niv)rapportData[cur][pfmp].fr_niv={};
+  const cur_niv=rapportData[cur][pfmp].fr_niv[critId];
+  // Re-cliquer sur le même niveau désélectionne
+  if(cur_niv===niv){
+    rapportData[cur][pfmp].fr_niv[critId]=-1;
+    rapportData[cur][pfmp].fr_pts[critId]='';
+  }else{
+    // 0=Non rendu, 1=Insuf, 2=Correct, 3=Bien, 4=Très bien → 0%, 25%, 50%, 75%, 100%
+    const pcts=[0,0.25,0.50,0.75,1.00];
+    const pts=Math.round(critMax*pcts[niv]*4)/4; // arrondi à 0.25 près
+    rapportData[cur][pfmp].fr_niv[critId]=niv;
+    rapportData[cur][pfmp].fr_pts[critId]=pts;
+  }
+  renderRapport();
+}
+
+async function sauverRapport(){
+  if(!cur){toast('Sélectionnez un élève','warn');return;}
+  const pfmp=document.getElementById('selRapportPfmp')?.value||'pfmp1';
+  const d=rapportData[cur]?.[pfmp]||{pro:{},fr:{},fr_pts:{},fr_niv:{},obs_pro:'',obs_fr:'',jury:''};
+  const s=students.find(x=>x.code===cur)||{};
+  const ts=new Date().toISOString();
+  const dateJury=new Date().toISOString().slice(0,10);
+
+  // 1. Sauvegarde locale immédiate (preuve de saisie)
   if(!notes[cur])notes[cur]={};
-  notes[cur]['rapport_'+pfmp]=rapportData[cur]?.[pfmp];
-  saveLocal();
-  toast('Évaluation rapport sauvegardée ✓','ok');
+  notes[cur]['rapport_'+pfmp]=d;
+  try{saveLocal();}catch(_){}
+
+  // 2. Calculer le total français
+  let totalFr=0;
+  CRIT_RAPPORT_FR.categories.forEach(cat=>{
+    cat.criteres.forEach(cr=>{
+      const v=d.fr_pts?.[cr.id];
+      if(v!==''&&v!=null)totalFr+=Number(v);
+    });
+  });
+
+  // 3. Empiler les envois dans la file pending standard de la page prof
+  //    → la mécanique anti-perte (_retryProfPending + sendBeacon + 15s loop) prend le relais
+  const pendingKey='inerweb-prof-pending-validations';
+  let pending=[];try{pending=JSON.parse(localStorage.getItem(pendingKey)||'[]');}catch(_){}
+  const pushItem=(data)=>{
+    pending.push({eleve:cur,data,ts:Date.now()+Math.random()});
+  };
+
+  const evalPro=getJuryEvaluateur('pro');
+  const evalFr=getJuryEvaluateur('fr');
+
+  // 3a. Évaluation prof de pro — niveau global + chaque critère
+  CRIT_RAPPORT_PRO.forEach(cr=>{
+    const niv=d.pro?.[cr.key];
+    if(niv!=null&&niv>=0){
+      pushItem({
+        epreuve:'RAPPORT_PRO',
+        competence:cr.key,
+        critere:cr.lbl,
+        niveau:String(niv),
+        niveau_qualitatif:NIVEAUX_R[niv]||'',
+        observation:d.obs_pro||'',
+        contexte:'rapport_stage',
+        phase:pfmp,
+        evaluateur:evalPro,
+        date_jury:dateJury,
+        timestamp:ts,
+        source:'rapport_stage_pro'
+      });
+    }
+  });
+
+  // 3b. Évaluation française — note globale + chaque critère
+  pushItem({
+    epreuve:'RAPPORT_FR',
+    competence:'__total_rapport_fr__',
+    critere:'',
+    niveau:String(totalFr),
+    observation:d.obs_fr||'',
+    contexte:'rapport_stage',
+    phase:pfmp,
+    evaluateur:evalFr,
+    jury_num:d.jury||'',
+    date_jury:dateJury,
+    timestamp:ts,
+    source:'rapport_stage_fr',
+    _payload:{type:'rapport_stage_fr',pfmp,scores:d.fr_pts,niveaux:d.fr_niv,total:totalFr,jury:getJuryComp()}
+  });
+  CRIT_RAPPORT_FR.categories.forEach(cat=>{
+    cat.criteres.forEach(cr=>{
+      const pts=d.fr_pts?.[cr.id];
+      const niv=d.fr_niv?.[cr.id];
+      if(pts!==''&&pts!=null){
+        pushItem({
+          epreuve:'RAPPORT_FR',
+          competence:cr.id,
+          critere:cr.lbl,
+          niveau:String(pts),
+          niveau_qualitatif:(niv!=null&&niv>=0)?NIVEAUX_R[niv]:'',
+          observation:'',
+          contexte:'rapport_stage',
+          phase:pfmp,
+          evaluateur:evalFr,
+          jury_num:d.jury||'',
+          date_jury:dateJury,
+          timestamp:ts,
+          source:'rapport_stage_fr'
+        });
+      }
+    });
+  });
+
+  localStorage.setItem(pendingKey,JSON.stringify(pending));
+  if(typeof _updateProfPendingUI==='function')_updateProfPendingUI();
+
+  // 4. Tenter l'envoi immédiat — sinon la file sera vidée automatiquement (15s + online + focus)
+  toast('💾 Sauvegarde en cours… ('+pending.length+' enregistrements)','ok');
+  if(typeof _retryProfPending==='function'){
+    try{await _retryProfPending();}catch(_){}
+  }
 }
 
 /* ═══ [H-ter] DOCUMENTS PARTAGÉS — DRIVE CLASSE ═══ */
@@ -4044,6 +4816,588 @@ function contactClasseSMS(){
   var nums=students.filter(s=>s.tel_eleve).map(s=>formatWA(s.tel_eleve)).join(',');
   if(nums)window.open('sms:'+nums+'?body='+encodeURIComponent('Bonjour, message de votre enseignant inerWeb TT.'),'_blank');
   else toast('Aucun numéro élève enregistré','err');
+}
+/* ═══ CONTACTER TOUS LES TUTEURS ═══ */
+function contactTuteurs(){
+  var els=students.filter(s=>s.statut!=='inactif');
+  var base=cfg.baseUrl||'';
+  var portailUrl=base+'tuteur-portail.html';
+  // Stats
+  var avecTel=els.filter(s=>s.tel_tuteur||s.tuteur_tel);
+  var avecEmail=els.filter(s=>s.tuteur_email||s.email_tuteur);
+  var avecNom=els.filter(s=>s.tuteur_nom||s.nom_tuteur);
+  var sansTel=els.filter(s=>!(s.tel_tuteur||s.tuteur_tel));
+
+  var html='<div style="max-height:60vh;overflow-y:auto">';
+  // Résumé
+  html+='<div class="alert al-info" style="margin-bottom:.75rem">'+avecTel.length+' tuteur(s) avec téléphone · '+avecEmail.length+' avec email · '+sansTel.length+' sans contact</div>';
+  // Boutons d'action groupée
+  html+='<div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.75rem">';
+  html+='<button class="btn btn-sm" style="background:#25D366;color:#fff;border:none;min-height:44px" onclick="contactTuteursBulkWA()">📱 WhatsApp tous les tuteurs</button>';
+  html+='<button class="btn btn-sm" style="background:#0088cc;color:#fff;border:none;min-height:44px" onclick="contactTuteursBulkSMS()">💬 SMS tous les tuteurs</button>';
+  html+='<button class="btn btn-sm" style="background:#ea4335;color:#fff;border:none;min-height:44px" onclick="contactTuteursBulkEmail()">📧 Email tous les tuteurs</button>';
+  html+='</div>';
+  // Lien portail
+  html+='<div style="background:var(--teal2);border-radius:var(--r2);padding:.65rem;margin-bottom:.75rem;font-size:.78rem">';
+  html+='<strong>🔗 Lien portail tuteur :</strong><br>';
+  html+='<span style="font-size:.7rem;word-break:break-all;font-family:monospace">'+esc(portailUrl)+'</span><br>';
+  html+='<button class="btn btn-ghost btn-sm" style="margin-top:.3rem" onclick="navigator.clipboard.writeText(\''+portailUrl+'\');toast(\'Lien copié\',\'ok\')">📋 Copier le lien</button>';
+  html+='</div>';
+  // Tableau détaillé
+  html+='<table style="width:100%;font-size:.75rem;border-collapse:collapse"><thead><tr>';
+  html+='<th style="text-align:left;padding:.3rem">Stagiaire</th>';
+  html+='<th style="text-align:left;padding:.3rem">Tuteur / Entreprise</th>';
+  html+='<th style="text-align:center">💬</th><th style="text-align:center">📱</th><th style="text-align:center">📧</th>';
+  html+='</tr></thead><tbody>';
+  els.forEach(function(s){
+    var tel=s.tel_tuteur||s.tuteur_tel||'';
+    var email=s.tuteur_email||s.email_tuteur||'';
+    var nom=s.tuteur_nom||s.nom_tuteur||'';
+    var ent=s.entreprise_nom||s.entreprise||'';
+    var lienTuteur=base+'inerweb_tuteur.html?eleve='+s.code+'&tuteur='+(s.token_tuteur||'')+'&role=tuteur';
+    var msgWA='Bonjour'+(nom?' '+nom:'')+',\nVoici votre lien tuteur pour le suivi de '+s.nom+' '+s.prenom+' :\n'+lienTuteur;
+    html+='<tr style="border-bottom:1px solid var(--gris3)">';
+    html+='<td style="padding:.3rem;font-weight:700">'+esc(s.nom)+' '+esc(s.prenom||'')+'</td>';
+    html+='<td style="padding:.3rem;font-size:.7rem">'+(nom?esc(nom):'<span style="color:var(--rouge)">?</span>')+(ent?' · '+esc(ent):'')+'</td>';
+    // SMS individuel
+    html+='<td style="text-align:center">'+(tel?'<a href="sms:+'+formatWA(tel)+'?body='+encodeURIComponent(msgWA)+'" title="SMS '+esc(nom)+'">💬</a>':'—')+'</td>';
+    // WhatsApp individuel
+    html+='<td style="text-align:center">'+(tel?'<a href="https://wa.me/'+formatWA(tel)+'?text='+encodeURIComponent(msgWA)+'" target="_blank" title="WhatsApp '+esc(nom)+'">📱</a>':'—')+'</td>';
+    // Email individuel
+    html+='<td style="text-align:center">'+(email?'<a href="mailto:'+esc(email)+'?subject='+encodeURIComponent('Suivi de stage — '+s.nom+' '+s.prenom)+'&body='+encodeURIComponent(msgWA)+'" title="Email '+esc(nom)+'">📧</a>':'—')+'</td>';
+    html+='</tr>';
+  });
+  html+='</tbody></table></div>';
+  showModal('🏢 Contacter les tuteurs',html,'<button class="btn btn-ghost" onclick="closeModal()">Fermer</button>');
+}
+function contactTuteursBulkSMS(){
+  var base=cfg.baseUrl||'';
+  var portailUrl=base+'tuteur-portail.html';
+  var nums=students.filter(s=>s.statut!=='inactif'&&(s.tel_tuteur||s.tuteur_tel)).map(s=>formatWA(s.tel_tuteur||s.tuteur_tel)).join(',');
+  if(!nums){toast('Aucun numéro tuteur enregistré','err');return;}
+  var msg='Bonjour,\nVoici le lien pour accéder à votre espace tuteur inerWeb :\n'+portailUrl+'\nSélectionnez votre stagiaire et connectez-vous.\nCordialement, '+cfg.nomProf;
+  window.open('sms:'+nums+'?body='+encodeURIComponent(msg),'_blank');
+}
+function contactTuteursBulkWA(){
+  var base=cfg.baseUrl||'';
+  var portailUrl=base+'tuteur-portail.html';
+  var msg='Bonjour,\nVoici le lien pour accéder à votre espace tuteur inerWeb :\n'+portailUrl+'\nSélectionnez votre stagiaire et connectez-vous.\nCordialement, '+cfg.nomProf;
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+}
+/* ═══ DOCUMENTS → DRIVE (générique) ═══ */
+var _currentDocType='';
+function showUploadDocs(docType,label){
+  _currentDocType=docType;
+  var html='<div style="max-height:60vh;overflow-y:auto">';
+  html+='<div class="alert al-info" style="margin-bottom:.75rem">Sélectionnez les PDF. Le nom du fichier doit contenir le nom de l\'élève pour le matching automatique.<br><em>Ex : PFMP_CAP_IFCA_DUPONT_Martin.pdf</em></div>';
+  html+='<input type="file" id="annexeFiles" accept=".pdf" multiple style="margin-bottom:.75rem;font-size:.85rem">';
+  html+='<div id="annexePreview" style="margin-bottom:.75rem"></div>';
+  html+='<button class="btn btn-primary" onclick="doUploadDocs()" id="btnUploadAnnexes" disabled>📤 Envoyer sur le Drive des élèves</button>';
+  html+='<div id="annexeProgress" style="margin-top:.75rem;font-size:.8rem;color:var(--gris)"></div>';
+  html+='</div>';
+  showModal('📄 '+esc(label)+' → Google Drive',html,'<button class="btn btn-ghost" onclick="closeModal()">Fermer</button>');
+  setTimeout(function(){
+    document.getElementById('annexeFiles').addEventListener('change',function(){
+      var files=this.files;
+      if(!files.length)return;
+      var preview=document.getElementById('annexePreview');
+      var rows='';
+      for(var i=0;i<files.length;i++){
+        var match=matchFileToStudent(files[i].name);
+        rows+='<div style="display:flex;align-items:center;gap:.5rem;padding:.3rem .5rem;border-bottom:1px solid var(--gris3);font-size:.78rem">';
+        rows+='<span style="flex:1;font-weight:700">'+esc(files[i].name)+'</span>';
+        rows+=(match?'<span style="color:var(--vert);font-weight:700">→ '+esc(match.nom)+' '+esc(match.prenom||'')+' ('+match.code+')</span>':'<span style="color:var(--rouge)">❌ Pas de correspondance</span>');
+        rows+='</div>';
+      }
+      preview.innerHTML=rows;
+      document.getElementById('btnUploadAnnexes').disabled=false;
+    });
+  },100);
+}
+function normalizeMatch(s){return String(s||'').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Z]/g,'');}
+function matchFileToStudent(filename){
+  var fn=normalizeMatch(filename);
+  var best=null,bestScore=0;
+  students.forEach(function(s){
+    if(s.statut==='inactif')return;
+    var nom=normalizeMatch(s.nom);
+    var prenom=normalizeMatch(s.prenom);
+    if(!nom)return;
+    var score=0;
+    if(fn.indexOf(nom)!==-1)score+=nom.length;
+    if(prenom&&fn.indexOf(prenom)!==-1)score+=prenom.length;
+    if(score>bestScore){bestScore=score;best=s;}
+  });
+  return bestScore>=3?best:null;
+}
+async function doUploadDocs(){
+  var files=document.getElementById('annexeFiles').files;
+  if(!files.length){toast('Aucun fichier sélectionné','err');return;}
+  var docType=_currentDocType||'document';
+  var labelMap={annexe3:'Annexe3',convention_vierge:'Convention_vierge',convention_remplie:'Convention_remplie',attestation:'Attestation'};
+  var prefix=labelMap[docType]||'Document';
+  var prog=document.getElementById('annexeProgress');
+  var btn=document.getElementById('btnUploadAnnexes');
+  btn.disabled=true;btn.textContent='⏳ Envoi en cours...';
+  var ok=0,err=0,skip=0;
+  for(var i=0;i<files.length;i++){
+    var f=files[i];
+    var match=matchFileToStudent(f.name);
+    if(!match){skip++;prog.innerHTML='⏭️ '+esc(f.name)+' — pas de correspondance';continue;}
+    prog.innerHTML='📤 '+esc(f.name)+' → '+esc(match.nom)+' ('+match.code+') — '+(i+1)+'/'+files.length;
+    try{
+      var base64=await readFileAsBase64(f);
+      var r=await apiCall({action:'uploadDocument',eleve:match.code,fileName:prefix+'_'+match.nom+'_'+(match.prenom||'')+'.pdf',base64:base64,mime:'application/pdf',docType:docType});
+      if(r&&r.ok){
+        ok++;
+        if(!match.documents)match.documents=[];
+        match.documents.push({type:docType,url:r.url,fileName:r.fileName,date:new Date().toISOString()});
+      }else{err++;prog.innerHTML+=' ❌ '+(r?.error||'Erreur');}
+    }catch(e){err++;console.warn('[upload]',f.name,e);}
+  }
+  btn.textContent='📤 Envoyer sur le Drive des élèves';btn.disabled=false;
+  prog.innerHTML='<strong>Terminé :</strong> ✅ '+ok+' envoyé(s)' + (err?' · ❌ '+err+' erreur(s)':'') + (skip?' · ⏭️ '+skip+' ignoré(s)':'');
+  if(ok)toast('✓ '+ok+' document(s) uploadé(s) sur Drive','ok');
+  saveLocal();
+}
+function readFileAsBase64(file){
+  return new Promise(function(resolve,reject){
+    var reader=new FileReader();
+    reader.onload=function(){
+      var result=reader.result;
+      // Extraire juste la partie base64 (sans le prefix data:...)
+      var idx=result.indexOf(',');
+      resolve(idx!==-1?result.substring(idx+1):result);
+    };
+    reader.onerror=reject;
+    reader.readAsDataURL(file);
+  });
+}
+/* ═══ RAPPEL INFOS TUTEUR PAR SMS / WHATSAPP ═══ */
+function rappelInfosTuteur(){
+  var els=students.filter(s=>s.statut!=='inactif');
+  var incomplets=els.filter(s=>{
+    var hasEmail=s.tuteur_email||s.email_tuteur;
+    var hasEleveEmail=s.email_eleve||s.email;
+    return !hasEmail||!hasEleveEmail;
+  });
+  var avecTel=incomplets.filter(s=>{var t=String(s.tel_eleve||'').replace(/[\s.\-+]/g,'');return t.length>=9;});
+  var base=cfg.baseUrl||'https://frigorx.github.io/tt-ia/';
+
+  // Message SMS
+  var smsMsg='[inerWeb] Connecte-toi sur l\'appli et renseigne OBLIGATOIREMENT :\n- Ton email\n- Le nom, tel et email de ton tuteur\nC\'est indispensable pour ton attestation de stage.\nM. Henninot';
+
+  // Numéros formatés pour SMS groupé
+  var nums=avecTel.map(function(s){
+    var t=String(s.tel_eleve||'').replace(/[\s.\-+]/g,'');
+    return t.startsWith('0')?t:'0'+t;
+  });
+
+  var html='<div style="max-height:60vh;overflow-y:auto">';
+  html+='<div class="alert al-info" style="margin-bottom:.75rem"><strong>'+incomplets.length+'</strong> élève(s) n\'ont pas encore renseigné toutes les infos.<br><strong>'+avecTel.length+'</strong> contactable(s) par SMS/WhatsApp.</div>';
+
+  // Liste
+  incomplets.forEach(function(s){
+    var t=String(s.tel_eleve||'').replace(/[\s.\-+]/g,'');
+    var hasTel=t.length>=9;
+    var manque=[];
+    if(!s.email_eleve&&!s.email)manque.push('email élève');
+    if(!s.tuteur_nom)manque.push('nom tuteur');
+    if(!s.tel_tuteur)manque.push('tél tuteur');
+    if(!s.tuteur_email&&!s.email_tuteur)manque.push('email tuteur');
+    html+='<div style="display:flex;align-items:center;gap:.4rem;padding:.35rem .5rem;border-bottom:1px solid var(--gris3);font-size:.78rem">';
+    html+='<span style="font-weight:700;min-width:120px">'+esc(s.nom)+' '+esc(s.prenom||'')+'</span>';
+    html+='<span style="flex:1;font-size:.65rem;color:var(--rouge)">❌ '+manque.join(', ')+'</span>';
+    html+=(hasTel?'<span style="color:var(--vert)">📱</span>':'<span style="opacity:.3">📱</span>');
+    html+='</div>';
+  });
+
+  // Zone message
+  html+='<div style="margin-top:1rem;background:var(--gris2);border-radius:var(--r2);padding:.75rem">';
+  html+='<div style="font-size:.75rem;font-weight:800;color:var(--bleu);margin-bottom:.4rem">Message :</div>';
+  html+='<textarea id="smsRappelMsg" rows="5" style="width:100%;padding:.5rem;border:2px solid var(--gris3);border-radius:var(--r2);font-size:.82rem;font-family:inherit;resize:vertical">'+esc(smsMsg)+'</textarea>';
+  html+='</div>';
+
+  // Numéros copiables
+  html+='<div style="margin-top:.75rem;background:var(--gris2);border-radius:var(--r2);padding:.75rem">';
+  html+='<div style="font-size:.75rem;font-weight:800;color:var(--bleu);margin-bottom:.4rem">Numéros ('+nums.length+') — cliquer pour copier :</div>';
+  html+='<div id="smsNumeros" style="font-family:monospace;font-size:.8rem;word-break:break-all;cursor:pointer;color:var(--teal)" onclick="navigator.clipboard.writeText(this.textContent);toast(\'Numéros copiés !\',\'ok\')">'+nums.join(', ')+'</div>';
+  html+='</div>';
+
+  // Boutons
+  html+='<div style="display:flex;gap:.5rem;margin-top:1rem;flex-wrap:wrap">';
+  html+='<button class="btn btn-primary btn-sm" onclick="doRappelSMS()" style="min-height:44px;flex:1;background:var(--bleu);border-color:var(--bleu)">💬 SMS groupé</button>';
+  html+='<button class="btn btn-primary btn-sm" onclick="doRappelWhatsApp()" style="min-height:44px;flex:1;background:#25D366;border-color:#25D366">📱 WhatsApp un par un</button>';
+  html+='</div>';
+  html+='</div>';
+
+  window._rappelIncomplets=avecTel;
+  window._rappelNums=nums;
+  showModal('📱 Rappel — Renseigner infos tuteur',html,'<button class="btn btn-ghost" onclick="closeModal()">Fermer</button>');
+}
+
+function doRappelSMS(){
+  var nums=window._rappelNums||[];
+  var msg=document.getElementById('smsRappelMsg').value;
+  if(!nums.length){toast('Aucun numéro disponible','err');return;}
+  // SMS groupé via sms: protocol (séparateur , pour iOS, ; pour Android)
+  var numStr=nums.join(',');
+  window.open('sms:'+numStr+'?body='+encodeURIComponent(msg),'_blank');
+  toast('SMS groupé ouvert — '+nums.length+' destinataires','ok');
+}
+
+function doRappelWhatsApp(){
+  var base=cfg.baseUrl||'https://frigorx.github.io/tt-ia/';
+  var atts=window._rappelIncomplets||[];
+  var msg=document.getElementById('smsRappelMsg').value;
+  var count=0;
+  atts.forEach(function(s){
+    var t=String(s.tel_eleve||'').replace(/[\s.\-+]/g,'');
+    if(t.length<9)return;
+    if(!t.startsWith('33'))t=t.startsWith('0')?'33'+t.slice(1):'33'+t;
+    window.open('https://wa.me/'+t+'?text='+encodeURIComponent(msg),'_blank');
+    count++;
+  });
+  toast(count+' message(s) WhatsApp ouverts','ok');
+}
+
+/* ═══ ENVOYER ATTESTATIONS (WhatsApp élèves + Mail tuteurs) ═══ */
+async function envoyerAttestations(){
+  var els=students.filter(s=>s.statut!=='inactif');
+  if(!els.length){toast('Aucun élève actif','err');return;}
+
+  // Récupérer les docs de chaque élève pour trouver l'attestation
+  showSpinner();
+  toast('Scan des drives en cours — '+els.length+' élèves...','inf');
+  var attestations=[];
+  for(var i=0;i<els.length;i++){
+    var s=els[i];
+    document.getElementById('syncLbl').textContent='Scan '+(i+1)+'/'+els.length+' — '+s.nom;
+    try{
+      var d=await apiCall({action:'getDocuments',eleve:s.code});
+      if(d.ok&&d.documents){
+        var att=d.documents.find(function(doc){return /attestation/i.test(doc.name)&&doc.type==='document';});
+        if(att) attestations.push({code:s.code,nom:s.nom,prenom:s.prenom||'',tel:s.tel_eleve||'',tuteurTel:s.tel_tuteur||'',eleveEmail:s.email_eleve||s.email||'',tuteurEmail:s.tuteur_email||s.email_tuteur||'',tuteurNom:s.tuteur_nom||'',url:att.url||('https://drive.google.com/file/d/'+att.id+'/view')});
+      }
+    }catch(e){console.warn('[attestations] Erreur pour',s.code,e.message);}
+  }
+  hideSpinner();setSyncState('ok');
+
+  if(!attestations.length){toast('Aucune attestation trouvée sur le Drive','err');return;}
+
+  // Construire la modale récapitulative
+  var html='<div style="max-height:60vh;overflow-y:auto">';
+  html+='<div class="alert al-info" style="margin-bottom:.75rem"><strong>'+attestations.length+' attestation(s)</strong> trouvée(s) sur le Drive. Choisissez le mode d\'envoi.</div>';
+
+  // Liste récap
+  html+='<div style="margin-bottom:.75rem">';
+  var nbTel=0,nbEmailTut=0,nbEmailElv=0;
+  attestations.forEach(function(a){
+    var tel=String(a.tel).replace(/[\s.\-+]/g,'');
+    if(tel.length>=9)nbTel++;
+    if(a.tuteurEmail)nbEmailTut++;
+    if(a.eleveEmail)nbEmailElv++;
+    html+='<div style="display:flex;align-items:center;gap:.4rem;padding:.3rem .5rem;border-bottom:1px solid var(--gris3);font-size:.78rem">';
+    html+='<span style="font-weight:700;min-width:100px">'+esc(a.nom)+' '+esc(a.prenom)+'</span>';
+    html+='<span style="flex:1;font-size:.65rem;color:var(--gris)">'+esc(a.code)+'</span>';
+    html+=(tel.length>=9?'<span title="Tel: '+esc(tel)+'">📱</span>':'<span style="opacity:.3">📱</span>');
+    html+=(a.eleveEmail?'<span title="Élève: '+esc(a.eleveEmail)+'" style="color:var(--violet)">📧</span>':'<span style="opacity:.3">📧</span>');
+    html+=(a.tuteurEmail?'<span title="Tuteur: '+esc(a.tuteurEmail)+'" style="color:var(--teal)">🏢</span>':'<span style="opacity:.3">🏢</span>');
+    html+='</div>';
+  });
+  html+='</div>';
+
+  // Numéros élèves pour SMS groupé
+  var numsEleves=[];
+  attestations.forEach(function(a){
+    var t=String(a.tel).replace(/[\s.\-+]/g,'');
+    if(t.length>=9){if(!t.startsWith('0'))t='0'+t;numsEleves.push(t);}
+  });
+  // Numéros tuteurs pour SMS groupé
+  var numsTuteurs=[];
+  attestations.forEach(function(a){
+    if(!a.tuteurTel)return;
+    var t=String(a.tuteurTel).replace(/[\s.\-+]/g,'');
+    if(t.length>=9){if(!t.startsWith('0'))t='0'+t;numsTuteurs.push(t);}
+  });
+
+  html+='<div style="display:flex;flex-direction:column;gap:.4rem">';
+  html+='<div class="alert al-ok" style="margin:0"><strong>📱 Élèves :</strong> '+nbTel+' avec numéro</div>';
+  html+='<div class="alert al-ok" style="margin:0"><strong>🏢 Tuteurs :</strong> '+nbEmailTut+' avec email · '+numsTuteurs.length+' avec tél</div>';
+  html+='</div>';
+
+  // Message SMS élèves éditable
+  html+='<div style="margin-top:.75rem;background:var(--gris2);border-radius:var(--r2);padding:.75rem">';
+  html+='<div style="font-size:.75rem;font-weight:800;color:var(--bleu);margin-bottom:.3rem">💬 Message élèves :</div>';
+  html+='<textarea id="attSmsEleve" rows="4" style="width:100%;padding:.5rem;border:2px solid var(--gris3);border-radius:var(--r2);font-size:.82rem;font-family:inherit;resize:vertical">Salut ! Ton attestation de stage est dispo sur l\'appli inerWeb dans tes Documents. Transmets-la à ton tuteur pour qu\'il la remplisse et la signe. C\'est obligatoire pour ton indemnité. Merci ! — M. Henninot</textarea>';
+  html+='</div>';
+
+  // Message SMS tuteurs éditable
+  html+='<div style="margin-top:.5rem;background:var(--teal2);border-radius:var(--r2);padding:.75rem">';
+  html+='<div style="font-size:.75rem;font-weight:800;color:var(--teal);margin-bottom:.3rem">🏢 Message tuteurs :</div>';
+  html+='<textarea id="attSmsTuteur" rows="5" style="width:100%;padding:.5rem;border:2px solid var(--gris3);border-radius:var(--r2);font-size:.82rem;font-family:inherit;resize:vertical">Bonjour, merci d\'avoir accueilli notre élève en stage. Une attestation vous a été transmise par votre stagiaire ou est disponible sur l\'appli inerWeb. Pourriez-vous la compléter, la signer et me la retourner ? Ce document est indispensable pour l\'indemnité de stage de l\'élève. Merci ! — F. Henninot</textarea>';
+  html+='</div>';
+
+  // Emails pour Gmail
+  var emailsEleves=attestations.filter(function(a){return a.eleveEmail;}).map(function(a){return a.eleveEmail;});
+  var emailsTuteurs=attestations.filter(function(a){return a.tuteurEmail;}).map(function(a){return a.tuteurEmail;});
+
+  html+='<div style="display:flex;flex-direction:column;gap:.5rem;margin-top:1rem">';
+
+  // Bouton principal : envoi automatique par le serveur
+  html+='<button class="btn btn-sm" onclick="doEnvoyerAttEmailsAuto(\'tous\')" style="min-height:50px;width:100%;background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff;border:none;font-weight:900;font-size:.95rem">📨 Envoyer par email — attestation personnalisée à chaque élève + tuteur</button>';
+  html+='<div style="font-size:.68rem;color:var(--gris);text-align:center;margin-bottom:.5rem">Chaque destinataire reçoit un email avec le lien vers SON attestation</div>';
+
+  html+='<div style="font-size:.72rem;font-weight:800;color:var(--bleu);text-transform:uppercase;letter-spacing:1px">Ou envoyer manuellement</div>';
+
+  html+='<div style="font-size:.72rem;font-weight:800;color:var(--bleu);text-transform:uppercase;letter-spacing:1px">Aux élèves</div>';
+  html+='<div style="display:flex;gap:.4rem;flex-wrap:wrap">';
+  html+='<button class="btn btn-primary btn-sm" onclick="doEnvoyerAttSmsEleves()" style="min-height:44px;flex:1;background:var(--bleu);border-color:var(--bleu)">💬 SMS ('+numsEleves.length+')</button>';
+  html+='<button class="btn btn-primary btn-sm" onclick="doEnvoyerAttWhatsApp()" style="min-height:44px;flex:1;background:#25D366;border-color:#25D366">📱 WhatsApp</button>';
+  html+='<button class="btn btn-primary btn-sm" onclick="doEnvoyerGmailEleves()" style="min-height:44px;flex:1;background:#EA4335;border-color:#EA4335">📧 Gmail ('+emailsEleves.length+')</button>';
+  html+='</div>';
+
+  html+='<div style="font-size:.72rem;font-weight:800;color:var(--teal);text-transform:uppercase;letter-spacing:1px;margin-top:.5rem">Envoyer aux tuteurs</div>';
+  html+='<div style="display:flex;gap:.4rem;flex-wrap:wrap">';
+  html+='<button class="btn btn-primary btn-sm" onclick="doEnvoyerAttSmsTuteurs()" style="min-height:44px;flex:1;background:var(--teal);border-color:var(--teal)">💬 SMS ('+numsTuteurs.length+')</button>';
+  html+='<button class="btn btn-primary btn-sm" onclick="doEnvoyerAttWhatsAppTuteurs()" style="min-height:44px;flex:1;background:#25D366;border-color:#25D366">📱 WhatsApp</button>';
+  html+='<button class="btn btn-primary btn-sm" onclick="doEnvoyerGmailTuteurs()" style="min-height:44px;flex:1;background:#EA4335;border-color:#EA4335">📧 Gmail ('+emailsTuteurs.length+')</button>';
+  html+='</div>';
+
+  html+='</div>';
+
+  window._attEmailsEleves=emailsEleves;
+  window._attEmailsTuteurs=emailsTuteurs;
+
+  window._attNumsEleves=numsEleves;
+  window._attNumsTuteurs=numsTuteurs;
+  html+='</div>';
+
+  // Stocker pour les sous-fonctions
+  window._attestations=attestations;
+  showModal('📨 Envoyer les attestations de stage',html,'<button class="btn btn-ghost" onclick="closeModal()">Fermer</button>');
+}
+
+function doEnvoyerAttWhatsApp(){
+  var atts=window._attestations||[];
+  var msgTpl=document.getElementById('attSmsEleve').value;
+  var count=0;
+  atts.forEach(function(a){
+    var tel=String(a.tel).replace(/[\s.\-+]/g,'');
+    if(tel.length<9)return;
+    if(!tel.startsWith('33'))tel=tel.startsWith('0')?'33'+tel.slice(1):'33'+tel;
+    window.open('https://wa.me/'+tel+'?text='+encodeURIComponent(msgTpl),'_blank');
+    count++;
+  });
+  toast(count+' message(s) WhatsApp ouverts','ok');
+}
+
+function doEnvoyerAttMailTuteurs(){
+  var atts=window._attestations||[];
+  var count=0;
+  atts.forEach(function(a){
+    if(!a.tuteurEmail)return;
+    var sujet='Attestation de stage — '+a.prenom+' '+a.nom;
+    var corps='Bonjour'+(a.tuteurNom?' '+a.tuteurNom:'')+',\n\n'
+      +'Au nom du lycée et de l\'équipe pédagogique, je vous remercie sincèrement d\'avoir accueilli '+a.prenom+' '+a.nom+' au sein de votre entreprise pour sa période de formation en milieu professionnel.\n\n'
+      +'Vous trouverez ci-dessous le lien vers l\'attestation de stage de votre stagiaire :\n'+a.url+'\n\n'
+      +'Ce document est indispensable pour déclencher le versement de l\'indemnité de stage de l\'élève.\n\n'
+      +'Pourriez-vous, s\'il vous plaît, compléter et signer ce document, puis me le retourner par mail ?\n\n'
+      +'Je reste à votre disposition pour toute question.\n\n'
+      +'Bien cordialement,\nFranck HENNINOT\nEnseignant — CAP Installateur en Froid et Conditionnement d\'Air';
+    window.open('mailto:'+encodeURIComponent(a.tuteurEmail)+'?subject='+encodeURIComponent(sujet)+'&body='+encodeURIComponent(corps),'_blank');
+    count++;
+  });
+  if(!count)toast('Aucun tuteur avec email renseigné','err');
+  else toast(count+' mail(s) tuteur ouverts','ok');
+}
+
+function doEnvoyerAttSmsEleves(){
+  var nums=window._attNumsEleves||[];
+  var msg=document.getElementById('attSmsEleve').value;
+  if(!nums.length){toast('Aucun numéro élève disponible','err');return;}
+  window.open('sms:'+nums.join(',')+'?body='+encodeURIComponent(msg),'_blank');
+  toast('SMS groupé ouvert — '+nums.length+' élèves','ok');
+}
+
+function doEnvoyerAttSmsTuteurs(){
+  var nums=window._attNumsTuteurs||[];
+  var msg=document.getElementById('attSmsTuteur').value;
+  if(!nums.length){toast('Aucun numéro tuteur disponible','err');return;}
+  window.open('sms:'+nums.join(',')+'?body='+encodeURIComponent(msg),'_blank');
+  toast('SMS groupé ouvert — '+nums.length+' tuteurs','ok');
+}
+
+function doEnvoyerAttWhatsAppTuteurs(){
+  var atts=window._attestations||[];
+  var msg=document.getElementById('attSmsTuteur').value;
+  var count=0;
+  atts.forEach(function(a){
+    if(!a.tuteurTel)return;
+    var t=String(a.tuteurTel).replace(/[\s.\-+]/g,'');
+    if(t.length<9)return;
+    if(!t.startsWith('33'))t=t.startsWith('0')?'33'+t.slice(1):'33'+t;
+    window.open('https://wa.me/'+t+'?text='+encodeURIComponent(msg),'_blank');
+    count++;
+  });
+  if(!count)toast('Aucun tuteur avec numéro','err');
+  else toast(count+' WhatsApp tuteur ouverts','ok');
+}
+
+async function doEnvoyerAttEmailsAuto(cibles){
+  var msgEleve=document.getElementById('attSmsEleve').value;
+  var msgTuteur=document.getElementById('attSmsTuteur').value;
+  showSpinner();
+  toast('Envoi des emails en cours... (le serveur envoie chaque attestation personnalisée)','inf');
+  try{
+    var r=await apiCall({
+      action:'sendAttestationEmails',
+      cibles:cibles,
+      msgEleve:'Bonjour {prenom},\n\nTon attestation de stage est disponible en cliquant sur le bouton ci-dessous.\n\nCe document est INDISPENSABLE pour le versement de ton indemnité de stage.\n\nTransmets-le à {tuteur} pour qu\'il le complète, le signe et le retourne à ton enseignant.\n\nMerci !',
+      msgTuteur:'Bonjour {tuteur},\n\nAu nom du lycée et de l\'équipe pédagogique, je vous remercie sincèrement d\'avoir accueilli {prenom} {nom} au sein de votre entreprise.\n\nVous trouverez ci-dessous le lien vers l\'attestation de stage de votre stagiaire.\n\nCe document est indispensable pour déclencher le versement de l\'indemnité de stage de l\'élève.\n\nPourriez-vous, s\'il vous plaît, compléter et signer ce document, puis me le retourner par mail ?\n\nJe reste à votre disposition pour toute question.\n\nBien cordialement',
+      sujetEleve:'Ton attestation de stage',
+      sujetTuteur:'Attestation de stage',
+      expediteur:'M. Henninot — CAP IFCA'
+    });
+    hideSpinner();
+    if(r.ok){
+      var msg='✅ Emails envoyés !\n• '+r.envoyesEleve+' élève(s)\n• '+r.envoyesTuteur+' tuteur(s)';
+      if(r.ignores)msg+='\n• '+r.ignores+' sans attestation (ignorés)';
+      if(r.erreurs&&r.erreurs.length)msg+='\n• '+r.erreurs.length+' erreur(s)';
+      msg+='\n\nQuota email restant : '+r.quotaRestant;
+      toast(msg,'ok');
+      alert(msg);
+    }else{
+      toast('Erreur : '+(r.error||'inconnue'),'err');
+      alert('Erreur : '+(r.error||'inconnue'));
+    }
+  }catch(e){
+    hideSpinner();
+    toast('Erreur : '+e.message,'err');
+    alert('Erreur : '+e.message);
+  }
+}
+
+function doEnvoyerGmailEleves(){
+  var emails=window._attEmailsEleves||[];
+  if(!emails.length){toast('Aucun élève avec email','err');return;}
+  var msg=document.getElementById('attSmsEleve').value;
+  var sujet='Attestation de stage — à transmettre à ton tuteur';
+  var url='https://mail.google.com/mail/?view=cm&bcc='+encodeURIComponent(emails.join(','))+'&su='+encodeURIComponent(sujet)+'&body='+encodeURIComponent(msg);
+  window.open(url,'_blank');
+  toast('Gmail ouvert — '+emails.length+' élèves en BCC','ok');
+}
+
+function doEnvoyerGmailTuteurs(){
+  var emails=window._attEmailsTuteurs||[];
+  if(!emails.length){toast('Aucun tuteur avec email','err');return;}
+  var msg=document.getElementById('attSmsTuteur').value;
+  var sujet='Attestation de stage — merci de compléter et retourner';
+  var url='https://mail.google.com/mail/?view=cm&bcc='+encodeURIComponent(emails.join(','))+'&su='+encodeURIComponent(sujet)+'&body='+encodeURIComponent(msg);
+  window.open(url,'_blank');
+  toast('Gmail ouvert — '+emails.length+' tuteurs en BCC','ok');
+}
+
+function doEnvoyerAttMailEleves(){
+  var atts=window._attestations||[];
+  var count=0;
+  atts.forEach(function(a){
+    if(!a.eleveEmail)return;
+    var sujet='Ton attestation de stage — à transmettre à ton tuteur';
+    var corps='Bonjour '+a.prenom+',\n\n'
+      +'Ton attestation de stage est disponible ici :\n'+a.url+'\n\n'
+      +'Ce document est INDISPENSABLE pour le versement de ton indemnité de stage.\n\n'
+      +'Ce que tu dois faire :\n'
+      +'1. Ouvrir le document\n'
+      +'2. L\'envoyer à ton tuteur ('+( a.tuteurNom||'ton tuteur')+')\n'
+      +'3. Lui demander de le compléter, signer et le retourner à ton enseignant\n\n'
+      +'Si tu as besoin d\'aide, demande à M. Henninot.\n\n'
+      +'Merci !';
+    window.open('mailto:'+encodeURIComponent(a.eleveEmail)+'?subject='+encodeURIComponent(sujet)+'&body='+encodeURIComponent(corps),'_blank');
+    count++;
+  });
+  if(!count)toast('Aucun élève avec email renseigné','err');
+  else toast(count+' mail(s) élève ouverts','ok');
+}
+
+/* ═══ ENVOYER DOCUMENTS AUX TUTEURS ═══ */
+async function envoyerDocsTuteurs(){
+  var base=cfg.baseUrl||'';
+  var els=students.filter(s=>s.statut!=='inactif');
+  if(!els.length){toast('Aucun élève actif','err');return;}
+  showSpinner();
+  var docsMap={};
+  for(var i=0;i<els.length;i++){
+    try{
+      var url=new URL(cfg.apiUrl);
+      url.searchParams.set('action','getDocuments');
+      url.searchParams.set('key',cfg.apiKey);
+      url.searchParams.set('eleve',els[i].code);
+      var r=await fetch(url.toString(),{method:'GET',redirect:'follow'});
+      var d=await r.json();
+      if(d.ok&&d.documents)docsMap[els[i].code]=d.documents;
+    }catch(e){}
+  }
+  hideSpinner();
+  var docTypes=[{key:'annexe3',label:'Annexe 3'},{key:'convention_vierge',label:'Conv. vierge'},{key:'convention_remplie',label:'Conv. remplie'},{key:'attestation',label:'Attestation'}];
+  var html='<div style="max-height:60vh;overflow-y:auto">';
+  html+='<div class="alert al-info" style="margin-bottom:.75rem">Documents disponibles sur le Drive de chaque élève. Cliquez pour envoyer au tuteur.</div>';
+  html+='<table style="width:100%;font-size:.72rem;border-collapse:collapse"><thead><tr>';
+  html+='<th style="text-align:left;padding:.3rem">Stagiaire</th>';
+  html+='<th style="text-align:left;padding:.3rem">Tuteur</th>';
+  docTypes.forEach(function(dt){html+='<th style="text-align:center;padding:.3rem;font-size:.65rem">'+dt.label+'</th>';});
+  html+='<th style="text-align:center;padding:.3rem">Envoyer</th>';
+  html+='</tr></thead><tbody>';
+  els.forEach(function(s){
+    var tel=s.tel_tuteur||s.tuteur_tel||'';
+    var email=s.tuteur_email||s.email_tuteur||'';
+    var nom=s.tuteur_nom||s.nom_tuteur||'';
+    var allDocs=docsMap[s.code]||[];
+    html+='<tr style="border-bottom:1px solid var(--gris3)">';
+    html+='<td style="padding:.3rem;font-weight:700">'+esc(s.nom)+' '+esc(s.prenom||'')+'</td>';
+    html+='<td style="padding:.3rem;font-size:.68rem">'+esc(nom||'?')+'</td>';
+    var docLinks=[];
+    docTypes.forEach(function(dt){
+      var found=allDocs.filter(function(d){return d.name&&d.name.toLowerCase().indexOf(dt.key.replace('_',' '))!==-1||d.name&&d.name.toLowerCase().indexOf(dt.key)!==-1;});
+      if(!found.length)found=allDocs.filter(function(d){
+        var n=d.name?d.name.toLowerCase():'';
+        if(dt.key==='annexe3')return n.indexOf('annex')!==-1;
+        if(dt.key==='convention_vierge')return n.indexOf('convention')!==-1&&n.indexOf('vierge')!==-1;
+        if(dt.key==='convention_remplie')return (n.indexOf('convention')!==-1&&n.indexOf('rempli')!==-1)||(n.indexOf('convention')!==-1&&n.indexOf('vierge')===-1&&n.indexOf('annex')===-1);
+        if(dt.key==='attestation')return n.indexOf('attestation')!==-1;
+        return false;
+      });
+      if(found.length){
+        html+='<td style="text-align:center"><a href="'+found[0].url+'" target="_blank" style="color:var(--vert)">✅</a></td>';
+        docLinks.push(dt.label+' : '+found[0].url);
+      }else{
+        html+='<td style="text-align:center"><span style="color:var(--gris)">—</span></td>';
+      }
+    });
+    // Boutons envoi
+    if(docLinks.length&&(tel||email)){
+      var msg='Bonjour'+(nom?' '+nom:'')+',\nVoici les documents de stage de '+s.nom+' '+s.prenom+' :\n\n'+docLinks.join('\n')+'\n\nCordialement, '+cfg.nomProf;
+      var btns='';
+      if(tel)btns+='<a href="sms:+'+formatWA(tel)+'?body='+encodeURIComponent(msg)+'" style="margin:0 1px">💬</a>';
+      if(tel)btns+='<a href="https://wa.me/'+formatWA(tel)+'?text='+encodeURIComponent(msg)+'" target="_blank" style="margin:0 1px">📱</a>';
+      if(email)btns+='<a href="mailto:'+esc(email)+'?subject='+encodeURIComponent('Documents de stage — '+s.nom+' '+s.prenom)+'&body='+encodeURIComponent(msg)+'" style="margin:0 1px">📧</a>';
+      html+='<td style="text-align:center">'+btns+'</td>';
+    }else{
+      html+='<td style="text-align:center;font-size:.65rem;color:var(--gris)">'+(docLinks.length?'pas de contact':'—')+'</td>';
+    }
+    html+='</tr>';
+  });
+  html+='</tbody></table></div>';
+  showModal('📤 Envoyer les documents aux tuteurs',html,'<button class="btn btn-ghost" onclick="closeModal()">Fermer</button>');
+}
+function contactTuteursBulkEmail(){
+  var base=cfg.baseUrl||'';
+  var portailUrl=base+'tuteur-portail.html';
+  var emails=students.filter(s=>s.statut!=='inactif'&&(s.tuteur_email||s.email_tuteur)).map(s=>s.tuteur_email||s.email_tuteur);
+  if(!emails.length){toast('Aucun email tuteur enregistré','err');return;}
+  var bcc=emails.join(',');
+  var msg='Bonjour,\n\nVoici le lien pour accéder à votre espace tuteur inerWeb (suivi de stage) :\n'+portailUrl+'\n\nSélectionnez votre stagiaire, puis connectez-vous avec votre code tuteur.\n\nCordialement,\n'+cfg.nomProf;
+  window.open('mailto:?bcc='+encodeURIComponent(bcc)+'&subject='+encodeURIComponent('Suivi de stage — Espace tuteur inerWeb')+'&body='+encodeURIComponent(msg),'_blank');
 }
 function showAddEleve(){
   showModal('➕ Ajouter un élève',`
@@ -4741,6 +6095,8 @@ function loadDemoData(){
 /* ═══ [L] UTILITAIRES ═══ */
 /** Échappe les caractères HTML pour éviter les injections XSS */
 function esc(s){if(s==null)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+/** Convertit les anciennes URLs Drive /uc?export=view vers le format lh3 qui fonctionne */
+function fixDriveUrl(url){if(!url||typeof url!=='string')return url;var m=url.match(/drive\.google\.com\/uc\?.*id=([a-zA-Z0-9_-]+)/);if(m)return'https://lh3.googleusercontent.com/d/'+m[1];return url;}
 function showModal(t,b,a){document.getElementById('modalTitle').textContent=t;document.getElementById('modalBody').innerHTML=b;document.getElementById('modalAct').innerHTML=a||'';var m=document.getElementById('modalOv');m.classList.add('open');m.setAttribute('aria-expanded','true');}
 function closeModal(){var m=document.getElementById('modalOv');m.classList.remove('open');m.setAttribute('aria-expanded','false');}
 function showSpinner(){document.getElementById('spinOv').classList.add('open');}
@@ -5056,6 +6412,9 @@ async function initApp(){
   if(window.fusionModule) fusionModule.renderDropZone(document.getElementById('fusionDropZone'));
   // [Phase 3] Deep-link : ?eleve=ELV-001&mode=e31
   handleDeepLink();
+  // Protection anti-perte : afficher les pending et lancer le retry
+  _updateProfPendingUI();
+  if(navigator.onLine)_retryProfPending();
 }
 
 /* ═══ [N2] ÉVALS TUTEURS ═══ */
@@ -5121,13 +6480,13 @@ function afficherEvalTuteur(code){
           <span style="background:var(--teal2);color:var(--teal);font-size:.65rem;font-weight:800;padding:.2rem .5rem;border-radius:20px">${v.niveau||'—'}</span>
         </div>`;
 
-      // Compétences évaluées par tuteur
-      const compEntries=Object.entries(comp).filter(([k,v])=>v.niveau&&v.niveau!=='NE');
+      // Compétences évaluées par tuteur (format tuteur: {niveau:"M"} OU format prof: "M")
+      const compEntries=Object.entries(comp).filter(([k,v])=>{const n=typeof v==='object'?v.niveau:v;return n&&n!=='NE';});
       if(compEntries.length){
         html+=`<div style="font-size:.75rem;font-weight:800;color:var(--bleu);margin-bottom:.4rem">Compétences évaluées :</div>`;
         html+=`<div style="display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.75rem">`;
         compEntries.forEach(([k,cv])=>{
-          const n=cv.niveau;
+          const n=typeof cv==='object'?cv.niveau:cv;
           html+=`<span style="background:${NV_CLR[n]||'var(--gris2)'};padding:.2rem .5rem;border-radius:20px;font-size:.7rem;font-weight:800">${k} ${n}</span>`;
         });
         html+=`</div>`;
@@ -5162,7 +6521,13 @@ function afficherEvalTuteur(code){
     });
     html+='</div>';
   } else {
+    const st=students.find(x=>x.code===code)||{};
+    const lienTuteur=(cfg.baseUrl||'https://frigorx.github.io/tt-ia/')+'inerweb_tuteur.html?eleve='+encodeURIComponent(code)+'&tuteur='+encodeURIComponent(st.token_tuteur||'')+'&role=tuteur';
     html+='<div class="alert al-info" style="margin-bottom:.75rem">Aucune évaluation tuteur reçue pour cet élève.</div>';
+    html+='<div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem">';
+    html+='<button class="btn btn-sm" onclick="evaluerCommeTuteur(\''+code+'\')" style="min-height:44px;background:var(--teal);color:#fff;border:none;font-weight:800">📝 Évaluer à la place du tuteur</button>';
+    html+='<button class="btn btn-sm" onclick="navigator.clipboard.writeText(\''+lienTuteur+'\');toast(\'Lien copié !\',\'ok\')" style="min-height:44px;background:var(--gris2);color:var(--bleu);border:none;font-weight:700">🔗 Copier lien tuteur</button>';
+    html+='</div>';
   }
 
   // ── SECTION PROF — Mon évaluation stage ──
@@ -5206,6 +6571,15 @@ function afficherEvalTuteur(code){
   html+=`</div></div>`;
 
   c.innerHTML=html;
+}
+
+function evaluerCommeTuteur(code){
+  var s=students.find(x=>x.code===code)||{};
+  var base=cfg.baseUrl||'https://frigorx.github.io/tt-ia/';
+  var lien=base+'inerweb_tuteur.html?eleve='+encodeURIComponent(code)+'&tuteur='+encodeURIComponent(s.token_tuteur||'')+'&role=tuteur';
+  // Ouvrir la page tuteur avec la config
+  var cfgB64=encodeURIComponent(btoa(JSON.stringify({apiUrl:cfg.apiUrl,apiKey:cfg.apiKey,baseUrl:base})));
+  window.open(lien+'#cfg='+cfgB64,'_blank');
 }
 
 function _getTuteurNiv(valsTuteur,compCode){

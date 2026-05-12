@@ -11,6 +11,21 @@
 (function(){
   'use strict';
 
+  // ═══ AUTO-CONNECT : lecture config depuis hash URL (#cfg=...) ═══
+  // Permet au raccourci bureau d'injecter la config sans la stocker en clair
+  (function(){
+    var h=location.hash;
+    if(h.indexOf('#cfg=')!==0) return;
+    try{
+      var d=JSON.parse(atob(decodeURIComponent(h.substring(5))));
+      if(d.apiUrl&&d.apiKey){
+        localStorage.setItem('inerweb-tt-fe-cfg',JSON.stringify(d));
+        // Nettoyer le hash pour ne pas exposer la config dans l'URL
+        history.replaceState(null,'',location.pathname+location.search);
+      }
+    }catch(e){console.warn('[AUTO-CONNECT] Erreur decodage cfg:',e);}
+  })();
+
   // ═══════════════════════════════════════════════════════════
   // CONFIGURATION PRINCIPALE
   // ═══════════════════════════════════════════════════════════
@@ -47,14 +62,13 @@
 
     // ─── ETABLISSEMENT ───
     ETABLISSEMENT: {
-      nom: 'Lycee Professionnel',
-      ville: '',
-      academie: ''
+      nom: 'LP Priv\u00e9 Jacques Raynaud \u2014 Campus \u00c9QUATIO',
+      ville: 'Marseille',
+      academie: 'Aix-Marseille'
     },
 
     // ─── ENSEIGNANT PAR DEFAUT ───
-    // Utilise si pas de configuration locale
-    ENSEIGNANT_DEFAUT: 'Enseignant',
+    ENSEIGNANT_DEFAUT: 'Henninot',
 
     // ─── FONCTIONNALITES ───
     FEATURES: {
