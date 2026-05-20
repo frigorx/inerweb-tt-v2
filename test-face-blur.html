@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Test floutage visages — inerWeb TT-IA</title>
+<link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%231b3a63'/><text x='32' y='46' font-size='36' text-anchor='middle' fill='white'>%E2%9D%84</text></svg>">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Calibri', sans-serif; font-size: 14pt; background: #f0f2f5;
+       padding: 1.5rem; color: #1a2332; }
+.box { max-width: 1000px; margin: 0 auto; background: white; border-radius: 16px;
+       padding: 2rem; box-shadow: 0 4px 20px rgba(0,0,0,.08); }
+h1 { font-family: 'Trebuchet MS', sans-serif; color: #1b3a63;
+     border-bottom: 4px solid #ff6b35; padding-bottom: .5rem; margin-bottom: 1rem; }
+.intro { background: #e8f0f8; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;
+         border-left: 5px solid #1b3a63; }
+.dropzone { border: 3px dashed #1b3a63; border-radius: 12px;
+            padding: 2rem; text-align: center; cursor: pointer; transition: all .2s;
+            background: #fafafa; }
+.dropzone:hover { background: #e8f0f8; }
+.dropzone.dragover { background: #fff8e1; border-color: #ff6b35; }
+input[type=file] { display: none; }
+.results { margin-top: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media (max-width: 700px) { .results { grid-template-columns: 1fr; } }
+.result-box { background: #f0f2f5; border-radius: 8px; padding: 1rem; }
+.result-box h3 { color: #1b3a63; margin-bottom: .5rem; }
+.result-box img { width: 100%; max-height: 480px; object-fit: contain;
+                  background: white; border-radius: 6px; }
+.stat { display: inline-block; background: #d4f4e2; color: #1e6b3e;
+        padding: .4rem .8rem; border-radius: 6px; font-weight: 700;
+        margin-top: .5rem; font-size: .95rem; }
+.stat.zero { background: #fff8e1; color: #a07e00; }
+.log { font-family: 'Consolas', monospace; font-size: .85rem;
+       background: #1a2332; color: #d4f4e2; padding: 1rem; border-radius: 8px;
+       max-height: 200px; overflow-y: auto; white-space: pre-wrap;
+       margin-top: 1rem; }
+button { background: #ff6b35; color: white; border: none;
+         padding: .8rem 1.4rem; font-size: 1rem; font-weight: 700;
+         border-radius: 8px; cursor: pointer; }
+.warn { background: #fff8e1; border-left: 5px solid #f39c12; padding: 1rem;
+        border-radius: 8px; margin-top: 1rem; font-size: .95rem; }
+</style>
+</head>
+<body>
+
+<div class="box">
+<h1>❄ Test floutage visages</h1>
+
+<div class="intro">
+Ce test valide que le module <code>face-blur.js</code> fonctionne avant intégration dans le flow d'upload. Le module est <strong>100% local</strong> (face-api.js tourne dans ton navigateur, aucune image envoyée à un serveur).
+</div>
+
+<div class="dropzone" id="dz" onclick="document.getElementById('fileInput').click()">
+  <div style="font-size:3rem">📸</div>
+  <div style="font-weight:700;color:#1b3a63;margin-top:.5rem">Clique ou dépose une photo ici</div>
+  <div style="font-size:.85rem;color:#6c757d;margin-top:.3rem">JPEG / PNG · n'importe quelle taille</div>
+</div>
+<input type="file" id="fileInput" accept="image/*" onchange="handle(this.files[0])">
+
+<div class="warn" id="loadingStatus">📦 Chargement du modèle face-api.js (~190 Ko) au premier dépôt de photo…</div>
+
+<div class="results" id="results" style="display:none">
+  <div class="result-box">
+    <h3>📷 Original</h3>
+    <img id="imgOriginal">
+    <div id="origInfo" style="font-size:.85rem;color:#6c757d;margin-top:.5rem"></div>
+  </div>
+  <div class="result-box">
+    <h3>🔒 Floutée (prête à upload)</h3>
+    <img id="imgBlurred">
+    <div id="blurInfo" style="margin-top:.5rem"></div>
+    <button onclick="download()" style="margin-top:.7rem">💾 Télécharger pour vérifier</button>
+  </div>
+</div>
+
+<div class="log" id="log" style="display:none">En attente d'une photo…</div>
+</div>
+
+<script src="js/security/face-blur.js"></script>
+
+<script>
+let lastBlob = null;
+
+function log(msg) {
+  const el = document.getElementById('log');
+  el.style.display = 'block';
+  const ts = new Date().toLocaleTimeString();
+  el.textContent += '\n[' + ts + '] ' + msg;
+  el.scrollTop = el.scrollHeight;
+}
+
+const dz = document.getElementById('dz');
+['dragover','dragenter'].forEach(e => dz.addEventListener(e, ev => { ev.preventDefault(); dz.classList.add('dragover'); }));
+['dragleave','drop'].forEach(e => dz.addEventListener(e, ev => { ev.preventDefault(); dz.classList.remove('dragover'); }));
+dz.addEventListener('drop', ev => { if (ev.dataTransfer.files.length) handle(ev.dataTransfer.files[0]); });
+
+async function handle(file) {
+  if (!file) return;
+  log('Photo reçue : ' + file.name + ' — ' + Math.round(file.size/1024) + ' Ko');
+  document.getElementById('loadingStatus').textContent = '⏳ Détection des visages en cours…';
+
+  // Aperçu original
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('imgOriginal').src = e.target.result;
+    document.getElementById('origInfo').textContent = file.name + ' · ' + Math.round(file.size/1024) + ' Ko';
+  };
+  reader.readAsDataURL(file);
+
+  document.getElementById('results').style.display = 'grid';
+
+  try {
+    const t0 = Date.now();
+    if (!window.iwFaceBlur.isLoaded()) {
+      log('Chargement du modèle tinyFaceDetector…');
+      await window.iwFaceBlur.init();
+      log('Modèle prêt en ' + (Date.now() - t0) + ' ms');
+    }
+    const t1 = Date.now();
+    const { dataUrl, faces } = await window.iwFaceBlur.processFileToDataUrl(file);
+    log('Floutage terminé en ' + (Date.now() - t1) + ' ms : ' + faces + ' visage(s) détecté(s)');
+    document.getElementById('imgBlurred').src = dataUrl;
+    const info = document.getElementById('blurInfo');
+    if (faces > 0) {
+      info.innerHTML = '<span class="stat">' + faces + ' visage(s) flouté(s)</span>';
+    } else {
+      info.innerHTML = '<span class="stat zero">⚠ Aucun visage détecté — photo passe telle quelle (juste redimensionnée)</span>';
+    }
+    // Préparer le blob pour téléchargement
+    const r = await window.iwFaceBlur.processFile(file);
+    lastBlob = r.blob;
+    document.getElementById('loadingStatus').style.display = 'none';
+  } catch (e) {
+    log('❌ Erreur : ' + e.message);
+    console.error(e);
+    document.getElementById('loadingStatus').textContent = '❌ ' + e.message;
+  }
+}
+
+function download() {
+  if (!lastBlob) return;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(lastBlob);
+  a.download = 'photo-floutee-' + Date.now() + '.jpg';
+  a.click();
+}
+</script>
+
+</body>
+</html>

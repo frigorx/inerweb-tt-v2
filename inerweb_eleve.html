@@ -524,6 +524,7 @@ input, select, textarea, button { font-family:inherit; }
 <script src="js/shared/student-registry.js"></script>
 <script src="js/eval/eval-projections.js"></script>
 <script src="js/security/pin-eleve.js"></script>
+<script src="js/security/face-blur.js"></script>
 <script src="js/core.js"></script>
 <script>
 // === BIENVENUE ===
@@ -603,6 +604,17 @@ if(urlToken&&cfg.token&&urlToken!==cfg.token){localStorage.removeItem(SK);eleve=
 return!!eleve;}catch{return false;}}
 
 async function compressImage(file){
+  // ═══ Étape 1 (CLAUDE.md règle 4) — Floutage local des visages ═══
+  // Non-bloquant : si face-api KO ou pas dispo, on passe à la compression seule.
+  let processedFile = file;
+  if(window.iwFaceBlur){
+    try{
+      const r = await window.iwFaceBlur.processFile(file, {maxWidth: 1600});
+      processedFile = new File([r.blob], (file.name||'photo')+'_floutee.jpg', {type: 'image/jpeg'});
+      if(r.faces > 0 && typeof toast === 'function') toast('🔒 '+r.faces+' visage(s) flouté(s)','inf');
+    }catch(e){ console.warn('[face-blur]',e); /* fallback non-bloquant */ }
+  }
+  // ═══ Étape 2 — Compression habituelle pour upload ═══
   return new Promise(resolve=>{
     const reader=new FileReader();
     reader.onload=e=>{
@@ -621,7 +633,7 @@ async function compressImage(file){
       };
       img.src=e.target.result;
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(processedFile);
   });
 }
 
