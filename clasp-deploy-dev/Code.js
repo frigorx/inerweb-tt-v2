@@ -151,6 +151,10 @@ function doGet(e) {
       case 'verifyElevePin':
         result = verifyElevePin(e.parameter.token, e.parameter.pin_hash);
         break;
+      case 'adminPreviewNominative':
+        if(!checkAdminKey_(e.parameter.adminKey)) return jsonResp({error: 'Clé admin invalide'});
+        result = previewNominativeData();
+        break;
       default:
         result = { error: 'Action inconnue: ' + action };
     }
@@ -253,6 +257,9 @@ function doPost(e) {
         break;
       case 'setElevePin':
         result = setElevePin(body);
+        break;
+      case 'adminClearNominative':
+        result = clearNominativeColumns(body);
         break;
       default:
         result = { error: 'Action POST inconnue: ' + action };
@@ -2312,6 +2319,61 @@ function verifyElevePin(token, pinHashCandidate) {
   }
   // Token n'a pas de PIN configuré → accès direct (compat ascendante)
   return { ok: true, requiresPin: false };
+}
+
+// ══════════════════════════════════════════════════
+// Clear nominatif — efface les valeurs en clair des colonnes sensibles
+// dans ELEVES après migration vault. Destructif → admin_key + confirm requis.
+// Les évaluations restent intactes (indexées par code).
+// ══════════════════════════════════════════════════
+
+var NOMINATIVE_FIELDS = ['nom','prenom','prénom','tel_eleve','telephone','tel_tuteur',
+  'email_eleve','email','tuteur_email','tuteur_nom','tuteur',
+  'entreprise_nom','entreprise','preference_contact_tuteur'];
+
+function previewNominativeData() {
+  var sh = getSheet(TABS.ELEVES);
+  if (!sh) return { error: 'Onglet Élèves non trouvé' };
+  var data = sh.getDataRange().getValues();
+  if (data.length <= 1) return { ok: true, rows: 0, cells_nominatives: 0, breakdown: {} };
+  var headers = data[0].map(function(h){ return String(h).toLowerCase().trim(); });
+  var count = 0;
+  var breakdown = {};
+  for (var j = 0; j < headers.length; j++) {
+    if (NOMINATIVE_FIELDS.indexOf(headers[j]) !== -1) {
+      var c = 0;
+      for (var i = 1; i < data.length; i++) {
+        if (data[i][j] !== '' && data[i][j] != null) c++;
+      }
+      if (c > 0) breakdown[headers[j]] = c;
+      count += c;
+    }
+  }
+  return { ok: true, rows: data.length - 1, cells_nominatives: count, breakdown: breakdown };
+}
+
+function clearNominativeColumns(body) {
+  if (!body || body.admin_key !== DEV_ADMIN_KEY) return { error: 'admin_key required' };
+  if (body.confirm !== 'OUI_EFFACER_NOMS_IRREVERSIBLE') {
+    return { error: 'confirmation requise (confirm: OUI_EFFACER_NOMS_IRREVERSIBLE)' };
+  }
+  var sh = getSheet(TABS.ELEVES);
+  if (!sh) return { error: 'Onglet Élèves non trouvé' };
+  var data = sh.getDataRange().getValues();
+  if (data.length <= 1) return { ok: true, cleared: 0, message: 'Aucune donnée' };
+  var headers = data[0].map(function(h){ return String(h).toLowerCase().trim(); });
+  var cleared = 0;
+  for (var j = 0; j < headers.length; j++) {
+    if (NOMINATIVE_FIELDS.indexOf(headers[j]) !== -1) {
+      for (var i = 1; i < data.length; i++) {
+        if (data[i][j] !== '' && data[i][j] != null) {
+          sh.getRange(i + 1, j + 1).setValue('');
+          cleared++;
+        }
+      }
+    }
+  }
+  return { ok: true, cleared: cleared, message: cleared + ' cellules nominatives effacées' };
 }
 
 function saveIdentityVault(body) {

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Clear nominatif Sheet — inerWeb TT-IA</title>
+<link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%23c62828'/><text x='32' y='46' font-size='36' text-anchor='middle' fill='white'>%E2%9A%A0</text></svg>">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Calibri', sans-serif; font-size: 14pt; background: #fde8e6;
+       padding: 1.5rem; color: #1a2332; }
+.box { max-width: 860px; margin: 0 auto; background: white; border-radius: 16px;
+       padding: 2rem; box-shadow: 0 4px 20px rgba(198,40,40,.2);
+       border-top: 8px solid #c62828; }
+h1 { font-family: 'Trebuchet MS', sans-serif; color: #c62828; font-weight: 900;
+     font-size: 1.7rem; margin-bottom: 1rem; }
+.warn-big { background: #fde8e6; padding: 1.2rem; border-radius: 10px;
+            border-left: 5px solid #c62828; margin-bottom: 1.5rem; font-weight: 700;
+            color: #b71c1c; }
+.checklist { background: #fff8e1; padding: 1rem 1.2rem; border-radius: 10px;
+             border-left: 5px solid #f39c12; margin-bottom: 1rem; }
+.checklist h3 { color: #a07e00; margin-bottom: .5rem; }
+.checklist ul { margin-left: 1.5rem; line-height: 1.8; }
+label { display: block; font-weight: 700; color: #1b3a63; margin: 1rem 0 .5rem; }
+input { width: 100%; padding: .8rem 1rem; font-size: 1.1rem;
+        border: 2px solid #1b3a63; border-radius: 8px;
+        font-family: 'Consolas', monospace; }
+input.danger { border-color: #c62828; background: #fff5f5; }
+button { padding: .9rem 1.4rem; font-size: 1rem; font-weight: 800;
+         border: none; border-radius: 10px; cursor: pointer; margin: .3rem .3rem .3rem 0;
+         font-family: 'Trebuchet MS', sans-serif; }
+button.preview { background: #1b3a63; color: white; }
+button.preview:hover { background: #0d1f3c; }
+button.danger { background: #c62828; color: white; }
+button.danger:hover { background: #a51919; }
+button:disabled { background: #ccc; cursor: not-allowed; }
+.preview-result { background: #fff8e1; padding: 1rem 1.2rem; border-radius: 8px;
+                  margin-top: 1rem; font-family: 'Consolas', monospace; }
+.preview-result table { width: 100%; margin-top: .5rem; }
+.preview-result td { padding: .3rem .6rem; border-bottom: 1px dashed #ccc; }
+.log { font-family: 'Consolas', monospace; font-size: .85rem;
+       background: #1a2332; color: #d4f4e2; padding: 1rem; border-radius: 8px;
+       max-height: 200px; overflow-y: auto; white-space: pre-wrap;
+       margin-top: 1rem; }
+.success { background: linear-gradient(135deg, #2e7d32, #4caf50);
+           color: white; padding: 1.2rem; border-radius: 10px;
+           text-align: center; font-weight: 800; margin-top: 1rem; }
+</style>
+</head>
+<body>
+
+<div class="box">
+
+<h1>⚠ Clear nominatif Sheet ELEVES</h1>
+
+<div class="warn-big">
+ATTENTION — Cette opération efface définitivement dans la Google Sheet les colonnes
+<code>nom, prenom, tel_eleve, tel_tuteur, email_eleve, tuteur_nom, tuteur_email, entreprise_nom, preference_contact_tuteur</code>.
+Les valeurs sont déjà dans le vault chiffré local + Sheet IdentityVault — l'app continue de fonctionner normalement après cette opération.
+</div>
+
+<div class="checklist">
+  <h3>Checklist avant de lancer</h3>
+  <ul>
+    <li>✅ Backup pré-chiffrement existe : <code>Bureau/inerWeb/BACKUP-AVANT-CHIFFREMENT/2026-05-20/</code></li>
+    <li>✅ Migration faite via <a href="migration-express.html" target="_blank">migration-express.html</a></li>
+    <li>✅ TM a confirmé qu'il voit bien les noms côté son poste avec la phrase <code>2TNE2526</code></li>
+    <li>✅ Évaluations indexées par code <code>ELV-XXX</code> (intactes après clear)</li>
+  </ul>
+</div>
+
+<label for="adminKey">1. Clé admin (devSetup2026fh) :</label>
+<input type="password" id="adminKey" placeholder="Clé admin" value="devSetup2026fh">
+
+<button class="preview" onclick="previewIt()">🔍 Aperçu : combien de cellules vont être effacées ?</button>
+
+<div id="previewResult"></div>
+
+<div id="confirmZone" style="display:none">
+  <label for="confirm">2. Saisis exactement <code>OUI_EFFACER_NOMS_IRREVERSIBLE</code> pour valider :</label>
+  <input type="text" id="confirm" class="danger" placeholder="OUI_EFFACER_NOMS_IRREVERSIBLE">
+  <button class="danger" onclick="execute()" id="btnExec" disabled>💥 Effacer définitivement</button>
+</div>
+
+<div class="log" id="log" style="display:none"></div>
+
+</div>
+
+<script>
+const DEV_API = 'https://script.google.com/macros/s/AKfycbz_yzn-iH41ExbZXBtCT_sF_mckfNFjg_0bEtlNNUJoLwngCbVGcWfgo_3GSZLlro-T2Q/exec';
+
+function log(msg) {
+  const el = document.getElementById('log');
+  el.style.display = 'block';
+  const ts = new Date().toLocaleTimeString();
+  el.textContent += '\n[' + ts + '] ' + msg;
+  el.scrollTop = el.scrollHeight;
+}
+
+async function previewIt() {
+  const adminKey = document.getElementById('adminKey').value.trim();
+  if (!adminKey) { alert('Clé admin requise'); return; }
+  log('Appel preview…');
+  try {
+    const url = DEV_API + '?action=adminPreviewNominative&adminKey=' + encodeURIComponent(adminKey);
+    const r = await fetch(url, { method: 'GET', redirect: 'follow' });
+    const d = await r.json();
+    if (d.error) { log('❌ ' + d.error); return; }
+    log('Preview OK : ' + d.cells_nominatives + ' cellules à effacer sur ' + d.rows + ' lignes');
+    let html = '<div class="preview-result"><strong>📊 Aperçu</strong>';
+    html += '<table><tr><td><strong>Lignes ELEVES :</strong></td><td>' + d.rows + '</td></tr>';
+    html += '<tr><td><strong>Cellules à effacer :</strong></td><td><strong style="color:#c62828">' + d.cells_nominatives + '</strong></td></tr>';
+    html += '</table>';
+    if (d.breakdown && Object.keys(d.breakdown).length) {
+      html += '<strong style="display:block;margin-top:.7rem">Détail par colonne :</strong><table>';
+      for (const k of Object.keys(d.breakdown).sort()) {
+        html += '<tr><td>' + k + '</td><td>' + d.breakdown[k] + ' cellules</td></tr>';
+      }
+      html += '</table>';
+    }
+    html += '</div>';
+    document.getElementById('previewResult').innerHTML = html;
+    if (d.cells_nominatives > 0) {
+      document.getElementById('confirmZone').style.display = 'block';
+    }
+  } catch (e) {
+    log('❌ Exception : ' + e.message);
+  }
+}
+
+document.addEventListener('input', e => {
+  if (e.target && e.target.id === 'confirm') {
+    document.getElementById('btnExec').disabled = e.target.value !== 'OUI_EFFACER_NOMS_IRREVERSIBLE';
+  }
+});
+
+async function execute() {
+  const adminKey = document.getElementById('adminKey').value.trim();
+  const confirm = document.getElementById('confirm').value.trim();
+  if (confirm !== 'OUI_EFFACER_NOMS_IRREVERSIBLE') return;
+  if (!window.confirm('Dernière confirmation : effacer les noms en clair dans la Sheet ELEVES ? L\'opération est IRRÉVERSIBLE (mais le backup existe). Continuer ?')) return;
+  log('Effacement en cours…');
+  document.getElementById('btnExec').disabled = true;
+  try {
+    const url = DEV_API + '?action=adminClearNominative';
+    const r = await fetch(url, {
+      method: 'POST', redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        action: 'adminClearNominative',
+        admin_key: adminKey,
+        confirm: 'OUI_EFFACER_NOMS_IRREVERSIBLE'
+      })
+    });
+    const d = await r.json();
+    if (d.error) { log('❌ ' + d.error); document.getElementById('btnExec').disabled = false; return; }
+    log('✅ ' + d.message);
+    const ok = document.createElement('div');
+    ok.className = 'success';
+    ok.innerHTML = '🎉 Effacement terminé — ' + d.cleared + ' cellules nominatives effacées.<br>' +
+                   'La Sheet ELEVES ne contient plus aucun nom en clair. Les évaluations restent intactes.';
+    document.getElementById('confirmZone').appendChild(ok);
+  } catch (e) {
+    log('❌ Exception : ' + e.message);
+    document.getElementById('btnExec').disabled = false;
+  }
+}
+</script>
+
+</body>
+</html>
