@@ -80,9 +80,11 @@ const SC = { ID:1, CLASSE:2, DATE:3, HORAIRE:4, TYPE:5, SEQ_ID:6, SEQ_NOM:7, CON
 // ══════════════════════════════════════════════════
 
 function doGet(e) {
-  if (!checkApiKey(e.parameter.key)) return jsonResp({ error: '⛔ Accès refusé : Clé API invalide' });
-
   const action = e.parameter.action || '';
+  // Les actions admin* ont leur propre auth (admin_key) — pas besoin d'API key
+  if (!action.startsWith('admin') && !checkApiKey(e.parameter.key)) return jsonResp({ error: '⛔ Accès refusé : Clé API invalide' });
+
+
   const enseignant = e.parameter.enseignant || '';
   let result;
 
@@ -143,6 +145,9 @@ function doGet(e) {
       case 'getEvalTuteur':
         result = getEvalTuteurData(e.parameter.eleve);
         break;
+      case 'getIdentityVault':
+        result = getIdentityVault();
+        break;
       default:
         result = { error: 'Action inconnue: ' + action };
     }
@@ -161,10 +166,10 @@ function doPost(e) {
   }
 
   const key = body.apiKey || body.key || (e.parameter && e.parameter.key) || '';
-  if (!checkApiKey(key)) return jsonResp({ error: '⛔ Accès refusé : Clé API invalide' });
-
   // v7.6.1 : accepter action depuis body OU URL (certains fronts envoient action dans l'URL)
   var action = body.action || (e.parameter && e.parameter.action) || '';
+  // Les actions admin* ont leur propre auth (admin_key) — pas besoin d'API key
+  if (!action.startsWith('admin') && !checkApiKey(key)) return jsonResp({ error: '⛔ Accès refusé : Clé API invalide' });
   let result;
   try {
     switch (action) {
@@ -207,6 +212,9 @@ function doPost(e) {
       case 'adminInstallTriggers':
         result = adminInstallTriggers(body);
         break;
+      case 'adminSetApiKey':
+        result = adminSetApiKey(body);
+        break;
       case 'addEleve':
         result = addEleveAction(body.data || body);
         break;
@@ -236,6 +244,9 @@ function doPost(e) {
         break;
       case 'sendCustomEmail':
         result = sendCustomEmail(body);
+        break;
+      case 'saveIdentityVault':
+        result = saveIdentityVault(body);
         break;
       default:
         result = { error: 'Action POST inconnue: ' + action };
@@ -895,7 +906,8 @@ function addEleveAction(data) {
       return { ok: true, code: allData[i][headers.indexOf('code')] || '', token_eleve: allData[i][headers.indexOf('token')] || '', token_tuteur: allData[i][headers.indexOf('token_tuteur')] || '', doublon: true };
     }
   }
-  var code = 'ELV-' + String(sheet.getLastRow()).padStart(3, '0');
+  // v3.0.1-rgpd : utiliser le code fourni par le client si présent (iwIdentity)
+  var code = data.code || ('ELV-' + String(sheet.getLastRow()).padStart(3, '0'));
   var tokenE = Math.random().toString(36).substring(2, 10).toUpperCase();
   var tokenT = Math.random().toString(36).substring(2, 10).toUpperCase();
   var row = headers.map(function(h) {
@@ -2166,4 +2178,75 @@ function adminInstallTriggers(body) {
   ScriptApp.newTrigger('triggerBackupQuotidien').timeBased().atHour(23).everyDays(1).create();
   ScriptApp.newTrigger('triggerSyncQuotidien').timeBased().atHour(6).everyDays(1).create();
   return { ok: true, success: true, installed: ['triggerBackupQuotidien@23h', 'triggerSyncQuotidien@6h'] };
+}
+
+/** Bootstrap : configure l'API_KEY du script (1ère config DEV) */
+function adminSetApiKey(body) {
+  if (!body || body.admin_key !== DEV_ADMIN_KEY) return { error: 'admin_key required' };
+  if (!body.api_key) return { error: 'api_key required' };
+  PropertiesService.getScriptProperties().setProperty('API_KEY', body.api_key);
+  return { ok: true, success: true };
+}
+
+// ══════════════════════════════════════════════════
+// IdentityVault — Sync FH↔TM des noms chiffrés AES-256
+// Le serveur ne déchiffre jamais. Stockage opaque uniquement.
+// 1 seule ligne par sheet, id = 'main'.
+// Format colonnes : [id, blob, updatedAt, updatedBy, version]
+// ══════════════════════════════════════════════════
+
+function getIdentityVaultSheet_() {
+  var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  var sh = ss.getSheetByName('IdentityVault');
+  if (!sh) {
+    sh = ss.insertSheet('IdentityVault');
+    sh.appendRow(['id', 'blob', 'updatedAt', 'updatedBy', 'version']);
+    sh.setFrozenRows(1);
+    sh.protect().setDescription('Vault chiffré — ne pas modifier manuellement');
+  }
+  return sh;
+}
+
+function getIdentityVault() {
+  var sh = getIdentityVaultSheet_();
+  var data = sh.getDataRange().getValues();
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][0]) === 'main') {
+      return {
+        ok: true,
+        blob: String(data[i][1] || ''),
+        updatedAt: String(data[i][2] || ''),
+        updatedBy: String(data[i][3] || ''),
+        version: Number(data[i][4] || 0)
+      };
+    }
+  }
+  return { ok: true, blob: '', updatedAt: '', updatedBy: '', version: 0 };
+}
+
+function saveIdentityVault(body) {
+  if (!body || typeof body.blob !== 'string') return { error: 'blob requis' };
+  if (body.blob.length > 2000000) return { error: 'blob trop volumineux (>2MB)' };
+  var sh = getIdentityVaultSheet_();
+  var data = sh.getDataRange().getValues();
+  var now = isoParis_(new Date());
+  var updatedBy = String(body.updatedBy || 'inconnu').substring(0, 64);
+  var clientVersion = Number(body.expectedVersion || 0);
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][0]) === 'main') {
+      var serverVersion = Number(data[i][4] || 0);
+      if (clientVersion && clientVersion < serverVersion) {
+        return {
+          error: 'conflit_version',
+          serverVersion: serverVersion,
+          clientVersion: clientVersion,
+          message: 'Le vault a été modifié par un autre prof. Recharger avant d\'écrire.'
+        };
+      }
+      sh.getRange(i + 1, 2, 1, 4).setValues([[body.blob, now, updatedBy, serverVersion + 1]]);
+      return { ok: true, updatedAt: now, version: serverVersion + 1 };
+    }
+  }
+  sh.appendRow(['main', body.blob, now, updatedBy, 1]);
+  return { ok: true, updatedAt: now, version: 1 };
 }

@@ -333,6 +333,77 @@
   // Charger au demarrage (mode sans PIN)
   load().catch(function() {});
 
+  /**
+   * Étend une entrée existante avec un profil complet (tel/email/tuteur/entreprise/classe…).
+   * V1.1 : pour le vault FH↔TM, on stocke tout ce qui est nominatif ici.
+   */
+  async function setProfile(code, profile) {
+    if (!isLoaded) await load();
+    if (!code || !profile) return null;
+    var PROFILE_FIELDS = [
+      'tel_eleve','tel_tuteur','telephone',
+      'email_eleve','email','tuteur_email',
+      'tuteur_nom','tuteur','entreprise_nom','entreprise',
+      'preference_contact_tuteur',
+      'classe','groupe','annee','referentiel','statut',
+      'pfmp1_sem','pfmp2_sem','pfmp1_debut','pfmp1_fin','pfmp2_debut','pfmp2_fin'
+    ];
+    for (var key in identityMap) {
+      if (identityMap[key].code === code) {
+        var entry = identityMap[key];
+        PROFILE_FIELDS.forEach(function(f) {
+          if (profile[f] !== undefined && profile[f] !== null && profile[f] !== '') entry[f] = profile[f];
+        });
+        entry.lastAccess = new Date().toISOString();
+        await save();
+        logAccess('setProfile', code);
+        return entry;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Récupère le profil complet pour un code (incl. tel/email/tuteur).
+   */
+  async function getFullProfile(code) {
+    if (!isLoaded) await load();
+    for (var key in identityMap) {
+      if (identityMap[key].code === code) return identityMap[key];
+    }
+    return null;
+  }
+
+  /**
+   * Variante synchrone — pour usage rapide dans les rendus (suppose load() déjà fait).
+   */
+  function getFullProfileSync(code) {
+    for (var key in identityMap) {
+      if (identityMap[key].code === code) return identityMap[key];
+    }
+    return null;
+  }
+
+  /**
+   * Enrichit une liste d'élèves (reçue de la Sheet) avec les noms/contacts locaux.
+   * Modifie l'objet en place. Renvoie aussi la liste pour chaînage.
+   */
+  function enrichStudents(list) {
+    if (!Array.isArray(list)) return list;
+    for (var i = 0; i < list.length; i++) {
+      var s = list[i];
+      var code = s.code || s.eleveId || s.eleveid || s.codergpd;
+      if (!code) continue;
+      var p = getFullProfileSync(code);
+      if (!p) continue;
+      // N'écrase QUE si la valeur locale est non vide. Conserve les champs Sheet en l'absence de local.
+      ['nom','prenom','tel_eleve','tel_tuteur','email_eleve','tuteur_nom','tuteur_email','entreprise_nom','preference_contact_tuteur'].forEach(function(f) {
+        if (p[f] !== undefined && p[f] !== '') s[f] = p[f];
+      });
+    }
+    return list;
+  }
+
   window.iwIdentity = {
     load: load,
     register: register,
@@ -348,7 +419,12 @@
     getAll: getAll,
     getStats: getStats,
     count: count,
-    clear: clear
+    clear: clear,
+    // v1.1 — profils complets pour vault FH↔TM
+    setProfile: setProfile,
+    getFullProfile: getFullProfile,
+    getFullProfileSync: getFullProfileSync,
+    enrichStudents: enrichStudents
   };
 
 })();

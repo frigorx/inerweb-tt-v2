@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Migration RGPD — inerWeb TT-IA</title>
+<style>
+  body { font-family: 'Calibri', sans-serif; font-size: 14pt; line-height: 1.5;
+         color: #1a2332; background: #f0f2f5; max-width: 900px; margin: 0 auto;
+         padding: 1.5rem; }
+  h1 { font-family: 'Trebuchet MS', sans-serif; color: #1b3a63; font-weight: 900;
+       border-bottom: 3px solid #ff6b35; padding-bottom: .5rem; }
+  h2 { font-family: 'Trebuchet MS', sans-serif; color: #1b3a63; margin-top: 2rem; }
+  .step { background: white; border-radius: 12px; padding: 1.2rem 1.5rem;
+          margin: 1rem 0; box-shadow: 0 2px 8px rgba(27,58,99,.08);
+          border-left: 5px solid #1b3a63; }
+  .step.done { border-left-color: #2e7d32; }
+  .step.warn { border-left-color: #f39c12; background: #fef9e7; }
+  .step h3 { margin-bottom: .5rem; color: #1b3a63; }
+  button { background: #ff6b35; color: white; border: none; padding: .7rem 1.4rem;
+           font-size: 1rem; font-weight: 700; border-radius: 8px; cursor: pointer;
+           margin: .3rem 0; }
+  button:hover { background: #e85f2d; }
+  button:disabled { background: #ccc; cursor: not-allowed; }
+  button.secondary { background: #6c757d; }
+  table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: .95rem; }
+  th, td { padding: .5rem .8rem; text-align: left; border-bottom: 1px solid #dee2e6; }
+  th { background: #e8f0f8; color: #1b3a63; font-weight: 700; }
+  .log { font-family: 'Consolas', monospace; font-size: .85rem;
+         background: #1a2332; color: #d4f4e2; padding: 1rem; border-radius: 8px;
+         max-height: 280px; overflow-y: auto; white-space: pre-wrap; }
+  .pin-box { background: #fff8e1; padding: 1rem; border-radius: 8px;
+             border-left: 5px solid #f39c12; margin: 1rem 0; }
+  .pin-box input { font-size: 1.5rem; padding: .5rem; width: 200px;
+                   border: 2px solid #ccc; border-radius: 6px; text-align: center;
+                   letter-spacing: .3rem; }
+  .stat { display: inline-block; background: #e8f0f8; padding: .4rem .8rem;
+          border-radius: 6px; margin-right: .5rem; font-weight: 700; color: #1b3a63; }
+</style>
+</head>
+<body>
+
+<h1>❄ Migration RGPD — Vault chiffré inerWeb TT-IA</h1>
+
+<div class="step warn">
+  <h3>⚠ Avant de commencer</h3>
+  <p>Cette page sert <strong>une seule fois</strong> à migrer les élèves existants
+     (24 IFCA actuellement dans la Sheet) vers le vault chiffré local
+     <code>iw_identity_encrypted</code>. Aucune donnée n'est perdue :
+     les valeurs en clair restent dans la Sheet jusqu'à la phase finale.</p>
+  <p><strong>Sauvegarde déjà faite</strong> dans
+     <code>Bureau/inerWeb/BACKUP-AVANT-CHIFFREMENT/2026-05-20/</code></p>
+</div>
+
+<div class="step" id="step1">
+  <h3>1. Déverrouillage RGPD</h3>
+  <p>Configure ou saisis ton PIN partagé FH↔TM. Cette phrase déchiffre le vault
+     et doit être identique sur les deux postes.</p>
+  <div class="pin-box">
+    <button onclick="startPin()">🔓 Démarrer l'écran PIN</button>
+    <span id="pinStatus" style="margin-left:1rem"></span>
+  </div>
+</div>
+
+<div class="step" id="step2">
+  <h3>2. Récupération des élèves actuels (Sheet DEV)</h3>
+  <button id="btnFetch" onclick="fetchEleves()" disabled>📥 Charger les élèves de la Sheet</button>
+  <span id="fetchStatus" style="margin-left:1rem"></span>
+  <div id="elevesTable"></div>
+</div>
+
+<div class="step" id="step3">
+  <h3>3. Migration vers iwIdentity (local chiffré)</h3>
+  <button id="btnMigrate" onclick="migrateAll()" disabled>🔐 Migrer vers le vault local</button>
+  <span id="migrateStatus" style="margin-left:1rem"></span>
+</div>
+
+<div class="step" id="step4">
+  <h3>4. Push vault vers Sheet (sync FH↔TM)</h3>
+  <button id="btnPush" onclick="pushVault()" disabled>☁️ Pousser le vault chiffré</button>
+  <span id="pushStatus" style="margin-left:1rem"></span>
+</div>
+
+<div class="step">
+  <h3>📋 Journal d'exécution</h3>
+  <div class="log" id="log">En attente…</div>
+</div>
+
+<!-- Modules security & identity -->
+<script src="js/security/crypto.js"></script>
+<script src="js/security/pin-manager.js"></script>
+<script src="js/core/identity-mapper.js"></script>
+<script src="js/security/identity-sync.js"></script>
+
+<script>
+const DEV_API = 'https://script.google.com/macros/s/AKfycbz_yzn-iH41ExbZXBtCT_sF_mckfNFjg_0bEtlNNUJoLwngCbVGcWfgo_3GSZLlro-T2Q/exec';
+const DEV_KEY = 'inerWeb2026fh';
+let elevesData = null;
+
+// S'assurer que la config est positionnée (les modules en dépendent)
+try {
+  if (!localStorage.getItem('inerweb-tt-fe-cfg')) {
+    localStorage.setItem('inerweb-tt-fe-cfg', JSON.stringify({
+      apiUrl: DEV_API, apiKey: DEV_KEY, nomProf: 'MIGRATION', baseUrl: location.origin + '/'
+    }));
+  }
+} catch(e) {}
+
+function log(msg, level) {
+  const el = document.getElementById('log');
+  const ts = new Date().toLocaleTimeString();
+  const prefix = level === 'err' ? '❌ ' : level === 'ok' ? '✅ ' : level === 'warn' ? '⚠ ' : '  ';
+  el.textContent += '\n[' + ts + '] ' + prefix + msg;
+  el.scrollTop = el.scrollHeight;
+}
+
+function startPin() {
+  if (!window.iwPin || !window.iwCrypto) { log('Modules sécurité absents', 'err'); return; }
+  window.iwPin.showLockScreen('Migration RGPD — saisis la phrase PIN partagée');
+  document.addEventListener('iw:unlocked', function _onU() {
+    document.removeEventListener('iw:unlocked', _onU);
+    document.getElementById('pinStatus').innerHTML = '<span style="color:#2e7d32;font-weight:700">✅ Déverrouillé</span>';
+    document.getElementById('btnFetch').disabled = false;
+    log('PIN OK — vault local accessible', 'ok');
+    // S'assurer qu'iwIdentity est chargé
+    if (window.iwIdentity) window.iwIdentity.load();
+  });
+}
+
+async function fetchEleves() {
+  log('Téléchargement du dashboard depuis Sheet DEV…');
+  try {
+    const url = DEV_API + '?action=getDashboard&key=' + encodeURIComponent(DEV_KEY);
+    const r = await fetch(url, { method: 'GET', redirect: 'follow' });
+    const data = await r.json();
+    if (!Array.isArray(data)) throw new Error('Réponse inattendue');
+    elevesData = data;
+    log('✅ ' + data.length + ' élève(s) reçu(s) de la Sheet', 'ok');
+    document.getElementById('fetchStatus').innerHTML = '<span class="stat">' + data.length + ' élèves</span>';
+    renderTable(data);
+    document.getElementById('btnMigrate').disabled = false;
+  } catch (e) {
+    log('Erreur fetch : ' + e.message, 'err');
+  }
+}
+
+function renderTable(data) {
+  let html = '<table><thead><tr><th>Code</th><th>Nom</th><th>Prénom</th><th>Classe</th><th>Tel</th><th>Tuteur</th></tr></thead><tbody>';
+  data.forEach(s => {
+    html += '<tr>' +
+      '<td><code>' + (s.code || '') + '</code></td>' +
+      '<td><strong>' + (s.nom || '') + '</strong></td>' +
+      '<td>' + (s.prenom || '') + '</td>' +
+      '<td>' + (s.classe || '') + '</td>' +
+      '<td>' + (s.tel_eleve || '') + '</td>' +
+      '<td>' + (s.tuteur_nom || '') + '</td>' +
+      '</tr>';
+  });
+  html += '</tbody></table>';
+  document.getElementById('elevesTable').innerHTML = html;
+}
+
+async function migrateAll() {
+  if (!elevesData || !elevesData.length) { log('Aucun élève à migrer', 'err'); return; }
+  if (!window.iwPin.isUnlocked()) { log('Vault verrouillé — déverrouille d\'abord', 'err'); return; }
+  log('Début migration de ' + elevesData.length + ' élève(s)…');
+  let migrated = 0, skipped = 0;
+  for (const s of elevesData) {
+    try {
+      if (!s.nom && !s.prenom) { skipped++; continue; }
+      // Enregistrer dans iwIdentity avec le code existant de la Sheet
+      const code = await window.iwIdentity.register(s.nom || '', s.prenom || '', s.code);
+      // Compléter avec tel/email/tuteur
+      await window.iwIdentity.setProfile(code, {
+        tel_eleve: s.tel_eleve || '',
+        tel_tuteur: s.tel_tuteur || '',
+        email_eleve: s.email_eleve || '',
+        tuteur_nom: s.tuteur_nom || '',
+        tuteur_email: s.tuteur_email || '',
+        entreprise_nom: s.entreprise_nom || '',
+        preference_contact_tuteur: s.preference_contact_tuteur || '',
+        classe: s.classe || '',
+        groupe: s.groupe || '',
+        annee: s.annee || 1,
+        referentiel: s.referentiel || '',
+        statut: s.statut || 'actif'
+      });
+      migrated++;
+      log('  ✓ ' + (s.nom || '?') + ' ' + (s.prenom || '') + ' [' + s.code + ']');
+    } catch (e) {
+      log('  ✗ Erreur sur ' + (s.code || '?') + ' : ' + e.message, 'err');
+    }
+  }
+  log('Migration locale terminée : ' + migrated + ' OK, ' + skipped + ' ignorés', 'ok');
+  document.getElementById('migrateStatus').innerHTML =
+    '<span class="stat" style="background:#d4f4e2;color:#2e7d32">' + migrated + ' migrés</span>';
+  document.getElementById('btnPush').disabled = false;
+
+  // Vérifier la taille du vault local
+  try {
+    const blob = localStorage.getItem('iw_identity_encrypted');
+    if (blob) log('Vault local taille = ' + blob.length + ' caractères chiffrés');
+  } catch(e) {}
+}
+
+async function pushVault() {
+  if (!window.iwIdentitySync) { log('Module identity-sync absent', 'err'); return; }
+  log('Push du vault chiffré vers Sheet…');
+  try {
+    const r = await window.iwIdentitySync.push();
+    if (r.ok) {
+      log('✅ Vault poussé — version ' + r.version, 'ok');
+      document.getElementById('pushStatus').innerHTML =
+        '<span class="stat" style="background:#d4f4e2;color:#2e7d32">Version ' + r.version + '</span>';
+    } else {
+      log('Push KO : ' + (r.reason || JSON.stringify(r)), 'err');
+    }
+  } catch (e) {
+    log('Exception push : ' + e.message, 'err');
+  }
+}
+
+// Auto-load iwIdentity dès le démarrage si possible
+document.addEventListener('DOMContentLoaded', function() {
+  log('Page de migration chargée. Modules :');
+  log('  iwCrypto : ' + (window.iwCrypto ? 'OK' : 'ABSENT'));
+  log('  iwPin : ' + (window.iwPin ? 'OK' : 'ABSENT'));
+  log('  iwIdentity : ' + (window.iwIdentity ? 'OK' : 'ABSENT'));
+  log('  iwIdentitySync : ' + (window.iwIdentitySync ? 'OK' : 'ABSENT'));
+});
+</script>
+
+</body>
+</html>

@@ -50,6 +50,7 @@ window.INERWEB_DEV_SHEET_ID='1WCMZ1oY5Nm882O4u5JnBNxD7Y01qx1iSl6NT6-gArHM';
     'shared/levels-registry','shared/classes-registry','shared/student-registry',
     'security/crypto','security/pin-manager',
     'core/identity-mapper',
+    'security/identity-sync',
     'rgpd/data-retention',
     'drive/tp-import','drive/drive-api',
     'mobile/eval-mobile',
@@ -1906,6 +1907,42 @@ function showConfigScreen(){
     if(b&&!b.value&&window.iwConfig)b.value=window.iwConfig.getBaseUrl();
   }
 }
+/* Hook RGPD — extrait les champs nominatifs avant envoi à la Sheet et les
+   stocke dans iwIdentity local. Le serveur ne voit que le code pseudonyme. */
+async function _rgpdAnonymizeOutgoing(params){
+  if(!window.iwIdentity||!window.iwPin||!window.iwPin.isUnlocked())return params;
+  const action=params.action;
+  if(action==='addEleve'){
+    const data=params.data||{};
+    const nom=data.nom||'',prenom=data.prenom||'';
+    if(nom||prenom){
+      let code=data.code;
+      if(!code) code=await window.iwIdentity.register(nom,prenom);
+      const profile={};
+      ['tel_eleve','tel_tuteur','email_eleve','tuteur_nom','tuteur_email','entreprise_nom','preference_contact_tuteur','classe','groupe','annee','referentiel','pfmp1_sem','pfmp2_sem'].forEach(f=>{if(data[f]!==undefined)profile[f]=data[f];});
+      if(Object.keys(profile).length) await window.iwIdentity.setProfile(code,profile);
+      // Ne transmettre QUE le code + champs structurels (jamais les contacts)
+      params.data={code:code,classe:data.classe||'',groupe:data.groupe||'',annee:data.annee||1,referentiel:data.referentiel||'',statut:'actif'};
+    }
+  } else if(action==='updateEleveProfil'){
+    const code=params.code||params.eleve;
+    if(code){
+      const profile={};
+      ['tel_eleve','telephone','tel_tuteur','email_eleve','email','tuteur_email','tuteur_nom','entreprise_nom','preference_contact_tuteur'].forEach(f=>{if(params[f]!==undefined)profile[f]=params[f];});
+      await window.iwIdentity.setProfile(code,profile);
+      // V1 : update profil = 100% local, pas d'aller-retour serveur
+      return {_localOnly:true,result:{ok:true,localOnly:true}};
+    }
+  }
+  return params;
+}
+function _rgpdEnrichIncoming(action,data){
+  if(!window.iwIdentity||!window.iwIdentity.enrichStudents)return data;
+  if(action==='getDashboard'&&Array.isArray(data)) window.iwIdentity.enrichStudents(data);
+  else if(action==='getEleves'&&data&&Array.isArray(data.eleves)) window.iwIdentity.enrichStudents(data.eleves);
+  return data;
+}
+
 /* apiCall → js/core/api.js (copie locale conservée pour rétro-compatibilité) */
 async function apiCall(params){
   if(!cfg.apiUrl){try{var _sc=JSON.parse(localStorage.getItem(SCFG)||'{}');if(_sc.apiUrl){cfg.apiUrl=_sc.apiUrl;cfg.apiKey=_sc.apiKey;}}catch(e){}}
@@ -1913,6 +1950,12 @@ async function apiCall(params){
   if(!cfg.apiUrl){cfg.apiUrl='https://script.google.com/macros/s/AKfycbzVvXZRi4975OM4P8AJeoDWvnTbFSfTpVUDErzrNk2R2knfxBxCw-A-kLmKaNzmW35V1A/exec';cfg.apiKey='inerWeb2026fh';}
   if(!cfg.apiUrl) throw new Error('no url');
   params.key=cfg.apiKey;
+  // ── Hook RGPD : anonymisation sortante ──
+  try{
+    const hooked=await _rgpdAnonymizeOutgoing(params);
+    if(hooked&&hooked._localOnly) return hooked.result;
+    if(hooked) params=hooked;
+  }catch(e){console.warn('[rgpd-out]',e);}
   const WRITE_ACTIONS=['saveValidation','addEleve','deleteEleve','cloturerEpreuve','addJournalEntry','saveConfig','addUser','deleteUser','sendAttestationEmails','uploadDocument','updateEleveProfil','saveEvalTuteur'];
   const isWrite=WRITE_ACTIONS.includes(params.action);
   let r;
@@ -1937,6 +1980,8 @@ async function apiCall(params){
   }
   if(d.error&&d.code===403) throw new Error('Accès refusé — clé API invalide');
   if(d.error) throw new Error(d.error);
+  // ── Hook RGPD : enrichissement entrant (vrais noms depuis iwIdentity local) ──
+  try{ _rgpdEnrichIncoming(params.action,d); }catch(e){console.warn('[rgpd-in]',e);}
   return d;
 }
 /* saveLocal, loadLocal → js/core/utils.js (copies locales conservées) */
@@ -2050,6 +2095,8 @@ async function syncAll(){
     dashUrl.searchParams.set('key',_key);
     var r=await fetch(dashUrl.toString(),{method:'GET',redirect:'follow'});
     var dash=await r.json();
+    // ── Hook RGPD : enrichit avec les noms locaux iwIdentity ──
+    try{ if(window.iwIdentity&&window.iwIdentity.enrichStudents&&Array.isArray(dash)) window.iwIdentity.enrichStudents(dash); }catch(e){console.warn('[rgpd-syncall]',e);}
     if(Array.isArray(dash)&&dash.length>0){
       students=dash;window.students=students;
     }
