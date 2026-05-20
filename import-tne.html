@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Import 2TNE 25-26 — inerWeb TT-IA</title>
+<link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%231b3a63'/><text x='32' y='46' font-size='36' text-anchor='middle' fill='white'>%E2%9D%84</text></svg>">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Calibri', 'Segoe UI', sans-serif; font-size: 16pt; line-height: 1.6;
+       color: #1a2332; background: linear-gradient(135deg, #1b3a63 0%, #0d1f3c 100%);
+       min-height: 100vh; padding: 1.5rem; }
+.box { max-width: 820px; margin: 0 auto; background: white; border-radius: 16px;
+       padding: 2rem; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+h1 { font-family: 'Trebuchet MS', sans-serif; color: #1b3a63; font-weight: 900;
+     font-size: 1.7rem; border-bottom: 4px solid #ff6b35; padding-bottom: .5rem;
+     margin-bottom: 1rem; }
+.intro { background: #e8f0f8; padding: 1rem 1.2rem; border-radius: 10px;
+         border-left: 5px solid #1b3a63; margin-bottom: 1.5rem; font-size: 1rem; }
+.eleves-preview { background: #f0f2f5; padding: 1rem 1.2rem; border-radius: 10px;
+                  margin-bottom: 1rem; max-height: 240px; overflow-y: auto;
+                  font-family: 'Consolas', monospace; font-size: .9rem; }
+.eleves-preview .ligne { padding: .2rem 0; border-bottom: 1px dashed #ccc; }
+button.go { width: 100%; background: #ff6b35; color: white; border: none;
+            padding: 1.2rem; font-size: 1.3rem; font-weight: 800;
+            border-radius: 12px; cursor: pointer; margin-top: 1rem;
+            font-family: 'Trebuchet MS', sans-serif; }
+button.go:hover { background: #e85f2d; }
+button.go:disabled { background: #ccc; cursor: not-allowed; }
+.step { background: #f0f2f5; padding: .8rem 1rem; border-radius: 8px;
+        margin-bottom: .5rem; font-size: 1rem; display: flex; align-items: center; gap: .8rem; }
+.step.done { background: #d4f4e2; color: #1e6b3e; }
+.step.err { background: #fde8e6; color: #b71c1c; }
+.step.run { background: #e8f0f8; color: #1b3a63; font-weight: 700; }
+.step .icon { font-size: 1.3rem; min-width: 1.5rem; }
+.log { font-family: 'Consolas', monospace; font-size: .85rem;
+       background: #1a2332; color: #d4f4e2; padding: 1rem; border-radius: 8px;
+       max-height: 320px; overflow-y: auto; white-space: pre-wrap;
+       margin-top: 1rem; }
+.success-banner { background: linear-gradient(135deg, #2e7d32, #4caf50);
+                  color: white; padding: 1.2rem; border-radius: 10px;
+                  text-align: center; font-weight: 800; font-size: 1.1rem;
+                  margin-top: 1rem; }
+.success-banner a { color: white; text-decoration: underline; margin: 0 .5rem; }
+</style>
+</head>
+<body>
+
+<div class="box">
+
+<h1>❄ Import 2TNE 25-26</h1>
+
+<div class="intro">
+20 élèves de la classe <strong>2TNE2526</strong> à importer. Référentiel <code>TNE</code>, année 1. Les noms entrent directement dans le vault chiffré (jamais en clair dans la Sheet). Pré-requis : vault déverrouillé avec la phrase <code>2TNE2526</code>.
+</div>
+
+<div class="eleves-preview" id="preview"></div>
+
+<button class="go" id="btnGo" onclick="lancer()">📥 Importer les 20 élèves dans le vault</button>
+
+<div class="steps" id="steps"></div>
+
+<div class="log" id="log" style="display:none">En attente…</div>
+
+</div>
+
+<!-- Modules security & identity -->
+<script src="js/security/crypto.js"></script>
+<script src="js/security/pin-manager.js"></script>
+<script src="js/core/identity-mapper.js"></script>
+<script src="js/security/identity-sync.js"></script>
+
+<script>
+const DEV_API = 'https://script.google.com/macros/s/AKfycbz_yzn-iH41ExbZXBtCT_sF_mckfNFjg_0bEtlNNUJoLwngCbVGcWfgo_3GSZLlro-T2Q/exec';
+const DEV_KEY = 'inerWeb2026fh';
+
+// Liste fournie par FH le 2026-05-20 pour la rentrée 2TNE 25-26
+const LISTE_TNE = [
+  'ABDILLAHI Youssouf',
+  'AMANE Nasser',
+  'ATTAF Racim',
+  'BEN BOUNASRI Jassem',
+  'BENHAMADA Tarek',
+  'BERKSOY Ahmet',
+  'BOUDAOUD Houssam-Eddine',
+  'CHABOU Radouane',
+  'DJIBA Mamadou',
+  'DJOUHRI Adam',
+  'DOMBA WEMBOPA Khyliane',
+  'HACHOUR Anir',
+  'HADJADJI Rayan',
+  'HOUBELLI Mohammed',
+  'KHENDEK Adam',
+  'MOGNI Fahimou',
+  'NAON Aarone',
+  'NDOMBASI Mavanga',
+  'PEYROL Flavio',
+  'SAID Mender'
+];
+
+const CLASSE = '2TNE2526';
+const REFERENTIEL = 'TNE';
+
+// Forcer la config
+try {
+  localStorage.setItem('inerweb-tt-fe-cfg', JSON.stringify({
+    apiUrl: DEV_API, apiKey: DEV_KEY, nomProf: 'FH', baseUrl: location.origin + '/'
+  }));
+} catch(e) {}
+
+/**
+ * Découpe "NOM_COMPOSÉ Prenom" en {nom, prenom}.
+ * Heuristique : tout ce qui est en MAJUSCULES (ou trait d'union) au début = nom.
+ * Le premier mot qui n'est pas tout-majuscules = début du prénom.
+ */
+function parseNomPrenom(ligne) {
+  const tokens = ligne.trim().split(/\s+/);
+  const nomTokens = [];
+  const prenomTokens = [];
+  let basculé = false;
+  for (const t of tokens) {
+    // Considère "NOM" si tout-majuscules (au moins 2 chars) ou contient un tiret entre majuscules
+    const estNom = /^[A-ZÀ-Ý][A-ZÀ-Ý\-']{0,}$/.test(t);
+    if (!basculé && estNom) {
+      nomTokens.push(t);
+    } else {
+      basculé = true;
+      prenomTokens.push(t);
+    }
+  }
+  return { nom: nomTokens.join(' '), prenom: prenomTokens.join(' ') };
+}
+
+// Aperçu
+const previewEl = document.getElementById('preview');
+LISTE_TNE.forEach(l => {
+  const p = parseNomPrenom(l);
+  const div = document.createElement('div');
+  div.className = 'ligne';
+  div.innerHTML = '<strong>' + p.nom + '</strong> · ' + p.prenom;
+  previewEl.appendChild(div);
+});
+
+function step(id, label, status) {
+  const el = document.getElementById('steps');
+  let row = document.getElementById('step-'+id);
+  if (!row) {
+    row = document.createElement('div');
+    row.id = 'step-'+id;
+    row.className = 'step';
+    row.innerHTML = '<span class="icon"></span><span class="label"></span>';
+    el.appendChild(row);
+  }
+  row.className = 'step ' + (status || 'run');
+  row.querySelector('.icon').textContent = status === 'done' ? '✅' : status === 'err' ? '❌' : '⏳';
+  row.querySelector('.label').textContent = label;
+}
+
+function log(msg) {
+  const el = document.getElementById('log');
+  el.style.display = 'block';
+  const ts = new Date().toLocaleTimeString();
+  el.textContent += '\n[' + ts + '] ' + msg;
+  el.scrollTop = el.scrollHeight;
+}
+
+async function postAddEleve(payload) {
+  const url = DEV_API + '?action=addEleve';
+  const r = await fetch(url, {
+    method: 'POST', redirect: 'follow',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({ key: DEV_KEY, action: 'addEleve', data: payload })
+  });
+  return await r.json();
+}
+
+async function lancer() {
+  document.getElementById('btnGo').disabled = true;
+  try {
+    // Étape 1 — Vérifier modules
+    step('1', 'Vérification des modules de sécurité', 'run');
+    if (!window.iwCrypto || !window.iwPin || !window.iwIdentity || !window.iwIdentitySync) {
+      throw new Error('Module manquant');
+    }
+    step('1', 'Modules OK', 'done');
+
+    // Étape 2 — Vérifier vault déverrouillé
+    step('2', 'Vérification du déverrouillage du vault', 'run');
+    if (!window.iwPin.isUnlocked()) {
+      log('Vault verrouillé — affichage écran PIN');
+      window.iwPin.showLockScreen('Saisis 2TNE2526 pour importer la classe TNE');
+      await new Promise((res, rej) => {
+        document.addEventListener('iw:unlocked', res, { once: true });
+        setTimeout(() => rej(new Error('Timeout déverrouillage')), 120000);
+      });
+    }
+    step('2', 'Vault déverrouillé', 'done');
+
+    // Étape 3 — S'assurer que iwIdentity a chargé le vault local
+    step('3', 'Chargement du vault local', 'run');
+    await window.iwIdentity.load();
+    const statsAvant = await window.iwIdentity.getStats();
+    log('Vault avant import : ' + statsAvant.count + ' entrées');
+    step('3', 'Vault chargé (' + statsAvant.count + ' entrées avant)', 'done');
+
+    // Étape 4 — Pull du vault distant pour partir à jour (cas TM/FH déjà actif)
+    step('4', 'Pull du vault distant (sync)', 'run');
+    const pull = await window.iwIdentitySync.pull();
+    log('Pull : ' + JSON.stringify(pull));
+    step('4', 'Sync distante OK (' + (pull.action || pull.reason) + ')', 'done');
+
+    // Étape 5 — Import des 20 élèves
+    step('5', 'Import des 20 élèves TNE', 'run');
+    let crees = 0, doublons = 0, errors = 0;
+    const detail = [];
+    for (const ligne of LISTE_TNE) {
+      const { nom, prenom } = parseNomPrenom(ligne);
+      try {
+        // Existe déjà localement ?
+        const existant = await window.iwIdentity.getCode(nom, prenom);
+        if (existant) {
+          doublons++;
+          log('⊙ Existe déjà : ' + nom + ' ' + prenom + ' [' + existant + ']');
+          detail.push({ nom, prenom, code: existant, status: 'doublon' });
+          continue;
+        }
+        // 1. Register dans le vault local → obtient code unique
+        const code = await window.iwIdentity.register(nom, prenom);
+        // 2. Compléter profil avec classe + référentiel
+        await window.iwIdentity.setProfile(code, {
+          classe: CLASSE,
+          referentiel: REFERENTIEL,
+          annee: 1,
+          statut: 'actif'
+        });
+        // 3. Pousser sur la Sheet — uniquement code + classe + structurel (pas le nom)
+        const r = await postAddEleve({
+          code: code,
+          classe: CLASSE,
+          referentiel: REFERENTIEL,
+          annee: 1
+        });
+        if (r.ok || r.code) {
+          crees++;
+          log('✓ ' + nom + ' ' + prenom + ' → ' + code);
+          detail.push({ nom, prenom, code, status: 'créé', token_eleve: r.token_eleve || '' });
+        } else {
+          errors++;
+          log('✗ ' + nom + ' ' + prenom + ' → ' + (r.error || JSON.stringify(r)));
+        }
+      } catch (e) {
+        errors++;
+        log('✗ ' + nom + ' ' + prenom + ' → exception : ' + e.message);
+      }
+    }
+    step('5', crees + ' créés, ' + doublons + ' doublons, ' + errors + ' erreurs', errors > 0 ? 'err' : 'done');
+
+    // Étape 6 — Push vault chiffré vers Sheet (sync FH↔TM)
+    step('6', 'Push vault chiffré vers Sheet', 'run');
+    const push = await window.iwIdentitySync.push();
+    if (!push.ok) throw new Error('Push KO : ' + JSON.stringify(push));
+    log('Vault distant version ' + push.version);
+    step('6', 'Vault sync version ' + push.version, 'done');
+
+    // Étape 7 — Vérification finale
+    step('7', 'Vérification finale', 'run');
+    const statsApres = await window.iwIdentity.getStats();
+    log('Vault après import : ' + statsApres.count + ' entrées (+' + (statsApres.count - statsAvant.count) + ')');
+    step('7', statsApres.count + ' élèves dans le vault total', 'done');
+
+    // Bannière succès + récap détail
+    const banner = document.createElement('div');
+    banner.className = 'success-banner';
+    banner.innerHTML = '🎉 Import terminé : ' + crees + ' nouveaux élèves TNE, ' + doublons + ' déjà présents, ' + errors + ' erreurs.<br><br>' +
+                       '<a href="inerweb_prof.html">→ Ouvrir l\'app TT-IA</a>' +
+                       '<a href="javascript:location.reload()">↻ Relancer</a>';
+    document.getElementById('steps').appendChild(banner);
+
+    // Tableau récap pour copie facile
+    const tbl = document.createElement('div');
+    tbl.style.cssText = 'margin-top:1.5rem;font-family:Consolas,monospace;font-size:.85rem;background:#f0f2f5;padding:1rem;border-radius:8px;max-height:300px;overflow-y:auto';
+    tbl.innerHTML = '<strong>Détail (à copier si besoin)</strong><br>' +
+      detail.map(d => d.status + ' — ' + d.nom + ' ' + d.prenom + ' → ' + d.code + (d.token_eleve ? ' (token: ' + d.token_eleve + ')' : '')).join('<br>');
+    document.getElementById('steps').appendChild(tbl);
+
+  } catch (e) {
+    log('❌ ERREUR : ' + e.message);
+    console.error(e);
+    document.getElementById('btnGo').disabled = false;
+  }
+}
+</script>
+
+</body>
+</html>
