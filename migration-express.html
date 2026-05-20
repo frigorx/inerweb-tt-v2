@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Migration RGPD Express — inerWeb TT-IA</title>
+<link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%231b3a63'/><text x='32' y='46' font-size='36' text-anchor='middle' fill='white'>%E2%9D%84</text></svg>">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Calibri', 'Segoe UI', sans-serif; font-size: 16pt; line-height: 1.6;
+       color: #1a2332; background: linear-gradient(135deg, #1b3a63 0%, #0d1f3c 100%);
+       min-height: 100vh; padding: 1.5rem; }
+.box { max-width: 720px; margin: 0 auto; background: white; border-radius: 16px;
+       padding: 2rem; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+h1 { font-family: 'Trebuchet MS', sans-serif; color: #1b3a63; font-weight: 900;
+     font-size: 1.8rem; border-bottom: 4px solid #ff6b35; padding-bottom: .5rem;
+     margin-bottom: 1rem; }
+.intro { background: #fff8e1; padding: 1rem 1.2rem; border-radius: 10px;
+         border-left: 5px solid #f39c12; margin-bottom: 1.5rem; font-size: 1rem; }
+label { display: block; font-weight: 700; color: #1b3a63; margin-bottom: .5rem;
+        font-size: 1.05rem; }
+input[type="text"] { width: 100%; padding: 1rem 1.2rem; font-size: 1.3rem;
+                     border: 3px solid #1b3a63; border-radius: 10px;
+                     font-family: 'Consolas', monospace; letter-spacing: .15rem;
+                     text-transform: none; }
+input[type="text"]:focus { outline: none; border-color: #ff6b35; }
+button.go { width: 100%; background: #ff6b35; color: white; border: none;
+            padding: 1.2rem; font-size: 1.3rem; font-weight: 800;
+            border-radius: 12px; cursor: pointer; margin-top: 1rem;
+            font-family: 'Trebuchet MS', sans-serif; }
+button.go:hover { background: #e85f2d; }
+button.go:disabled { background: #ccc; cursor: not-allowed; }
+.steps { margin-top: 1.5rem; }
+.step { background: #f0f2f5; padding: .8rem 1rem; border-radius: 8px;
+        margin-bottom: .5rem; font-size: 1rem; display: flex; align-items: center; gap: .8rem; }
+.step.done { background: #d4f4e2; color: #1e6b3e; }
+.step.err { background: #fde8e6; color: #b71c1c; }
+.step.run { background: #e8f0f8; color: #1b3a63; font-weight: 700; }
+.step .icon { font-size: 1.3rem; min-width: 1.5rem; }
+.log { font-family: 'Consolas', monospace; font-size: .85rem;
+       background: #1a2332; color: #d4f4e2; padding: 1rem; border-radius: 8px;
+       max-height: 260px; overflow-y: auto; white-space: pre-wrap;
+       margin-top: 1rem; }
+.success-banner { background: linear-gradient(135deg, #2e7d32, #4caf50);
+                  color: white; padding: 1.2rem; border-radius: 10px;
+                  text-align: center; font-weight: 800; font-size: 1.1rem;
+                  margin-top: 1rem; }
+.success-banner a { color: white; text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<div class="box">
+
+<h1>❄ Migration RGPD Express</h1>
+
+<div class="intro">
+<strong>1 phrase, 1 bouton, tout est fait.</strong><br>
+Tape ta phrase secrète et clique « Lancer ». La page purge tout vieux résidu, configure le chiffrement, récupère tes 24 élèves IFCA, les met dans le vault local, et le pousse vers la Sheet pour TM.
+</div>
+
+<label for="phrase">Phrase secrète partagée FH↔TM :</label>
+<input type="text" id="phrase" value="2TNE2526" autocomplete="off">
+
+<button class="go" id="btnGo" onclick="lancer()">🚀 Lancer la migration complète</button>
+
+<div class="steps" id="steps"></div>
+
+<div class="log" id="log" style="display:none">En attente…</div>
+
+</div>
+
+<!-- Modules security & identity -->
+<script src="js/security/crypto.js"></script>
+<script src="js/security/pin-manager.js"></script>
+<script src="js/core/identity-mapper.js"></script>
+<script src="js/security/identity-sync.js"></script>
+
+<script>
+const DEV_API = 'https://script.google.com/macros/s/AKfycbz_yzn-iH41ExbZXBtCT_sF_mckfNFjg_0bEtlNNUJoLwngCbVGcWfgo_3GSZLlro-T2Q/exec';
+const DEV_KEY = 'inerWeb2026fh';
+
+// Forcer la config
+try {
+  localStorage.setItem('inerweb-tt-fe-cfg', JSON.stringify({
+    apiUrl: DEV_API, apiKey: DEV_KEY, nomProf: 'FH', baseUrl: location.origin + '/'
+  }));
+} catch(e) {}
+
+function step(id, label, status) {
+  const el = document.getElementById('steps');
+  let row = document.getElementById('step-'+id);
+  if (!row) {
+    row = document.createElement('div');
+    row.id = 'step-'+id;
+    row.className = 'step';
+    row.innerHTML = '<span class="icon"></span><span class="label"></span>';
+    el.appendChild(row);
+  }
+  row.className = 'step ' + (status || 'run');
+  row.querySelector('.icon').textContent = status === 'done' ? '✅' : status === 'err' ? '❌' : '⏳';
+  row.querySelector('.label').textContent = label;
+}
+
+function log(msg) {
+  const el = document.getElementById('log');
+  el.style.display = 'block';
+  const ts = new Date().toLocaleTimeString();
+  el.textContent += '\n[' + ts + '] ' + msg;
+  el.scrollTop = el.scrollHeight;
+}
+
+async function lancer() {
+  const phrase = document.getElementById('phrase').value.trim();
+  if (!phrase || phrase.length < 6) { alert('Phrase trop courte (6 caractères min.)'); return; }
+  document.getElementById('btnGo').disabled = true;
+
+  try {
+    // Étape 1 — Purge vieux résidus
+    step('1', 'Purge des anciens résidus (hash, lockout, attempts)', 'run');
+    try { if (window.iwPin && window.iwPin.factoryReset) window.iwPin.factoryReset(); } catch(e) {}
+    // Nettoyage manuel au cas où
+    Object.keys(localStorage).filter(k => k.startsWith('iw_pin_') || k === 'iw_identity_encrypted' || k === 'iw_identity_meta' || k === 'iw_identity_version' || k === 'iw_identity_map').forEach(k => localStorage.removeItem(k));
+    log('Purge OK');
+    step('1', 'Purge terminée', 'done');
+
+    // Étape 2 — Vérifier modules
+    step('2', 'Vérification des modules de sécurité', 'run');
+    if (!window.iwCrypto || !window.iwPin || !window.iwIdentity || !window.iwIdentitySync) {
+      throw new Error('Module manquant : iwCrypto=' + !!window.iwCrypto + ' iwPin=' + !!window.iwPin + ' iwIdentity=' + !!window.iwIdentity + ' iwIdentitySync=' + !!window.iwIdentitySync);
+    }
+    log('Tous les modules présents');
+    step('2', 'Modules OK (iwCrypto, iwPin, iwIdentity, iwIdentitySync)', 'done');
+
+    // Étape 3 — Setup phrase
+    step('3', 'Configuration de la phrase secrète', 'run');
+    await window.iwPin.setupPin(phrase);
+    document.dispatchEvent(new Event('iw:unlocked'));
+    log('Phrase configurée, vault local prêt');
+    step('3', 'Phrase « ' + phrase + ' » configurée', 'done');
+
+    // Étape 4 — Fetch dashboard
+    step('4', 'Récupération des élèves depuis Sheet DEV', 'run');
+    const url = DEV_API + '?action=getDashboard&key=' + encodeURIComponent(DEV_KEY);
+    const r = await fetch(url, { method: 'GET', redirect: 'follow' });
+    const eleves = await r.json();
+    if (!Array.isArray(eleves)) throw new Error('Réponse Sheet inattendue : ' + JSON.stringify(eleves).slice(0,200));
+    log(eleves.length + ' élève(s) reçus de la Sheet');
+    step('4', eleves.length + ' élèves récupérés', 'done');
+
+    // Étape 5 — Migration locale
+    step('5', 'Stockage des noms/contacts dans le vault chiffré local', 'run');
+    let migrated = 0;
+    for (const s of eleves) {
+      if (!s.nom && !s.prenom) continue;
+      const code = await window.iwIdentity.register(s.nom || '', s.prenom || '', s.code);
+      await window.iwIdentity.setProfile(code, {
+        tel_eleve: s.tel_eleve || '', tel_tuteur: s.tel_tuteur || '',
+        email_eleve: s.email_eleve || '',
+        tuteur_nom: s.tuteur_nom || '', tuteur_email: s.tuteur_email || '',
+        entreprise_nom: s.entreprise_nom || '',
+        preference_contact_tuteur: s.preference_contact_tuteur || '',
+        classe: s.classe || '', groupe: s.groupe || '',
+        annee: s.annee || 1, referentiel: s.referentiel || '',
+        statut: s.statut || 'actif'
+      });
+      migrated++;
+      log('✓ ' + (s.nom || '?') + ' ' + (s.prenom || '') + ' [' + s.code + ']');
+    }
+    step('5', migrated + ' élèves migrés dans le vault local', 'done');
+
+    // Étape 6 — Push vault vers Sheet
+    step('6', 'Push du vault chiffré vers la Sheet (pour TM)', 'run');
+    const pushRes = await window.iwIdentitySync.push();
+    if (!pushRes.ok) throw new Error('Push KO : ' + JSON.stringify(pushRes));
+    log('Vault poussé, version ' + pushRes.version);
+    step('6', 'Vault distant — version ' + pushRes.version, 'done');
+
+    // Étape 7 — Vérification finale
+    step('7', 'Vérification finale du vault', 'run');
+    const blob = localStorage.getItem('iw_identity_encrypted');
+    const stats = await window.iwIdentity.getStats();
+    log('Vault local : ' + blob.length + ' caractères chiffrés, ' + stats.count + ' entrées');
+    step('7', stats.count + ' élèves dans le vault — ' + blob.length + ' chars chiffrés', 'done');
+
+    // Succès final
+    const success = document.createElement('div');
+    success.className = 'success-banner';
+    success.innerHTML = '🎉 Migration RGPD terminée — ' + migrated + ' élèves dans le vault chiffré.<br><br>' +
+                        '<a href="inerweb_prof.html">→ Ouvrir l\'app TT-IA</a> · ' +
+                        '<a href="javascript:location.reload()">↻ Recommencer</a>';
+    document.getElementById('steps').appendChild(success);
+    log('🎉 MIGRATION OK');
+
+  } catch (e) {
+    log('❌ ERREUR : ' + e.message);
+    console.error(e);
+    const lastStepId = (document.querySelectorAll('.step').length).toString();
+    step(lastStepId, 'Erreur : ' + e.message, 'err');
+    document.getElementById('btnGo').disabled = false;
+  }
+}
+</script>
+
+</body>
+</html>
