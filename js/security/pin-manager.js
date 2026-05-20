@@ -22,11 +22,11 @@
 
   async function setupPin(pin) {
     if (!pin || pin.length < 6) {
-      throw new Error('Le PIN doit contenir au moins 6 chiffres');
+      throw new Error('La phrase doit contenir au moins 6 caractères');
     }
-    if (!/^\d+$/.test(pin)) {
-      throw new Error('Le PIN ne doit contenir que des chiffres');
-    }
+    // v1.1 : alphanumérique accepté (lettres + chiffres) pour permettre des phrases
+    // mnémotechniques type "2tne2526". Pas de contrainte de casse ni de caractères
+    // spéciaux interdits — Web Crypto + PBKDF2 acceptent tout UTF-8.
 
     var hash = await window.iwCrypto.hashPin(pin);
     localStorage.setItem(STORAGE_KEY_HASH, hash);
@@ -151,15 +151,15 @@
 
     if (configured) {
       html += '<div class="lock-form">'
-        + '<label>Entrez votre PIN :</label>'
-        + '<input type="password" id="pin-input" inputmode="numeric" pattern="[0-9]*" maxlength="10" autofocus>'
+        + '<label>Phrase secr\u00E8te :</label>'
+        + '<input type="password" id="pin-input" maxlength="64" autocomplete="current-password" autofocus>'
         + '<button id="btn-unlock" class="lock-btn-primary">\uD83D\uDD13 Deverrouiller</button>'
         + '</div>';
     } else {
       html += '<div class="lock-form">'
-        + '<label>Creez votre PIN (6 chiffres min.) :</label>'
-        + '<input type="password" id="pin-new" inputmode="numeric" pattern="[0-9]*" maxlength="10" placeholder="Nouveau PIN">'
-        + '<input type="password" id="pin-confirm" inputmode="numeric" pattern="[0-9]*" maxlength="10" placeholder="Confirmer">'
+        + '<label>Cr\u00E9ez votre phrase secr\u00E8te (6 caract\u00E8res min., partag\u00E9e FH\u2194TM) :</label>'
+        + '<input type="password" id="pin-new" maxlength="64" autocomplete="new-password" placeholder="Phrase secr\u00E8te">'
+        + '<input type="password" id="pin-confirm" maxlength="64" autocomplete="new-password" placeholder="Confirmer">'
         + '<button id="btn-setup" class="lock-btn-primary">\uD83D\uDD10 Configurer</button>'
         + '</div>';
     }
