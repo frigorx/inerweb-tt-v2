@@ -51,6 +51,7 @@ window.INERWEB_DEV_SHEET_ID='1WCMZ1oY5Nm882O4u5JnBNxD7Y01qx1iSl6NT6-gArHM';
     'security/crypto','security/pin-manager',
     'core/identity-mapper',
     'security/identity-sync',
+    'security/pin-eleve',
     'rgpd/data-retention',
     'drive/tp-import','drive/drive-api',
     'mobile/eval-mobile',
@@ -1982,6 +1983,29 @@ async function apiCall(params){
   if(d.error) throw new Error(d.error);
   // ── Hook RGPD : enrichissement entrant (vrais noms depuis iwIdentity local) ──
   try{ _rgpdEnrichIncoming(params.action,d); }catch(e){console.warn('[rgpd-in]',e);}
+  // ── Hook PIN élève : à chaque addEleve réussi, générer un PIN 6 chiffres ──
+  if(params.action==='addEleve' && d && (d.ok || d.code) && window.iwPinEleve && window.iwPin && window.iwPin.isUnlocked() && window.iwIdentity){
+    try{
+      const elv_code = d.code || (params.data && params.data.code) || '';
+      const tok = d.token_eleve || d.token || '';
+      if(elv_code && tok){
+        const existing = await window.iwIdentity.getFullProfile(elv_code);
+        if(!existing || !existing.pin_eleve){
+          const pin = window.iwPinEleve.genererPin();
+          const hashPin = await window.iwPinEleve.hashPin(pin, tok);
+          await window.iwIdentity.setProfile(elv_code, { pin_eleve: pin, token_eleve: tok });
+          // Push hash vers Sheet
+          const setUrl = new URL(cfg.apiUrl);
+          setUrl.searchParams.set('action','setElevePin');
+          await fetch(setUrl.toString(), {
+            method:'POST', redirect:'follow',
+            headers:{'Content-Type':'text/plain'},
+            body: JSON.stringify({ key:cfg.apiKey, action:'setElevePin', code:elv_code, token:tok, pin_hash:hashPin })
+          });
+        }
+      }
+    }catch(e){ console.warn('[pin-eleve]',e); }
+  }
   return d;
 }
 /* saveLocal, loadLocal → js/core/utils.js (copies locales conservées) */

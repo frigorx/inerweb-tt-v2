@@ -148,6 +148,9 @@ function doGet(e) {
       case 'getIdentityVault':
         result = getIdentityVault();
         break;
+      case 'verifyElevePin':
+        result = verifyElevePin(e.parameter.token, e.parameter.pin_hash);
+        break;
       default:
         result = { error: 'Action inconnue: ' + action };
     }
@@ -247,6 +250,9 @@ function doPost(e) {
         break;
       case 'saveIdentityVault':
         result = saveIdentityVault(body);
+        break;
+      case 'setElevePin':
+        result = setElevePin(body);
         break;
       default:
         result = { error: 'Action POST inconnue: ' + action };
@@ -2222,6 +2228,90 @@ function getIdentityVault() {
     }
   }
   return { ok: true, blob: '', updatedAt: '', updatedBy: '', version: 0 };
+}
+
+// ══════════════════════════════════════════════════
+// ElevePinHash — PIN 6 chiffres élève (hash PBKDF2, jamais en clair)
+// Le PIN clair vit dans le vault prof. Ici on ne stocke que le hash.
+// Colonnes : [code, token, pin_hash, set_at, attempts, lockout_until]
+// ══════════════════════════════════════════════════
+
+function getElevePinHashSheet_() {
+  var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  var sh = ss.getSheetByName('ElevePinHash');
+  if (!sh) {
+    sh = ss.insertSheet('ElevePinHash');
+    sh.appendRow(['code', 'token', 'pin_hash', 'set_at', 'attempts', 'lockout_until']);
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
+function setElevePin(body) {
+  if (!body || !body.code || !body.pin_hash) return { error: 'code et pin_hash requis' };
+  var sh = getElevePinHashSheet_();
+  var data = sh.getDataRange().getValues();
+  var now = isoParis_(new Date());
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][0]) === body.code) {
+      // Update existant
+      sh.getRange(i + 1, 2, 1, 5).setValues([[
+        String(body.token || data[i][1] || ''),
+        String(body.pin_hash),
+        now,
+        0,  // reset attempts
+        ''  // reset lockout
+      ]]);
+      return { ok: true, action: 'updated', code: body.code };
+    }
+  }
+  // Nouveau
+  sh.appendRow([body.code, body.token || '', body.pin_hash, now, 0, '']);
+  return { ok: true, action: 'created', code: body.code };
+}
+
+function verifyElevePin(token, pinHashCandidate) {
+  if (!token) return { error: 'token requis' };
+  var sh = getElevePinHashSheet_();
+  var data = sh.getDataRange().getValues();
+  var nowMs = Date.now();
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][1]) === String(token)) {
+      // PIN configuré pour ce token
+      if (!pinHashCandidate) {
+        // L'élève cherche juste à savoir si un PIN est requis
+        return { ok: true, requiresPin: true };
+      }
+      // Lockout actif ?
+      var lockoutStr = String(data[i][5] || '');
+      if (lockoutStr) {
+        var lockoutMs = new Date(lockoutStr).getTime();
+        if (lockoutMs > nowMs) {
+          var sec = Math.ceil((lockoutMs - nowMs) / 1000);
+          return { error: 'Bloqué encore ' + sec + ' secondes', lockoutSec: sec };
+        }
+      }
+      // Vérif hash
+      if (String(data[i][2]) === String(pinHashCandidate)) {
+        sh.getRange(i + 1, 5, 1, 2).setValues([[0, '']]);
+        return { ok: true, code: String(data[i][0]), token: String(data[i][1]), pinVerified: true };
+      } else {
+        var attempts = Number(data[i][4] || 0) + 1;
+        var update = { attempts: attempts, lockout: '' };
+        if (attempts >= 5) {
+          update.lockout = isoParis_(new Date(nowMs + 10 * 60 * 1000));
+          update.attempts = 0;
+        }
+        sh.getRange(i + 1, 5, 1, 2).setValues([[update.attempts, update.lockout]]);
+        if (update.lockout) {
+          return { error: 'Trop de tentatives. Bloqué 10 minutes.', lockoutSec: 600 };
+        }
+        return { error: 'Code incorrect. ' + (5 - attempts) + ' essai(s) restant(s).', attemptsLeft: 5 - attempts };
+      }
+    }
+  }
+  // Token n'a pas de PIN configuré → accès direct (compat ascendante)
+  return { ok: true, requiresPin: false };
 }
 
 function saveIdentityVault(body) {

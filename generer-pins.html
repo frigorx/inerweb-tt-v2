@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Générer codes élèves — inerWeb TT-IA</title>
+<link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%231b3a63'/><text x='32' y='46' font-size='36' text-anchor='middle' fill='white'>%E2%9D%84</text></svg>">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Calibri', 'Segoe UI', sans-serif; font-size: 14pt; line-height: 1.5;
+       color: #1a2332; background: linear-gradient(135deg, #1b3a63 0%, #0d1f3c 100%);
+       min-height: 100vh; padding: 1.5rem; }
+.box { max-width: 1100px; margin: 0 auto; background: white; border-radius: 16px;
+       padding: 2rem; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+h1 { font-family: 'Trebuchet MS', sans-serif; color: #1b3a63; font-weight: 900;
+     font-size: 1.7rem; border-bottom: 4px solid #ff6b35; padding-bottom: .5rem;
+     margin-bottom: 1rem; }
+.intro { background: #e8f0f8; padding: 1rem 1.2rem; border-radius: 10px;
+         border-left: 5px solid #1b3a63; margin-bottom: 1.5rem; font-size: 1rem; }
+button.go { background: #ff6b35; color: white; border: none;
+            padding: 1rem 1.6rem; font-size: 1.1rem; font-weight: 800;
+            border-radius: 10px; cursor: pointer; margin: .3rem .3rem .3rem 0;
+            font-family: 'Trebuchet MS', sans-serif; }
+button.go:hover { background: #e85f2d; }
+button.go:disabled { background: #ccc; cursor: not-allowed; }
+button.secondary { background: #6c757d; }
+button.secondary:hover { background: #545b62; }
+.step { background: #f0f2f5; padding: .8rem 1rem; border-radius: 8px;
+        margin-bottom: .5rem; font-size: 1rem; display: flex; align-items: center; gap: .8rem; }
+.step.done { background: #d4f4e2; color: #1e6b3e; }
+.step.err { background: #fde8e6; color: #b71c1c; }
+.step.run { background: #e8f0f8; color: #1b3a63; font-weight: 700; }
+.log { font-family: 'Consolas', monospace; font-size: .85rem;
+       background: #1a2332; color: #d4f4e2; padding: 1rem; border-radius: 8px;
+       max-height: 220px; overflow-y: auto; white-space: pre-wrap;
+       margin-top: 1rem; }
+table { width: 100%; border-collapse: collapse; margin-top: 1.5rem;
+        background: white; font-size: 1rem; }
+th { background: #1b3a63; color: white; padding: .7rem .8rem; text-align: left; }
+td { padding: .55rem .8rem; border-bottom: 1px solid #dee2e6; }
+tr:nth-child(even) td { background: #f8f9fa; }
+.pin { font-family: 'Consolas', monospace; font-size: 1.4rem; font-weight: 900;
+       color: #ff6b35; letter-spacing: .3rem; }
+.classe-badge { display: inline-block; background: #e8f0f8; color: #1b3a63;
+                padding: .2rem .6rem; border-radius: 6px; font-size: .85rem; font-weight: 700; }
+.classe-2TNE2526 { background: #fff8e1; color: #a07e00; }
+.classe-CAP { background: #d4f4e2; color: #2e7d32; }
+.actions { margin-top: 1rem; }
+.print-only { display: none; }
+@media print {
+  body { background: white; padding: 0; }
+  .box { box-shadow: none; max-width: 100%; padding: 1rem; }
+  .no-print { display: none; }
+  .print-only { display: block; }
+  h1 { font-size: 1.3rem; }
+  table { font-size: 10pt; page-break-inside: auto; }
+  tr { page-break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<div class="box">
+
+<h1>❄ Générer les codes élèves (PIN 6 chiffres)</h1>
+
+<div class="intro no-print">
+Cette page attribue un <strong>code 6 chiffres</strong> personnel à chaque élève qui n'en a pas encore. Le code est stocké chiffré dans ton vault (jamais en clair dans la Sheet). Tu pourras l'imprimer pour le distribuer en classe.
+</div>
+
+<div id="actions" class="actions no-print">
+  <button class="go" onclick="lancer()" id="btnGo">🔢 Générer les codes manquants</button>
+  <button class="go secondary" onclick="window.print()" id="btnPrint" style="display:none">🖨 Imprimer la liste</button>
+  <button class="go secondary" onclick="exportCSV()" id="btnCSV" style="display:none">📋 Exporter CSV</button>
+</div>
+
+<div class="steps no-print" id="steps"></div>
+<div class="log no-print" id="log" style="display:none">En attente…</div>
+
+<div id="tableau"></div>
+
+</div>
+
+<script src="js/security/crypto.js"></script>
+<script src="js/security/pin-manager.js"></script>
+<script src="js/core/identity-mapper.js"></script>
+<script src="js/security/identity-sync.js"></script>
+<script src="js/security/pin-eleve.js"></script>
+
+<script>
+const DEV_API = 'https://script.google.com/macros/s/AKfycbz_yzn-iH41ExbZXBtCT_sF_mckfNFjg_0bEtlNNUJoLwngCbVGcWfgo_3GSZLlro-T2Q/exec';
+const DEV_KEY = 'inerWeb2026fh';
+
+try {
+  localStorage.setItem('inerweb-tt-fe-cfg', JSON.stringify({
+    apiUrl: DEV_API, apiKey: DEV_KEY, nomProf: 'FH', baseUrl: location.origin + '/'
+  }));
+} catch(e) {}
+
+let resultats = [];
+
+function step(id, label, status) {
+  const el = document.getElementById('steps');
+  let row = document.getElementById('step-'+id);
+  if (!row) {
+    row = document.createElement('div');
+    row.id = 'step-'+id;
+    row.className = 'step';
+    row.innerHTML = '<span class="icon"></span><span class="label"></span>';
+    el.appendChild(row);
+  }
+  row.className = 'step ' + (status || 'run');
+  row.querySelector('.icon').textContent = status === 'done' ? '✅' : status === 'err' ? '❌' : '⏳';
+  row.querySelector('.label').textContent = label;
+}
+
+function log(msg) {
+  const el = document.getElementById('log');
+  el.style.display = 'block';
+  const ts = new Date().toLocaleTimeString();
+  el.textContent += '\n[' + ts + '] ' + msg;
+  el.scrollTop = el.scrollHeight;
+}
+
+async function pushSetElevePin(code, token, hashPin) {
+  const url = new URL(DEV_API);
+  url.searchParams.set('action', 'setElevePin');
+  const r = await fetch(url.toString(), {
+    method:'POST', redirect:'follow',
+    headers:{'Content-Type':'text/plain'},
+    body: JSON.stringify({ key: DEV_KEY, action: 'setElevePin', code, token, pin_hash: hashPin })
+  });
+  return await r.json();
+}
+
+async function lancer() {
+  document.getElementById('btnGo').disabled = true;
+  try {
+    step('1', 'Vérification modules', 'run');
+    if (!window.iwPin || !window.iwIdentity || !window.iwPinEleve || !window.iwIdentitySync) throw new Error('Modules manquants');
+    step('1', 'Modules OK', 'done');
+
+    step('2', 'Déverrouillage vault', 'run');
+    if (!window.iwPin.isUnlocked()) {
+      window.iwPin.showLockScreen('Saisis 2TNE2526 pour générer les codes élèves');
+      await new Promise((res, rej) => {
+        document.addEventListener('iw:unlocked', res, { once: true });
+        setTimeout(() => rej(new Error('Timeout déverrouillage')), 120000);
+      });
+    }
+    await window.iwIdentity.load();
+    step('2', 'Vault déverrouillé', 'done');
+
+    step('3', 'Pull vault distant', 'run');
+    await window.iwIdentitySync.pull();
+    step('3', 'Sync distant OK', 'done');
+
+    step('4', 'Récupération de la liste des élèves côté Sheet', 'run');
+    const r = await fetch(DEV_API + '?action=getDashboard&key=' + encodeURIComponent(DEV_KEY));
+    const eleves = await r.json();
+    if (!Array.isArray(eleves)) throw new Error('Dashboard inattendu');
+    step('4', eleves.length + ' élèves récupérés', 'done');
+
+    step('5', 'Génération des codes manquants', 'run');
+    let nouveau = 0, deja = 0, errors = 0;
+    for (const s of eleves) {
+      const code = s.code;
+      if (!code) continue;
+      const profile = await window.iwIdentity.getFullProfile(code);
+      if (!profile) {
+        log('⊙ ' + code + ' : pas de profil local, ignoré');
+        continue;
+      }
+      const tok = profile.token_eleve || s.token_eleve || s.token || '';
+      if (!tok) {
+        errors++;
+        log('✗ ' + code + ' : pas de token_eleve trouvé');
+        continue;
+      }
+      if (profile.pin_eleve) {
+        deja++;
+        resultats.push({
+          code, nom: profile.nom, prenom: profile.prenom, classe: profile.classe || s.classe,
+          pin: profile.pin_eleve, token: tok, status: 'existant'
+        });
+        log('⊙ Existe : ' + (profile.nom || '?') + ' ' + (profile.prenom || '') + ' → ' + profile.pin_eleve);
+        continue;
+      }
+      try {
+        const pin = window.iwPinEleve.genererPin();
+        const hashPin = await window.iwPinEleve.hashPin(pin, tok);
+        await window.iwIdentity.setProfile(code, { pin_eleve: pin, token_eleve: tok });
+        const setRes = await pushSetElevePin(code, tok, hashPin);
+        if (setRes.ok) {
+          nouveau++;
+          resultats.push({
+            code, nom: profile.nom, prenom: profile.prenom, classe: profile.classe || s.classe,
+            pin, token: tok, status: 'nouveau'
+          });
+          log('✓ Nouveau : ' + (profile.nom || '?') + ' ' + (profile.prenom || '') + ' → ' + pin);
+        } else {
+          errors++;
+          log('✗ ' + code + ' : ' + (setRes.error || JSON.stringify(setRes)));
+        }
+      } catch (e) {
+        errors++;
+        log('✗ ' + code + ' : ' + e.message);
+      }
+    }
+    step('5', nouveau + ' nouveaux PIN, ' + deja + ' déjà attribués, ' + errors + ' erreurs', errors > 0 ? 'err' : 'done');
+
+    step('6', 'Push vault chiffré vers Sheet', 'run');
+    const push = await window.iwIdentitySync.push();
+    if (!push.ok) throw new Error('Push KO : ' + JSON.stringify(push));
+    step('6', 'Vault sync version ' + push.version, 'done');
+
+    afficherTableau();
+    document.getElementById('btnPrint').style.display = 'inline-block';
+    document.getElementById('btnCSV').style.display = 'inline-block';
+    document.getElementById('btnGo').textContent = '↻ Relancer';
+    document.getElementById('btnGo').disabled = false;
+  } catch (e) {
+    log('❌ ERREUR : ' + e.message);
+    console.error(e);
+    document.getElementById('btnGo').disabled = false;
+  }
+}
+
+function classeColor(classe) {
+  if (!classe) return '';
+  if (classe.indexOf('TNE') !== -1) return 'classe-2TNE2526';
+  if (classe.indexOf('CAP') !== -1) return 'classe-CAP';
+  return '';
+}
+
+function afficherTableau() {
+  // Tri : par classe, puis nom
+  resultats.sort((a, b) => {
+    const ca = (a.classe || '').localeCompare(b.classe || '');
+    if (ca !== 0) return ca;
+    return (a.nom || '').localeCompare(b.nom || '');
+  });
+  let html = '<h2 style="margin-top:2rem;color:#1b3a63;font-family:Trebuchet MS">Codes élèves — ' + resultats.length + ' au total</h2>';
+  html += '<div class="print-only" style="margin-bottom:1rem;font-size:9pt">Document confidentiel — distribuer en main propre. Code à 6 chiffres personnel. À ne pas écrire dans le carnet.</div>';
+  html += '<table><thead><tr><th>Classe</th><th>Nom</th><th>Prénom</th><th>Code 6 chiffres</th><th class="no-print">Lien</th></tr></thead><tbody>';
+  for (const r of resultats) {
+    const lienEleve = location.origin + '/inerweb-tt-v2/inerweb_eleve.html?token=' + r.token;
+    html += '<tr>'
+      + '<td><span class="classe-badge ' + classeColor(r.classe) + '">' + (r.classe || '—') + '</span></td>'
+      + '<td><strong>' + (r.nom || '—') + '</strong></td>'
+      + '<td>' + (r.prenom || '—') + '</td>'
+      + '<td><span class="pin">' + r.pin + '</span></td>'
+      + '<td class="no-print" style="font-size:.7rem;word-break:break-all">'
+      + '<a href="' + lienEleve + '" target="_blank">lien</a>'
+      + '</td>'
+      + '</tr>';
+  }
+  html += '</tbody></table>';
+  document.getElementById('tableau').innerHTML = html;
+}
+
+function exportCSV() {
+  let csv = 'classe;nom;prenom;code;pin;token\n';
+  for (const r of resultats) {
+    csv += [r.classe, r.nom, r.prenom, r.code, r.pin, r.token].map(v => '"' + String(v||'').replace(/"/g,'""') + '"').join(';') + '\n';
+  }
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'codes-eleves-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+}
+</script>
+
+</body>
+</html>

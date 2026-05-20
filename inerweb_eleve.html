@@ -306,6 +306,24 @@ input, select, textarea, button { font-family:inherit; }
   </div>
 </div>
 
+<!-- Écran PIN 6 chiffres (apparaît après vérif token si PIN configuré) -->
+<div class="login-container" id="pinScreen" style="display:none">
+  <div class="login-box">
+    <div class="login-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" width="280" height="50" viewBox="0 0 400 50" style="max-width:100%">
+        <text fill="#1b3a63" font-size="28px" x="4" y="34">🔒</text>
+        <text fill="#1b3a63" font-family="Trebuchet MS, sans-serif" font-size="22px" font-weight="bold" x="44" y="32">Code de sécurité</text>
+      </svg>
+    </div>
+    <div class="login-title" style="margin-top:.5rem">Bonjour <span id="pinEleveName">—</span></div>
+    <div class="login-sub">Saisis ton code à 6 chiffres pour accéder à ton espace.</div>
+    <div class="login-error" id="pinError">Code incorrect</div>
+    <input type="tel" class="login-input" id="pinInput" placeholder="------" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" style="text-align:center;letter-spacing:.6rem;font-size:1.8rem;font-family:Consolas,monospace;font-weight:900">
+    <button class="login-btn" onclick="doPinVerify()" id="pinBtn">🔓 Valider</button>
+    <div class="login-help"><a href="#" onclick="cancelPin();return false">← Changer de code élève</a> · Tu as oublié ton PIN ? Demande à ton professeur.</div>
+  </div>
+</div>
+
 <div class="app-container" id="appContainer">
   <div id="main-content"></div>
   <header class="app-header">
@@ -505,6 +523,7 @@ input, select, textarea, button { font-family:inherit; }
 <script src="js/shared/classes-registry.js"></script>
 <script src="js/shared/student-registry.js"></script>
 <script src="js/eval/eval-projections.js"></script>
+<script src="js/security/pin-eleve.js"></script>
 <script src="js/core.js"></script>
 <script>
 // === BIENVENUE ===
@@ -723,10 +742,92 @@ async function verifyToken(token){
     const p=new URLSearchParams({action:'verifyEleveToken',token,key:apiKey});
     const r=await fetch(`${cfg.apiUrl}?${p}`,{redirect:'follow'});
     const d=await r.json();
-    if(d.success&&d.eleve){eleve=d.eleve;evals=d.evals||{};journal=d.journal||[];saveLocal();startApp();toast('Connecté !','ok');}
-    else{document.getElementById('loginError').style.display='block';toast('Code non reconnu','err');}
-  }catch(err){console.error(err);document.getElementById('loginError').textContent='Erreur réseau. Utilise DEMO pour tester.';document.getElementById('loginError').style.display='block';}
-  hideSpinner();
+    if(d.success&&d.eleve){
+      eleve=d.eleve;evals=d.evals||{};journal=d.journal||[];saveLocal();
+      hideSpinner();
+      // ── Vérifier si un PIN est configuré pour ce token ──
+      try{
+        const verifyKey = (new URLSearchParams({action:'verifyElevePin',token,key:apiKey})).toString();
+        const rv = await fetch(`${cfg.apiUrl}?${verifyKey}`,{redirect:'follow'});
+        const dv = await rv.json();
+        if(dv.ok && dv.requiresPin){
+          // Si déjà vérifié dans cette session (rechargement) → bypass
+          try{
+            if(sessionStorage.getItem('iw_eleve_pin_verified_'+token)==='1'){
+              startApp(); toast('Connecté !','ok'); return;
+            }
+          }catch(e){}
+          showPinScreen();
+          return;
+        }
+      }catch(e){console.warn('verifyElevePin',e);}
+      // Pas de PIN configuré (élève ancien, ou pin pas encore généré) → accès direct
+      startApp();
+      toast('Connecté !','ok');
+    } else {
+      document.getElementById('loginError').style.display='block';
+      toast('Code non reconnu','err');
+      hideSpinner();
+    }
+  }catch(err){
+    console.error(err);
+    document.getElementById('loginError').textContent='Erreur réseau. Utilise DEMO pour tester.';
+    document.getElementById('loginError').style.display='block';
+    hideSpinner();
+  }
+}
+
+function showPinScreen(){
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('pinScreen').style.display='flex';
+  var n=(eleve.prenom||'')+' '+(eleve.nom||'');
+  if(n.trim()==='') n=eleve.code||'';
+  document.getElementById('pinEleveName').textContent=n.trim();
+  var err=document.getElementById('pinError'); if(err) err.style.display='none';
+  var inp=document.getElementById('pinInput'); inp.value=''; setTimeout(function(){inp.focus();},200);
+  // Validation à Entrée
+  inp.onkeypress=function(e){ if(e.key==='Enter') doPinVerify(); };
+}
+
+function cancelPin(){
+  document.getElementById('pinScreen').style.display='none';
+  document.getElementById('loginScreen').classList.remove('hidden');
+  cfg.token=''; eleve=null; localStorage.removeItem(SK);
+}
+
+async function doPinVerify(){
+  var pin=document.getElementById('pinInput').value.trim();
+  var err=document.getElementById('pinError');
+  if(!pin||pin.length!==6||!/^\d{6}$/.test(pin)){ err.textContent='Le code fait 6 chiffres'; err.style.display='block'; return; }
+  if(!window.iwPinEleve){ err.textContent='Module de sécurité non chargé'; err.style.display='block'; return; }
+  document.getElementById('pinBtn').disabled=true;
+  document.getElementById('pinBtn').textContent='⏳ Vérification...';
+  showSpinner();
+  try{
+    const hash=await window.iwPinEleve.hashPin(pin,cfg.token);
+    const apiKey=(window.iwApi&&window.iwApi.getKey)?window.iwApi.getKey():(window.INERWEB_CONFIG?window.INERWEB_CONFIG.API_KEY:'');
+    const p=new URLSearchParams({action:'verifyElevePin',token:cfg.token,pin_hash:hash,key:apiKey});
+    const r=await fetch(`${cfg.apiUrl}?${p}`,{redirect:'follow'});
+    const d=await r.json();
+    if(d.ok && d.pinVerified){
+      try{ sessionStorage.setItem('iw_eleve_pin_verified_'+cfg.token,'1'); }catch(e){}
+      document.getElementById('pinScreen').style.display='none';
+      startApp();
+      toast('Connecté !','ok');
+    } else {
+      err.textContent = d.error || 'Code incorrect';
+      err.style.display='block';
+      document.getElementById('pinInput').value='';
+      document.getElementById('pinInput').focus();
+    }
+  }catch(e){
+    err.textContent='Erreur réseau';
+    err.style.display='block';
+  }finally{
+    document.getElementById('pinBtn').disabled=false;
+    document.getElementById('pinBtn').textContent='🔓 Valider';
+    hideSpinner();
+  }
 }
 
 function loadDemoData(){
