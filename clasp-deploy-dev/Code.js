@@ -226,6 +226,12 @@ function doPost(e) {
       case 'adminSetApiKey':
         result = adminSetApiKey(body);
         break;
+      case 'adminListClasses':
+        result = adminListClasses(body);
+        break;
+      case 'adminPurgeTNE':
+        result = adminPurgeTNE(body);
+        break;
       case 'addEleve':
         result = addEleveAction(body.data || body);
         break;
@@ -2645,4 +2651,124 @@ function saveIdentityVault(body) {
   }
   sh.appendRow(['main', body.blob, now, updatedBy, 1]);
   return { ok: true, updatedAt: now, version: 1 };
+}
+
+// ══════════════════════════════════════════════════
+// LISTE DES CLASSES — diagnostic (admin only)
+// ══════════════════════════════════════════════════
+/** Retourne classes uniques + comptage + préfixes codes. AUCUN nom n'est renvoyé. */
+function adminListClasses(body) {
+  if (!body || body.admin_key !== DEV_ADMIN_KEY) return { error: 'admin_key required' };
+  var sheet = getSheet(TABS.ELEVES);
+  if (!sheet) return { error: 'onglet Élèves introuvable' };
+  var data = sheet.getDataRange().getValues();
+  if (data.length < 2) return { ok: true, total: 0, classes: {}, prefixes: {} };
+  var headers = data[0];
+  var idxCode = headers.indexOf('code');
+  var idxClasse = headers.indexOf('classe');
+  if (idxCode === -1 || idxClasse === -1) return { error: 'colonnes manquantes' };
+  var classes = {}, prefixes = {}, croisement = {};
+  for (var i = 1; i < data.length; i++) {
+    var c = String(data[i][idxClasse] || '').trim();
+    var code = String(data[i][idxCode] || '').trim();
+    classes[c] = (classes[c] || 0) + 1;
+    var m = code.match(/^([A-Z]+)/);
+    var pref = m ? m[1] : '?';
+    prefixes[pref] = (prefixes[pref] || 0) + 1;
+    var key = c + ' × ' + pref;
+    croisement[key] = (croisement[key] || 0) + 1;
+  }
+  return { ok: true, total: data.length - 1, classes: classes, prefixes: prefixes, croisement: croisement };
+}
+
+// ══════════════════════════════════════════════════
+// PURGE CIBLÉE PAR CLASSE — admin only, mode dry-run par défaut
+// ══════════════════════════════════════════════════
+/**
+ * Supprime toutes les lignes appartenant à `body.classe` dans Élèves +
+ * onglets liés. Toute classe non vide acceptée (DEV souple).
+ *
+ * body = { admin_key, classe, dry_run }
+ */
+function adminPurgeTNE(body) {
+  if (!body || body.admin_key !== DEV_ADMIN_KEY) return { error: 'admin_key required' };
+  var classeCible = String(body.classe || '').trim();
+  if (!classeCible) return { error: 'classe requise' };
+  var dryRun = body.dry_run !== false;
+
+  var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(10000)) return { error: 'verrou occupé, réessayer' };
+
+  try {
+    var elevesSheet = ss.getSheetByName(TABS.ELEVES);
+    if (!elevesSheet) return { error: 'onglet Élèves introuvable' };
+    var data = elevesSheet.getDataRange().getValues();
+    if (data.length < 2) return { ok: true, dry_run: dryRun, codes_supprimes: [], counts: { eleves: 0 } };
+    var headers = data[0];
+    var idxCode = headers.indexOf('code');
+    var idxClasse = headers.indexOf('classe');
+    if (idxCode === -1 || idxClasse === -1) return { error: 'colonnes code/classe introuvables' };
+
+    var codesAffectes = [];
+    var lignesAffectees = [];
+    for (var i = 1; i < data.length; i++) {
+      if (String(data[i][idxClasse]).trim() === classeCible) {
+        codesAffectes.push(String(data[i][idxCode]));
+        lignesAffectees.push(i + 1);
+      }
+    }
+
+    var counts = { eleves: codesAffectes.length, evaluations_unifiees: 0, evaluations: 0, pfmp_log: 0, ccf_log: 0, eval_tuteur: 0, pin_hash: 0, pin_clair: 0 };
+
+    if (codesAffectes.length === 0) {
+      lock.releaseLock();
+      return { ok: true, dry_run: dryRun, codes_supprimes: [], counts: counts, message: 'Aucun élève en classe "' + classeCible + '"' };
+    }
+
+    var codeSet = {};
+    codesAffectes.forEach(function (c) { codeSet[c] = true; });
+
+    function processTable(sheetName, headerCol) {
+      var s = ss.getSheetByName(sheetName);
+      if (!s || s.getLastRow() < 2) return 0;
+      var d = s.getDataRange().getValues();
+      var h = d[0];
+      var col = (typeof headerCol === 'string') ? h.indexOf(headerCol) : headerCol;
+      if (col === -1 || col == null) return 0;
+      var count = 0;
+      for (var k = d.length - 1; k >= 1; k--) {
+        if (codeSet[String(d[k][col])]) {
+          count++;
+          if (!dryRun) s.deleteRow(k + 1);
+        }
+      }
+      return count;
+    }
+
+    counts.evaluations_unifiees = processTable(TABS.EVALUATIONS_UNIFIEES, 0);
+    counts.evaluations = processTable(TABS.EVALUATIONS, 0);
+    counts.pfmp_log = processTable(TABS.PFMP_LOG, 'eleveCode');
+    counts.ccf_log = processTable(TABS.CCF_LOG, 'eleveCode');
+    counts.eval_tuteur = processTable('EvalTuteur', 'eleveCode');
+    counts.pin_hash = processTable('ElevePinHash', 'code');
+    counts.pin_clair = processTable('ElevePinClair', 'code');
+
+    if (!dryRun) {
+      lignesAffectees.sort(function (a, b) { return b - a; });
+      lignesAffectees.forEach(function (rowNum) { elevesSheet.deleteRow(rowNum); });
+    }
+
+    lock.releaseLock();
+    return {
+      ok: true, dry_run: dryRun, classe: classeCible,
+      codes_supprimes: codesAffectes, counts: counts,
+      message: dryRun
+        ? '🔍 DRY-RUN : ' + codesAffectes.length + ' élèves "' + classeCible + '" seraient supprimés.'
+        : '✅ ' + codesAffectes.length + ' élèves "' + classeCible + '" supprimés.'
+    };
+  } catch (e) {
+    try { lock.releaseLock(); } catch (_) {}
+    return { error: 'exception : ' + e.message };
+  }
 }

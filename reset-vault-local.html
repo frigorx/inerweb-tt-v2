@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reset vault local — inerWeb TT-IA</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Calibri', sans-serif; font-size: 14pt; background: #fff8e1;
+       padding: 1.5rem; color: #1a2332; line-height: 1.5; }
+.box { max-width: 760px; margin: 0 auto; background: white; border-radius: 16px;
+       padding: 2rem; box-shadow: 0 4px 20px rgba(255,107,53,.2);
+       border-top: 8px solid #ff6b35; }
+h1 { font-family: 'Trebuchet MS', sans-serif; color: #ff6b35; font-weight: 900;
+     font-size: 1.6rem; margin-bottom: 1rem; }
+h2 { font-family: 'Trebuchet MS', sans-serif; color: #1b3a63; font-size: 1.1rem;
+     margin: 1.2rem 0 .5rem; }
+.explain { background: #e3f2fd; padding: 1rem 1.2rem; border-radius: 10px;
+           border-left: 5px solid #1b3a63; margin-bottom: 1rem; }
+.keys-list { background: #f5f5f5; padding: .8rem 1rem; border-radius: 8px;
+             font-family: 'Consolas', monospace; font-size: .9rem;
+             max-height: 280px; overflow-y: auto; margin: .8rem 0; }
+.keys-list .iw { color: #c62828; font-weight: 700; }
+.keys-list .other { color: #666; }
+button { padding: .9rem 1.4rem; font-size: 1rem; font-weight: 800;
+         border: none; border-radius: 10px; cursor: pointer; margin: .3rem .3rem .3rem 0;
+         font-family: 'Trebuchet MS', sans-serif; }
+button.safe { background: #ff6b35; color: white; }
+button.safe:hover { background: #e64a19; }
+button.go { background: #2e7d32; color: white; }
+button:disabled { background: #ccc; cursor: not-allowed; }
+.success { background: linear-gradient(135deg, #2e7d32, #4caf50);
+           color: white; padding: 1.2rem; border-radius: 10px;
+           text-align: center; font-weight: 800; margin-top: 1rem; }
+.note { color: #666; font-size: .9rem; margin-top: .5rem; }
+</style>
+</head>
+<body>
+
+<div class="box">
+
+<h1>🧹 Reset du vault local (navigateur uniquement)</h1>
+
+<div class="explain">
+<strong>Pourquoi cette page ?</strong> Le navigateur stocke un vault chiffré local
+(<code>iw_identity_*</code>) qui contient les associations code↔nom utilisées par
+prof.html. Les essais d'import TNE ont pollué ce vault — il associe des noms TNE à des
+codes ELV qui correspondent aujourd'hui à des CAP IFCA.<br><br>
+<strong>Ce que cette page fait :</strong> efface UNIQUEMENT les clés <code>iw_*</code>
+du localStorage du domaine <code>frigorx.github.io</code>. Les noms en clair des 30
+CAP IFCA restent dans la Google Sheet — l'app les rechargera automatiquement.
+</div>
+
+<h2>1. Clés localStorage actuelles sur ce domaine</h2>
+<div class="keys-list" id="keysList">(chargement…)</div>
+
+<h2>2. Action</h2>
+<button class="safe" id="btnClean" onclick="cleanIwKeys()">🧹 Effacer toutes les clés iw_*</button>
+<button class="safe" id="btnNuke" onclick="nukeAll()" style="background:#c62828">💥 Tout effacer (radical)</button>
+<p class="note">→ Les clés non-<code>iw_*</code> (préférences éventuelles) sont préservées par le bouton orange.</p>
+
+<div id="result"></div>
+
+<h2>3. Rouvrir l'app</h2>
+<button class="go" onclick="window.location.href='inerweb_prof.html'">↪ Ouvrir prof.html DEV</button>
+<button class="go" onclick="window.location.href='https://frigorx.github.io/tt-ia/inerweb_prof.html'">↪ Ouvrir prof.html PROD</button>
+
+</div>
+
+<script>
+function refreshList() {
+  const list = document.getElementById('keysList');
+  if (localStorage.length === 0) { list.innerHTML = '<em>(localStorage vide)</em>'; return; }
+  let html = '';
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    const v = localStorage.getItem(k) || '';
+    const cls = k.startsWith('iw') ? 'iw' : 'other';
+    const len = v.length;
+    html += `<div class="${cls}">${k} <span style="color:#999">(${len} car.)</span></div>`;
+  }
+  list.innerHTML = html;
+}
+
+function cleanIwKeys() {
+  const keys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k.startsWith('iw')) keys.push(k);
+  }
+  keys.forEach(k => localStorage.removeItem(k));
+  document.getElementById('result').innerHTML =
+    `<div class="success">✅ ${keys.length} clés <code>iw_*</code> supprimées : ${keys.map(k=>'<code>'+k+'</code>').join(', ')}</div>`;
+  refreshList();
+}
+
+function nukeAll() {
+  if (!confirm('Effacer TOUT le localStorage de frigorx.github.io ?')) return;
+  const n = localStorage.length;
+  localStorage.clear();
+  document.getElementById('result').innerHTML =
+    `<div class="success">💥 ${n} clés supprimées (vidage total).</div>`;
+  refreshList();
+}
+
+refreshList();
+</script>
+
+</body>
+</html>
