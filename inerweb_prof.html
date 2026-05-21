@@ -2,6 +2,9 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8"><script>
+// RESET VAULT LOCAL one-shot (2026-05-21) — efface les associations code↔nom polluées par les essais TNE.
+// L'app rechargera les noms depuis la Sheet (30 IFCA en clair). Le flag iw_purge_version empêche la ré-exécution.
+(function(){try{var EXPECTED='20260521';var current=localStorage.getItem('iw_purge_version')||'';if(current===EXPECTED)return;var k=[],i;for(i=0;i<localStorage.length;i++){var key=localStorage.key(i);if(key&&(key.indexOf('iw_identity')===0||key.indexOf('iw_pin')===0||key.indexOf('iw_vault')===0))k.push(key);}k.forEach(function(x){localStorage.removeItem(x);});localStorage.setItem('iw_purge_version',EXPECTED);console.log('[iw-purge] '+k.length+' clés effacées : '+k.join(', '));}catch(e){}})();
 // ENVIRONNEMENT DEV — auto-config API DEV
 window.INERWEB_MODE='dev';
 window.INERWEB_DEV_API='https://script.google.com/macros/s/AKfycbz_yzn-iH41ExbZXBtCT_sF_mckfNFjg_0bEtlNNUJoLwngCbVGcWfgo_3GSZLlro-T2Q/exec';
