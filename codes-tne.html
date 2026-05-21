@@ -77,6 +77,24 @@ cette page pour récupérer les codes.
   <button class="secondary" onclick="recharger()">🔄 Recharger les codes existants</button>
   <button class="green" onclick="window.print()" id="btnPrint" style="display:none">🖨 Imprimer pour distribution</button>
   <button class="secondary" onclick="exportCSV()" id="btnCSV" style="display:none">📋 Export CSV</button>
+  <button style="background:#8e44ad" onclick="demoMode(0)" id="btnDemo" style="display:none">📺 Mode démo plein écran</button>
+</div>
+
+<!-- Overlay mode démo -->
+<div id="demoOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#1b3a63,#0d1f3c);color:white;z-index:99999;padding:2rem;align-items:center;justify-content:center;flex-direction:column">
+  <div style="background:white;color:#1a2332;padding:3rem;border-radius:20px;max-width:900px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5)">
+    <div style="font-family:'Trebuchet MS',sans-serif;font-size:3rem;font-weight:900;color:#1b3a63;margin-bottom:1rem" id="demoNom">—</div>
+    <div style="font-size:1.2rem;color:#6c757d">Ton code à 6 chiffres :</div>
+    <div style="font-family:'Consolas',monospace;font-size:5.5rem;font-weight:900;color:#ff6b35;letter-spacing:1.2rem;background:#fff8e1;padding:1.5rem;border-radius:14px;margin:1.5rem 0;border:4px solid #ff6b35" id="demoPin">000000</div>
+    <div style="font-size:1.1rem;color:#1b3a63;font-weight:700">Clique ton lien personnel et tape ce code 6 chiffres sur l'écran de l'app.</div>
+    <div style="font-family:'Consolas',monospace;font-size:.95rem;word-break:break-all;background:#e8f0f8;padding:1rem;border-radius:8px;color:#1b3a63;margin-top:1rem" id="demoLien"></div>
+  </div>
+  <div style="color:white;padding:1rem;font-size:1.2rem;font-weight:700;margin-top:1rem" id="demoCounter">1 / 20</div>
+  <div style="display:flex;justify-content:center;gap:1rem;margin-top:1rem">
+    <button style="background:white;color:#1b3a63;padding:1rem 2rem;font-size:1.1rem" onclick="demoNav(-1)">⬅ Précédent</button>
+    <button style="background:#c62828;color:white;padding:1rem 2rem;font-size:1.1rem" onclick="demoExit()">✖ Quitter</button>
+    <button style="background:white;color:#1b3a63;padding:1rem 2rem;font-size:1.1rem" onclick="demoNav(1)">Suivant ➡</button>
+  </div>
 </div>
 
 <div class="status" id="status">Prêt. Clique « Générer » pour créer les codes.</div>
@@ -182,6 +200,7 @@ async function generer() {
     setStatus('✅ ' + d.count + ' élèves TNE prêts. PIN stocké en clair côté serveur (admin only) + hash pour authentification.', 'ok');
     document.getElementById('btnPrint').style.display = 'inline-block';
     document.getElementById('btnCSV').style.display = 'inline-block';
+    document.getElementById('btnDemo').style.display = 'inline-block';
     document.getElementById('btnGo').textContent = '↻ Re-générer (nouveaux PIN)';
     document.getElementById('btnGo').disabled = false;
     afficherTableau();
@@ -207,6 +226,7 @@ async function recharger() {
     setStatus('✅ ' + resultats.length + ' codes existants chargés depuis la Sheet.', 'ok');
     document.getElementById('btnPrint').style.display = 'inline-block';
     document.getElementById('btnCSV').style.display = 'inline-block';
+    document.getElementById('btnDemo').style.display = 'inline-block';
     afficherTableau();
   } catch (e) {
     setStatus('❌ ' + e.message, 'err');
@@ -226,12 +246,15 @@ function afficherTableau() {
       + '<td><strong>' + e.nom + '</strong></td>'
       + '<td>' + e.prenom + '</td>'
       + '<td><div class="pin">' + e.pin + '</div>'
-      + '<button class="copy-btn no-print" onclick="copier(\'' + e.pin + '\', this, \'PIN ' + e.pin + '\')">📋 Copier PIN</button>'
-      + '</td>'
+      + '<div class="no-print" style="margin-top:.3rem">'
+      + '<button class="copy-btn" onclick="copier(\'' + e.pin + '\', this, \'PIN ' + e.pin + '\')">📋 Copier PIN</button> '
+      + '<button class="copy-btn" style="background:#c62828" onclick="regenererPin(' + i + ')">🔄 Régénérer</button>'
+      + '</div></td>'
       + '<td><div class="lien">' + lien + '</div>'
       + '<div class="no-print" style="margin-top:.3rem">'
       + '<button class="copy-btn" onclick="copier(\'' + lien + '\', this, \'Lien copié\')">📋 Copier lien</button> '
-      + '<a class="copy-btn" style="background:#16a085;color:white;text-decoration:none" href="' + lien + '" target="_blank">🔗 Tester</a>'
+      + '<a class="copy-btn" style="background:#16a085;color:white;text-decoration:none" href="' + lien + '" target="_blank">🔗 Tester</a> '
+      + '<button class="copy-btn" style="background:#8e44ad" onclick="demoMode(' + i + ')">📺 Démo</button>'
       + '</div></td>'
       + '</tr>';
   });
@@ -258,6 +281,73 @@ function exportCSV() {
   a.href = URL.createObjectURL(blob);
   a.download = 'codes-2TNE-' + new Date().toISOString().slice(0,10) + '.csv';
   a.click();
+}
+
+// ── Mode démo plein écran ──
+let demoIndex = 0;
+function demoMode(idx) {
+  if (!resultats[idx]) return;
+  demoIndex = idx;
+  showDemo();
+  const ov = document.getElementById('demoOverlay');
+  ov.style.display = 'flex';
+}
+function showDemo() {
+  const e = resultats[demoIndex];
+  if (!e) return;
+  const lien = location.origin + '/inerweb-tt-v2/inerweb_eleve.html?token=' + e.token;
+  document.getElementById('demoNom').textContent = (e.prenom || '') + ' ' + (e.nom || '');
+  document.getElementById('demoPin').textContent = e.pin;
+  document.getElementById('demoLien').textContent = lien;
+  document.getElementById('demoCounter').textContent = (demoIndex + 1) + ' / ' + resultats.length;
+}
+function demoNav(delta) {
+  demoIndex = (demoIndex + delta + resultats.length) % resultats.length;
+  showDemo();
+}
+function demoExit() {
+  document.getElementById('demoOverlay').style.display = 'none';
+}
+document.addEventListener('keydown', e => {
+  if (document.getElementById('demoOverlay').style.display !== 'flex') return;
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); demoNav(1); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); demoNav(-1); }
+  else if (e.key === 'Escape') demoExit();
+});
+
+// ── Régénération PIN par élève ──
+async function regenererPin(idx) {
+  const e = resultats[idx];
+  if (!e) return;
+  if (!confirm('Régénérer le code de ' + e.prenom + ' ' + e.nom + ' ?\nL\'ancien code ne sera plus valide.')) return;
+  setStatus('<span class="spinner"></span>Régénération du code pour ' + e.nom + '…');
+  try {
+    const newPin = genererPin();
+    const newHash = await hashPin(newPin, e.token);
+    // Update PIN clair (admin)
+    const r1 = await fetch(API + '?action=adminSetElevePinClair', {
+      method: 'POST', redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        action: 'adminSetElevePinClair', adminKey: ADMIN_KEY,
+        code: e.code, nom: e.nom, prenom: e.prenom, classe: e.classe, token: e.token, pin: newPin
+      })
+    });
+    const d1 = await r1.json();
+    if (d1.error) throw new Error(d1.error);
+    // Update hash
+    await fetch(API + '?action=setElevePin', {
+      method: 'POST', redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ key: API_KEY, action: 'setElevePin', code: e.code, token: e.token, pin_hash: newHash })
+    });
+    // Update local
+    resultats[idx].pin = newPin;
+    afficherTableau();
+    setStatus('✅ Nouveau code pour ' + e.nom + ' : ' + newPin + '. Distribue-le à l\'élève.', 'ok');
+  } catch (err) {
+    setStatus('❌ ' + err.message, 'err');
+  }
 }
 
 // Auto-load au démarrage si codes existent déjà

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Administration inerWeb TT-IA</title>
+<link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%231b3a63'/><text x='32' y='46' font-size='36' text-anchor='middle' fill='white'>%E2%9D%84</text></svg>">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Calibri', 'Segoe UI', sans-serif; font-size: 14pt; line-height: 1.5;
+       color: #1a2332; background: linear-gradient(135deg, #1b3a63 0%, #0d1f3c 100%);
+       min-height: 100vh; padding: 1.5rem; }
+.wrap { max-width: 1200px; margin: 0 auto; }
+.header { background: white; border-radius: 16px; padding: 1.5rem 2rem; margin-bottom: 1.5rem;
+          box-shadow: 0 4px 20px rgba(0,0,0,.15); display: flex; align-items: center; gap: 1.5rem; }
+.header .logo { font-size: 3rem; }
+.header h1 { font-family: 'Trebuchet MS', sans-serif; color: #1b3a63; font-weight: 900;
+             font-size: 1.8rem; }
+.header .sub { color: #6c757d; font-size: .95rem; }
+.section { background: white; border-radius: 16px; padding: 1.5rem 2rem; margin-bottom: 1.5rem;
+           box-shadow: 0 4px 20px rgba(0,0,0,.1); }
+.section h2 { font-family: 'Trebuchet MS', sans-serif; color: #1b3a63;
+              border-bottom: 3px solid #ff6b35; padding-bottom: .4rem; margin-bottom: 1rem; }
+.section .desc { color: #6c757d; font-size: .95rem; margin-bottom: 1rem; }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+.card { background: #f0f2f5; border-radius: 12px; padding: 1.2rem; text-decoration: none;
+        color: #1a2332; display: block; transition: all .2s; border-left: 5px solid #1b3a63; }
+.card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.1);
+              background: #e8f0f8; }
+.card.urgent { border-left-color: #ff6b35; background: #fff5f0; }
+.card.urgent:hover { background: #fff8e1; }
+.card.danger { border-left-color: #c62828; }
+.card.green { border-left-color: #2e7d32; }
+.card-icon { font-size: 2rem; margin-bottom: .3rem; }
+.card-title { font-weight: 800; font-family: 'Trebuchet MS', sans-serif;
+              font-size: 1.05rem; color: #1b3a63; }
+.card-desc { font-size: .85rem; color: #6c757d; margin-top: .3rem; line-height: 1.4; }
+
+.badge { display: inline-block; padding: .15rem .55rem; border-radius: 6px;
+         font-size: .7rem; font-weight: 800; margin-left: .4rem; }
+.badge.essentiel { background: #ff6b35; color: white; }
+.badge.test { background: #2e7d32; color: white; }
+.badge.dev { background: #6c757d; color: white; }
+.badge.danger { background: #c62828; color: white; }
+
+.quick-test { background: linear-gradient(135deg, #2e7d32, #4caf50); color: white;
+              padding: 1.2rem; border-radius: 12px; margin-top: 1rem; }
+.quick-test h3 { font-family: 'Trebuchet MS', sans-serif; margin-bottom: .5rem; }
+.quick-test code { background: rgba(255,255,255,.2); padding: .2rem .5rem; border-radius: 4px;
+                   font-size: .9rem; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="header">
+    <div class="logo">❄</div>
+    <div>
+      <h1>Administration inerWeb TT-IA</h1>
+      <div class="sub">Hub central — F. Henninot · LP Privé Jacques Raynaud · Marseille</div>
+    </div>
+  </div>
+
+  <!-- ESSENTIEL -->
+  <div class="section">
+    <h2>🎯 Action principale du jour</h2>
+    <div class="desc">Génération et distribution des codes pour la classe 2TNE 25-26.</div>
+    <div class="cards">
+      <a class="card urgent" href="codes-tne.html">
+        <div class="card-icon">🔢</div>
+        <div class="card-title">Codes 2TNE 25-26 <span class="badge essentiel">ESSENTIEL</span></div>
+        <div class="card-desc">Génère / récupère / régénère les 20 PIN. Imprime pour distribution. Mode démo plein écran pour vidéoprojecteur.</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- APPLICATIONS ÉLÈVES / PROFS -->
+  <div class="section">
+    <h2>📱 Applications opérationnelles</h2>
+    <div class="cards">
+      <a class="card" href="inerweb_prof.html">
+        <div class="card-icon">👨‍🏫</div>
+        <div class="card-title">App Prof (FH)</div>
+        <div class="card-desc">Tableau de bord, évaluations, journal stage, validations PFMP. Dashboard avec tous les élèves.</div>
+      </a>
+      <a class="card" href="inerweb_eleve.html">
+        <div class="card-icon">🎒</div>
+        <div class="card-title">App Élève</div>
+        <div class="card-desc">Sans token URL : écran de saisie du token. Avec token : écran PIN 6 chiffres puis accès stage.</div>
+      </a>
+      <a class="card" href="inerweb_tuteur.html">
+        <div class="card-icon">🛠</div>
+        <div class="card-title">App Tuteur</div>
+        <div class="card-desc">Évaluation tuteur en fin de PFMP. Accès via lien d'invitation token + 4 derniers chiffres tel.</div>
+      </a>
+      <a class="card" href="hub-tm.html">
+        <div class="card-icon">👥</div>
+        <div class="card-title">Hub pour TM</div>
+        <div class="card-desc">Page d'accès simplifiée pour ton collègue TM. Liens directs vers les outils essentiels.</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- OUTILS DE GESTION -->
+  <div class="section">
+    <h2>🛠 Outils de gestion</h2>
+    <div class="cards">
+      <a class="card" href="migration-express.html">
+        <div class="card-icon">📥</div>
+        <div class="card-title">Migration IFCA <span class="badge dev">FAIT</span></div>
+        <div class="card-desc">Récupère les 24 élèves IFCA depuis la Sheet en clair vers le vault chiffré local. À ne plus relancer.</div>
+      </a>
+      <a class="card" href="generer-pins.html">
+        <div class="card-icon">🔐</div>
+        <div class="card-title">Générer PIN tous élèves</div>
+        <div class="card-desc">Pour les classes autres que TNE. Imprime tableau global. Dépend du vault local (fragile).</div>
+      </a>
+      <a class="card danger" href="clear-nominatif.html">
+        <div class="card-icon">🧹</div>
+        <div class="card-title">Effacement nominatif Sheet <span class="badge danger">DESTRUCTIF</span></div>
+        <div class="card-desc">Efface les noms en clair de la Sheet ELEVES. À lancer uniquement quand tout est validé.</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- TESTS -->
+  <div class="section">
+    <h2>🧪 Tests fonctionnels</h2>
+    <div class="cards">
+      <a class="card green" href="test-face-blur.html">
+        <div class="card-icon">📸</div>
+        <div class="card-title">Test floutage photos <span class="badge test">TEST</span></div>
+        <div class="card-desc">Dépose une photo, vérifie que le visage est flouté côté navigateur avant upload Drive.</div>
+      </a>
+      <a class="card green" href="inerweb-HUB-FH.html">
+        <div class="card-icon">📱</div>
+        <div class="card-title">Hub PWA mobile FH</div>
+        <div class="card-desc">Hub mobile installable sur iPhone/Android (Ajouter à l'écran d'accueil).</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- DÉMARRAGE RAPIDE -->
+  <div class="quick-test">
+    <h3>🚀 Parcours rapide pour ta démo</h3>
+    <ol style="margin-left:1.5rem;line-height:2">
+      <li>Ouvre <strong>Codes 2TNE 25-26</strong> ci-dessus → bouton « Générer » → tableau imprimable</li>
+      <li>Bouton « Mode démo plein écran » → projection 1 élève par diapo</li>
+      <li>Chaque élève reçoit son lien personnel + code 6 chiffres</li>
+      <li>L'élève clique son lien → écran code → tape le PIN → connecté</li>
+    </ol>
+  </div>
+
+</div>
+
+</body>
+</html>
