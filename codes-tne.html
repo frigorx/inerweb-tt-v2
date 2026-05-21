@@ -167,7 +167,7 @@ async function generer() {
     const eleves = LISTE_TNE.map(([nom, prenom]) => ({ nom, prenom, pin: genererPin() }));
 
     // 2. Appel serveur : PURGE les anciennes lignes TNE + recrée proprement avec codes TNE-001 à TNE-020
-    const confirm1 = confirm('NETTOYAGE COMPLET 2TNE2526 :\n\n✅ Les CAP IFCA et MFER ne sont PAS touchés.\n\n✅ Les lignes avec classe = 2TNE2526 vont être supprimées et recréées avec codes TNE-001 à TNE-020 (plus de collision avec les codes ELV-XXX des anciens IFCA).\n\n⚠ Les anciens PIN TNE distribués deviennent caducs (à redistribuer).\n\nContinuer ?');
+    const confirm1 = confirm('NETTOYAGE COMPLET 2TNE 25-26 :\n\n✅ Les CAP IFCA et MFER ne sont PAS touchés.\n\n✅ Les lignes 2TNE2526 vont être supprimées et recréées avec codes TNE2526-001 à TNE2526-020.\n   → Préfixe TNE2526 = aucune collision avec les anciens IFCA (codes ELV-XXX) ni avec les futures promos (TNE2627, TNE2728...).\n\n⚠ Les anciens PIN TNE distribués deviennent caducs (à redistribuer).\n\nContinuer ?');
     if (!confirm1) { setStatus('Annulé.', 'err'); document.getElementById('btnGo').disabled = false; return; }
     const r = await fetch(API + '?action=adminCreerElevesTNE', {
       method: 'POST', redirect: 'follow',
@@ -179,7 +179,8 @@ async function generer() {
         referentiel: 'TNE',
         eleves: eleves,
         purgeFirst: true,
-        prefix: 'TNE'
+        prefix: 'TNE2526'  // ← codes TNE2526-001..020 pour distinguer la promo 25-26
+                            //    Année prochaine : passer à 'TNE2627' (nouveau dossier propre)
       })
     });
     const d = await r.json();
