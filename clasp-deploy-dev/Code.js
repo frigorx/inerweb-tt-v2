@@ -232,6 +232,24 @@ function doPost(e) {
       case 'adminPurgeTNE':
         result = adminPurgeTNE(body);
         break;
+      case 'adminListTabs':
+        result = adminListTabs(body);
+        break;
+      case 'adminListBackups':
+        result = adminListBackups(body);
+        break;
+      case 'adminRestoreFromBackup':
+        result = adminRestoreFromBackup(body);
+        break;
+      case 'adminInspectBackupEleves':
+        result = adminInspectBackupEleves(body);
+        break;
+      case 'adminClearDevSheetId':
+        result = adminClearDevSheetId(body);
+        break;
+      case 'adminCreateTneSquelette':
+        result = adminCreateTneSquelette(body);
+        break;
       case 'addEleve':
         result = addEleveAction(body.data || body);
         break;
@@ -2771,4 +2789,162 @@ function adminPurgeTNE(body) {
     try { lock.releaseLock(); } catch (_) {}
     return { error: 'exception : ' + e.message };
   }
+}
+
+// Liste tous les onglets de la Sheet + nb lignes (admin)
+function adminListTabs(body) {
+  if (!body || body.admin_key !== DEV_ADMIN_KEY) return { error: 'admin_key required' };
+  var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  var tabs = ss.getSheets().map(function (s) {
+    return { name: s.getName(), rows: s.getLastRow(), cols: s.getLastColumn() };
+  });
+  return { ok: true, spreadsheet_id: CONFIG.SPREADSHEET_ID, spreadsheet_name: ss.getName(), tabs: tabs };
+}
+
+// Liste tous les backups Drive (admin)
+function adminListBackups(body) {
+  if (!body || body.admin_key !== DEV_ADMIN_KEY) return { error: 'admin_key required' };
+  var iterator = DriveApp.getFoldersByName('Backups inerWeb');
+  if (!iterator.hasNext()) return { ok: true, backups: [], message: 'Dossier Backups inerWeb introuvable' };
+  var folder = iterator.next();
+  var files = folder.getFiles();
+  var list = [];
+  while (files.hasNext()) {
+    var f = files.next();
+    list.push({ id: f.getId(), name: f.getName(), createdAt: f.getDateCreated().toISOString(), size: f.getSize() });
+  }
+  list.sort(function (a, b) { return b.createdAt.localeCompare(a.createdAt); });
+  return { ok: true, count: list.length, backups: list };
+}
+
+// Restaure un backup spécifique en écrasant la Sheet courante (admin, dry_run dispo)
+// body = { admin_key, backup_id, dry_run, tabs_to_restore: ['Élèves',...] }
+function adminRestoreFromBackup(body) {
+  if (!body || body.admin_key !== DEV_ADMIN_KEY) return { error: 'admin_key required' };
+  if (!body.backup_id) return { error: 'backup_id required' };
+  var dryRun = body.dry_run !== false;
+  try {
+    var backupFile = DriveApp.getFileById(body.backup_id);
+    var backupSS = SpreadsheetApp.openById(body.backup_id);
+    var backupTabs = backupSS.getSheets().map(function (s) {
+      return { name: s.getName(), rows: s.getLastRow(), cols: s.getLastColumn() };
+    });
+    var tabsToRestore = body.tabs_to_restore || backupTabs.map(function (t) { return t.name; });
+    if (dryRun) {
+      return { ok: true, dry_run: true, backup_name: backupFile.getName(), tabs_available: backupTabs, tabs_would_restore: tabsToRestore, message: 'DRY-RUN — rien restauré' };
+    }
+    var targetSS = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+    var restored = [];
+    tabsToRestore.forEach(function (tabName) {
+      var src = backupSS.getSheetByName(tabName);
+      if (!src) return;
+      var data = src.getDataRange().getValues();
+      var dst = targetSS.getSheetByName(tabName);
+      if (!dst) dst = targetSS.insertSheet(tabName);
+      dst.clear();
+      if (data.length > 0 && data[0].length > 0) {
+        dst.getRange(1, 1, data.length, data[0].length).setValues(data);
+      }
+      restored.push({ name: tabName, rows: data.length });
+    });
+    return { ok: true, dry_run: false, backup_name: backupFile.getName(), restored: restored };
+  } catch (e) {
+    return { error: 'exception : ' + e.message };
+  }
+}
+
+// Inspecte un backup : retourne classes uniques + préfixes codes (sans afficher noms)
+function adminInspectBackupEleves(body) {
+  if (!body || body.admin_key !== DEV_ADMIN_KEY) return { error: 'admin_key required' };
+  if (!body.backup_id) return { error: 'backup_id required' };
+  try {
+    var ss = SpreadsheetApp.openById(body.backup_id);
+    var sheet = ss.getSheetByName('Élèves');
+    if (!sheet) return { error: 'onglet Élèves absent du backup' };
+    var data = sheet.getDataRange().getValues();
+    if (data.length < 2) return { ok: true, total: 0, classes: {}, prefixes: {} };
+    var headers = data[0];
+    var idxCode = headers.indexOf('code');
+    var idxClasse = headers.indexOf('classe');
+    var classes = {}, prefixes = {};
+    for (var i = 1; i < data.length; i++) {
+      var c = String(data[i][idxClasse] || '').trim();
+      var code = String(data[i][idxCode] || '').trim();
+      classes[c] = (classes[c] || 0) + 1;
+      var m = code.match(/^([A-Z]+)/);
+      var pref = m ? m[1] : '?';
+      prefixes[pref] = (prefixes[pref] || 0) + 1;
+    }
+    return { ok: true, backup_name: ss.getName(), total: data.length - 1, classes: classes, prefixes: prefixes };
+  } catch (e) {
+    return { error: 'exception : ' + e.message };
+  }
+}
+
+// Casse la sync auto PROD→DEV (efface SHEET_DEV_ID côté PROD pour stopper l'écrasement)
+function adminClearDevSheetId(body) {
+  if (!body || body.admin_key !== DEV_ADMIN_KEY) return { error: 'admin_key required' };
+  var props = PropertiesService.getScriptProperties();
+  var was = props.getProperty('SHEET_DEV_ID');
+  props.deleteProperty('SHEET_DEV_ID');
+  props.deleteProperty('last_auto_sync_at');
+  return { ok: true, previous_value: was, message: 'Sync auto PROD→DEV désactivée.' };
+}
+
+// Crée N élèves TNE pseudonymisés (codes TNE2526-001..N) en classe '2TNE'
+// avec PIN clair 6 chiffres aléatoires + hash PBKDF2 minimal
+// body = { admin_key, n: 20 }
+function adminCreateTneSquelette(body) {
+  if (!body || body.admin_key !== DEV_ADMIN_KEY) return { error: 'admin_key required' };
+  var n = Math.max(1, Math.min(40, parseInt(body.n || 20, 10)));
+  var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  var elevesSheet = ss.getSheetByName(TABS.ELEVES);
+  if (!elevesSheet) return { error: 'onglet Élèves introuvable' };
+  var headers = elevesSheet.getRange(1, 1, 1, elevesSheet.getLastColumn()).getValues()[0];
+  var idx = {};
+  ['code','nom','prenom','classe','groupe','annee','statut','referentiel','token','token_tuteur','tel_eleve','tel_tuteur','email_eleve','tuteur_nom','tuteur_email','entreprise_nom','preference_contact_tuteur'].forEach(function (h) { idx[h] = headers.indexOf(h); });
+
+  // Vérifier les codes déjà présents pour ne pas écraser
+  var data = elevesSheet.getDataRange().getValues();
+  var existing = {};
+  for (var i = 1; i < data.length; i++) existing[String(data[i][idx.code])] = true;
+
+  var pinClairSheet = ss.getSheetByName('ElevePinClair');
+  if (!pinClairSheet) pinClairSheet = ss.insertSheet('ElevePinClair').appendRow(['code','pin','generated_at','generated_by','classe','phase','revoked_at']) && ss.getSheetByName('ElevePinClair');
+
+  var created = [];
+  var skipped = [];
+  for (var k = 1; k <= n; k++) {
+    var num = ('000' + k).slice(-3);
+    var code = 'TNE2526-' + num;
+    if (existing[code]) { skipped.push(code); continue; }
+    var pseudo = 'TNE ' + num;
+    var token = _randToken8(); var tokenT = _randToken8();
+    var row = new Array(headers.length).fill('');
+    row[idx.code] = code;
+    row[idx.nom] = pseudo;
+    row[idx.prenom] = '';
+    row[idx.classe] = '2TNE';
+    row[idx.annee] = '2025-2026';
+    row[idx.statut] = 'actif';
+    row[idx.referentiel] = '2nde TNE';
+    if (idx.token !== -1) row[idx.token] = token;
+    if (idx.token_tuteur !== -1) row[idx.token_tuteur] = tokenT;
+    elevesSheet.appendRow(row);
+    // PIN 6 chiffres aléatoires
+    var pin = _randPin6();
+    pinClairSheet.appendRow([code, pin, new Date().toISOString(), 'FH', '2TNE', 'creation', '']);
+    created.push({ code: code, pin: pin, pseudo: pseudo });
+  }
+  return { ok: true, created: created, skipped: skipped, count_created: created.length };
+}
+
+function _randToken8() {
+  var c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; var t = '';
+  for (var i = 0; i < 8; i++) t += c.charAt(Math.floor(Math.random() * c.length));
+  return t;
+}
+function _randPin6() {
+  var s = ''; for (var i = 0; i < 6; i++) s += Math.floor(Math.random() * 10);
+  return s;
 }

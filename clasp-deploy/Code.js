@@ -212,6 +212,9 @@ function doPost(e) {
       case 'adminPurgeTNE':
         result = adminPurgeTNE(body);
         break;
+      case 'adminClearDevSheetId':
+        result = adminClearDevSheetId(body);
+        break;
       case 'addEleve':
         result = addEleveAction(body.data || body);
         break;
@@ -2203,6 +2206,16 @@ function adminSetDevSheetId(body) {
   if (!body.dev_sheet_id) return { error: 'dev_sheet_id required' };
   PropertiesService.getScriptProperties().setProperty('SHEET_DEV_ID', body.dev_sheet_id);
   return { ok: true, success: true, dev_sheet_id: body.dev_sheet_id };
+}
+
+/** Coupe la sync auto PROD→DEV en effaçant SHEET_DEV_ID */
+function adminClearDevSheetId(body) {
+  if (!body || body.admin_key !== DEV_ADMIN_KEY) return { error: 'admin_key required' };
+  var props = PropertiesService.getScriptProperties();
+  var was = props.getProperty('SHEET_DEV_ID');
+  props.deleteProperty('SHEET_DEV_ID');
+  props.deleteProperty('last_auto_sync_at');
+  return { ok: true, previous_value: was, message: 'Sync auto PROD→DEV désactivée.' };
 }
 
 /** Installe les 2 triggers (à exécuter une seule fois manuellement) */
