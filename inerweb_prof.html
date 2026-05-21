@@ -594,7 +594,6 @@ window.devSnapshot=devSnapshot;
     </div>
     <div class="hdr-right">
       <div class="sync-pill" data-help="sync" onclick="sauvegarder()"><span class="sync-dot" id="syncDot"></span><span id="syncLbl">✓ Sauvegardé</span><span id="syncBadge" style="display:none;background:var(--orange);color:#fff;font-size:.65rem;font-weight:800;padding:.1rem .4rem;border-radius:10px;margin-left:.3rem;">0</span></div>
-      <a href="codes-tne.html" target="_blank" class="btn btn-ghost btn-xs" title="Codes & PIN élèves (page admin)" style="text-decoration:none;background:#ff6b35;color:#fff;padding:.35rem .6rem;border-radius:6px;font-weight:800">🔢 Codes</a>
       <a href="admin.html" target="_blank" class="btn btn-ghost btn-xs" title="Hub admin — tous les outils" style="text-decoration:none">🔧</a>
       <button class="btn btn-ghost btn-xs" onclick="showParamModal()" aria-label="Paramètres">⚙️</button>
       <button class="btn btn-ghost btn-xs" onclick="doLogout()" title="Déconnexion" aria-label="Déconnexion" style="font-size:.8rem">🚪</button>
@@ -710,7 +709,7 @@ window.devSnapshot=devSnapshot;
         <button class="btn btn-ghost btn-sm" onclick="envoyerDocsTuteurs()" style="color:var(--orange)">📤 Envoyer docs aux tuteurs</button>
         <button class="btn btn-sm" onclick="envoyerAttestations()" style="background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff;border:none;font-weight:800">📨 Envoyer attestations</button>
         <button class="btn btn-sm" onclick="rappelInfosTuteur()" style="background:#25D366;color:#fff;border:none;font-weight:800">📱 Rappel infos tuteur</button>
-        <button class="btn btn-ghost btn-sm" onclick="lienInscription()" style="color:var(--violet)">🎓 Lien inscription</button>
+        <a class="btn btn-sm" href="codes-tne.html" target="_blank" style="background:linear-gradient(135deg,#ff6b35,#e85f2d);color:#fff;border:none;font-weight:800;text-decoration:none">🔢 Codes & PIN classe</a>
         <button class="btn btn-ghost btn-sm" onclick="pushStudentsToBackend(students)" style="color:var(--teal)">☁️ Envoyer au serveur</button>
         <button class="btn btn-ghost btn-sm" onclick="showImportModal()">📥 Import</button>
         <input type="file" id="importCsv" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleImportFile(this.files[0])">
