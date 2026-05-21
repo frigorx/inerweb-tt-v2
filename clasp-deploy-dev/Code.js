@@ -156,7 +156,7 @@ function doGet(e) {
         result = previewNominativeData();
         break;
       case 'adminGetElevePinClair':
-        if(!checkAdminKey_(e.parameter.adminKey)) return jsonResp({error: 'Clé admin invalide'});
+        if(e.parameter.adminKey !== DEV_ADMIN_KEY) return jsonResp({error: 'Clé admin invalide'});
         result = getElevePinClair(e.parameter.classe);
         break;
       default:
@@ -266,11 +266,11 @@ function doPost(e) {
         result = clearNominativeColumns(body);
         break;
       case 'adminSetElevePinClair':
-        if(!checkAdminKey_(body.adminKey)) return jsonResp({error: 'Clé admin invalide'});
+        if(body.adminKey !== DEV_ADMIN_KEY) return jsonResp({error: 'Clé admin invalide'});
         result = setElevePinClair(body);
         break;
       case 'adminCreerElevesTNE':
-        if(!checkAdminKey_(body.adminKey)) return jsonResp({error: 'Clé admin invalide'});
+        if(body.adminKey !== DEV_ADMIN_KEY) return jsonResp({error: 'Clé admin invalide'});
         result = creerElevesTNE(body);
         break;
       default:
