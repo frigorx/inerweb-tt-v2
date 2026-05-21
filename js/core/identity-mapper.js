@@ -386,19 +386,40 @@
 
   /**
    * Enrichit une liste d'élèves (reçue de la Sheet) avec les noms/contacts locaux.
+   * v2 — MATCH PRIORITAIRE PAR TOKEN_ELEVE (unique) au lieu du code, qui peut
+   * collisionner entre un ancien IFCA et un nouveau TNE créés à des moments
+   * différents avec un schéma de codes différent.
    * Modifie l'objet en place. Renvoie aussi la liste pour chaînage.
    */
   function enrichStudents(list) {
     if (!Array.isArray(list)) return list;
+
+    // Pré-index par token pour O(1)
+    var byToken = {};
+    var byCode = {};
+    for (var key in identityMap) {
+      var p = identityMap[key];
+      if (p.token_eleve) byToken[p.token_eleve] = p;
+      if (p.code) byCode[p.code] = p;
+    }
+
     for (var i = 0; i < list.length; i++) {
       var s = list[i];
+      var tokenEleve = s.token_eleve || s.token;
       var code = s.code || s.eleveId || s.eleveid || s.codergpd;
-      if (!code) continue;
-      var p = getFullProfileSync(code);
-      if (!p) continue;
+      var match = null;
+      // 1. Match par token (priorité) — unique par ligne Sheet, pas de collision
+      if (tokenEleve && byToken[tokenEleve]) match = byToken[tokenEleve];
+      // 2. Fallback : match par code SI la ligne Sheet a déjà un nom (sinon = ambigu)
+      if (!match && code && s.nom && byCode[code]) {
+        // On accepte uniquement si le profil local match aussi le nom
+        var cand = byCode[code];
+        if (!cand.nom || !s.nom || cand.nom.toUpperCase() === s.nom.toUpperCase()) match = cand;
+      }
+      if (!match) continue;
       // N'écrase QUE si la valeur locale est non vide. Conserve les champs Sheet en l'absence de local.
       ['nom','prenom','tel_eleve','tel_tuteur','email_eleve','tuteur_nom','tuteur_email','entreprise_nom','preference_contact_tuteur'].forEach(function(f) {
-        if (p[f] !== undefined && p[f] !== '') s[f] = p[f];
+        if (match[f] !== undefined && match[f] !== '') s[f] = match[f];
       });
     }
     return list;
