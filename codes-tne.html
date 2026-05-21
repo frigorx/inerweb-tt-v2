@@ -258,11 +258,12 @@ function afficherTableau() {
       + '<button class="copy-btn" style="background:#c62828" onclick="regenererPin(' + i + ')">🔄 Reset</button>'
       + '</div></td>'
       + '<td>'
-      + '<div class="no-print" style="display:flex;gap:.3rem;flex-wrap:wrap;margin-bottom:.4rem">'
+      + '<div class="no-print" style="display:flex;gap:.3rem;flex-wrap:wrap;margin-bottom:.4rem;align-items:center">'
       + '<button class="copy-btn" style="background:#25D366;color:white;font-size:.95rem;padding:.5rem .8rem" onclick="envoyerWA('+i+')">📱 WhatsApp</button> '
       + '<button class="copy-btn" style="background:#0088cc;color:white;font-size:.95rem;padding:.5rem .8rem" onclick="envoyerSMS('+i+')">💬 SMS</button> '
       + '<button class="copy-btn" onclick="copier(\'' + lien + '\', this, \'Lien copié\')">📋 Lien</button> '
-      + '<a class="copy-btn" style="background:#16a085;color:white;text-decoration:none" href="' + lien + '" target="_blank">🔗 Test</a>'
+      + '<a class="copy-btn" style="background:#16a085;color:white;text-decoration:none" href="' + lien + '" target="_blank" title="Aperçu côté élève">🔗 Test</a>'
+      + '<span id="envoiStatus_'+i+'" style="font-size:.85rem;font-weight:800;color:'+(e.envoye?'#2e7d32':'#6c757d')+'">'+(e.envoye?'✉ Envoyé ✓':'')+'</span>'
       + '</div>'
       + '<div class="lien">' + lien + '</div>'
       + '</td>'
@@ -317,6 +318,15 @@ function buildMessage(e) {
          '— M. Henninot';
 }
 
+function marquerEnvoye(idx) {
+  resultats[idx].envoye = true;
+  const st = document.getElementById('envoiStatus_'+idx);
+  if (st) { st.textContent = '✉ Envoyé ✓'; st.style.color = '#2e7d32'; }
+  // Persister côté serveur via setTel (tel est déjà là, on en profite pour marquer envoye)
+  // V1 simple : on garde le marqueur uniquement local à cette session.
+  // Pour rendre persistant entre PC, on pourrait ajouter une colonne dans ElevePinClair.
+}
+
 function envoyerWA(idx) {
   const e = resultats[idx];
   const tel = document.getElementById('tel_'+idx).value;
@@ -324,6 +334,7 @@ function envoyerWA(idx) {
   const num = normalizeTel(tel);
   const msg = buildMessage(e);
   window.open('https://wa.me/' + num + '?text=' + encodeURIComponent(msg), '_blank');
+  marquerEnvoye(idx);
 }
 
 function envoyerSMS(idx) {
@@ -333,6 +344,7 @@ function envoyerSMS(idx) {
   const num = '+' + normalizeTel(tel);
   const msg = buildMessage(e);
   window.location.href = 'sms:' + num + '?body=' + encodeURIComponent(msg);
+  marquerEnvoye(idx);
 }
 
 function copier(txt, btn, msg) {
