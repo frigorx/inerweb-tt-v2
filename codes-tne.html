@@ -149,11 +149,11 @@ async function generer() {
     const eleves = LISTE_TNE.map(([nom, prenom]) => ({ nom, prenom, pin: genererPin() }));
 
     // 2. Appel serveur : crée les élèves + stocke PIN clair
-    const r = await fetch(API + '?action=creerElevesTNE', {
+    const r = await fetch(API + '?action=adminCreerElevesTNE', {
       method: 'POST', redirect: 'follow',
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({
-        action: 'creerElevesTNE',
+        action: 'adminCreerElevesTNE',
         adminKey: ADMIN_KEY,
         classe: CLASSE,
         referentiel: 'TNE',
@@ -195,7 +195,7 @@ async function generer() {
 async function recharger() {
   setStatus('<span class="spinner"></span>Lecture des codes depuis la Sheet…');
   try {
-    const url = API + '?action=getElevePinClair&adminKey=' + encodeURIComponent(ADMIN_KEY) + '&classe=' + encodeURIComponent(CLASSE);
+    const url = API + '?action=adminGetElevePinClair&adminKey=' + encodeURIComponent(ADMIN_KEY) + '&classe=' + encodeURIComponent(CLASSE);
     const r = await fetch(url);
     const d = await r.json();
     if (d.error) throw new Error(d.error);
