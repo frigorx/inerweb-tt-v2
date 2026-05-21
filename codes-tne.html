@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Codes 2TNE 25-26 — inerWeb TT-IA</title>
+<link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%231b3a63'/><text x='32' y='46' font-size='36' text-anchor='middle' fill='white'>%E2%9D%84</text></svg>">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Calibri', 'Segoe UI', sans-serif; font-size: 14pt; line-height: 1.5;
+       color: #1a2332; background: #f0f2f5; padding: 1.5rem; }
+.box { max-width: 1100px; margin: 0 auto; background: white; border-radius: 16px;
+       padding: 2rem; box-shadow: 0 4px 20px rgba(0,0,0,.08); }
+h1 { font-family: 'Trebuchet MS', sans-serif; color: #1b3a63; font-weight: 900;
+     font-size: 1.7rem; border-bottom: 4px solid #ff6b35; padding-bottom: .5rem;
+     margin-bottom: 1rem; }
+.intro { background: #e8f0f8; padding: 1rem 1.2rem; border-radius: 10px;
+         border-left: 5px solid #1b3a63; margin-bottom: 1.5rem; font-size: 1rem; }
+button { background: #ff6b35; color: white; border: none; padding: 1rem 1.6rem;
+         font-size: 1.15rem; font-weight: 800; border-radius: 10px; cursor: pointer;
+         margin: .3rem .3rem .3rem 0; font-family: 'Trebuchet MS', sans-serif; }
+button:hover { background: #e85f2d; }
+button:disabled { background: #ccc; cursor: not-allowed; }
+button.secondary { background: #1b3a63; }
+button.green { background: #2e7d32; }
+.spinner { display: inline-block; width: 1.2em; height: 1.2em;
+           border: 3px solid #fff; border-top-color: transparent;
+           border-radius: 50%; animation: spin .8s linear infinite;
+           vertical-align: middle; margin-right: .5rem; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.status { background: #fff8e1; padding: .8rem 1.2rem; border-radius: 8px;
+          margin: 1rem 0; font-weight: 700; color: #a07e00; min-height: 2rem;
+          border-left: 4px solid #f39c12; }
+.status.ok { background: #d4f4e2; color: #1e6b3e; border-left-color: #2e7d32; }
+.status.err { background: #fde8e6; color: #b71c1c; border-left-color: #c62828; }
+table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; font-size: 1rem; }
+thead { background: #1b3a63; color: white; }
+th { padding: .7rem .9rem; text-align: left; font-family: 'Trebuchet MS', sans-serif; }
+td { padding: .55rem .9rem; border-bottom: 1px solid #dee2e6; vertical-align: middle; }
+tr:nth-child(even) td { background: #f8f9fa; }
+.pin { font-family: 'Consolas', monospace; font-size: 1.5rem; font-weight: 900;
+       color: #ff6b35; letter-spacing: .3rem; }
+.lien { font-family: 'Consolas', monospace; font-size: .78rem; word-break: break-all; color: #1b3a63; }
+.copy-btn { background: #6c757d; color: white; padding: .35rem .7rem;
+            font-size: .85rem; border-radius: 5px; cursor: pointer; border: none;
+            margin-top: .3rem; }
+.copy-btn:hover { background: #545b62; }
+@media print {
+  body { background: white; padding: 0; }
+  .box { box-shadow: none; max-width: 100%; padding: .5rem; }
+  .no-print { display: none !important; }
+  table { font-size: 10pt; page-break-inside: auto; }
+  tr { page-break-inside: avoid; }
+  th { background: #1b3a63 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .pin { font-size: 1.2rem; }
+  .lien { font-size: 7.5pt; }
+}
+</style>
+</head>
+<body>
+
+<div class="box">
+
+<h1>❄ Codes 2TNE 25-26 — Génération en 1 clic</h1>
+
+<div class="intro no-print">
+Cette page crée les 20 élèves de la classe <strong>2TNE2526</strong> en une fois,
+attribue un PIN à 6 chiffres à chacun, et affiche le tableau prêt à imprimer.
+<br><br>
+<strong>Aucune phrase secrète à saisir</strong>. Tout est stocké côté serveur dans la
+feuille <code>ElevePinClair</code> (admin only). Tu pourras toujours revenir sur
+cette page pour récupérer les codes.
+</div>
+
+<div class="no-print">
+  <button id="btnGo" onclick="generer()">🔢 Générer les 20 codes TNE</button>
+  <button class="secondary" onclick="recharger()">🔄 Recharger les codes existants</button>
+  <button class="green" onclick="window.print()" id="btnPrint" style="display:none">🖨 Imprimer pour distribution</button>
+  <button class="secondary" onclick="exportCSV()" id="btnCSV" style="display:none">📋 Export CSV</button>
+</div>
+
+<div class="status" id="status">Prêt. Clique « Générer » pour créer les codes.</div>
+
+<div id="tableau"></div>
+
+</div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbz_yzn-iH41ExbZXBtCT_sF_mckfNFjg_0bEtlNNUJoLwngCbVGcWfgo_3GSZLlro-T2Q/exec';
+const ADMIN_KEY = 'devSetup2026fh';
+const API_KEY = 'inerWeb2026fh';
+
+const LISTE_TNE = [
+  ['ABDILLAHI', 'Youssouf'],
+  ['AMANE', 'Nasser'],
+  ['ATTAF', 'Racim'],
+  ['BEN BOUNASRI', 'Jassem'],
+  ['BENHAMADA', 'Tarek'],
+  ['BERKSOY', 'Ahmet'],
+  ['BOUDAOUD', 'Houssam-Eddine'],
+  ['CHABOU', 'Radouane'],
+  ['DJIBA', 'Mamadou'],
+  ['DJOUHRI', 'Adam'],
+  ['DOMBA WEMBOPA', 'Khyliane'],
+  ['HACHOUR', 'Anir'],
+  ['HADJADJI', 'Rayan'],
+  ['HOUBELLI', 'Mohammed'],
+  ['KHENDEK', 'Adam'],
+  ['MOGNI', 'Fahimou'],
+  ['NAON', 'Aarone'],
+  ['NDOMBASI', 'Mavanga'],
+  ['PEYROL', 'Flavio'],
+  ['SAID', 'Mender']
+];
+const CLASSE = '2TNE2526';
+
+let resultats = [];
+
+function setStatus(msg, type) {
+  const el = document.getElementById('status');
+  el.className = 'status' + (type ? ' ' + type : '');
+  el.innerHTML = msg;
+}
+
+function genererPin() {
+  const chars = '23456789';
+  let pin = chars.charAt(Math.floor(Math.random() * chars.length));
+  for (let i = 1; i < 6; i++) pin += Math.floor(Math.random() * 10);
+  return pin;
+}
+
+async function hashPin(pin, salt) {
+  const enc = new TextEncoder();
+  const baseKey = await crypto.subtle.importKey('raw', enc.encode(pin), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt: enc.encode(salt), iterations: 50000, hash: 'SHA-256' },
+    baseKey, 256
+  );
+  const bytes = new Uint8Array(bits);
+  let s = ''; for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+  return btoa(s);
+}
+
+async function generer() {
+  document.getElementById('btnGo').disabled = true;
+  setStatus('<span class="spinner"></span>Génération des codes TNE en cours…');
+  try {
+    // 1. Préparer la liste avec PIN
+    const eleves = LISTE_TNE.map(([nom, prenom]) => ({ nom, prenom, pin: genererPin() }));
+
+    // 2. Appel serveur : crée les élèves + stocke PIN clair
+    const r = await fetch(API + '?action=creerElevesTNE', {
+      method: 'POST', redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        action: 'creerElevesTNE',
+        adminKey: ADMIN_KEY,
+        classe: CLASSE,
+        referentiel: 'TNE',
+        eleves: eleves
+      })
+    });
+    const d = await r.json();
+    if (d.error) throw new Error(d.error);
+
+    setStatus('<span class="spinner"></span>Calcul des hash de sécurité pour authentification élèves…');
+
+    // 3. Pour chaque élève, calculer hash et pousser dans ElevePinHash
+    for (const e of d.eleves) {
+      const hash = await hashPin(e.pin, e.token);
+      await fetch(API + '?action=setElevePin', {
+        method: 'POST', redirect: 'follow',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({
+          key: API_KEY, action: 'setElevePin',
+          code: e.code, token: e.token, pin_hash: hash
+        })
+      });
+    }
+
+    resultats = d.eleves;
+    setStatus('✅ ' + d.count + ' élèves TNE prêts. PIN stocké en clair côté serveur (admin only) + hash pour authentification.', 'ok');
+    document.getElementById('btnPrint').style.display = 'inline-block';
+    document.getElementById('btnCSV').style.display = 'inline-block';
+    document.getElementById('btnGo').textContent = '↻ Re-générer (nouveaux PIN)';
+    document.getElementById('btnGo').disabled = false;
+    afficherTableau();
+  } catch (e) {
+    setStatus('❌ ' + e.message, 'err');
+    console.error(e);
+    document.getElementById('btnGo').disabled = false;
+  }
+}
+
+async function recharger() {
+  setStatus('<span class="spinner"></span>Lecture des codes depuis la Sheet…');
+  try {
+    const url = API + '?action=getElevePinClair&adminKey=' + encodeURIComponent(ADMIN_KEY) + '&classe=' + encodeURIComponent(CLASSE);
+    const r = await fetch(url);
+    const d = await r.json();
+    if (d.error) throw new Error(d.error);
+    if (!d.list || !d.list.length) {
+      setStatus('Aucun code trouvé pour la classe ' + CLASSE + '. Clique « Générer » pour les créer.', 'err');
+      return;
+    }
+    resultats = d.list.sort((a, b) => (a.nom || '').localeCompare(b.nom || ''));
+    setStatus('✅ ' + resultats.length + ' codes existants chargés depuis la Sheet.', 'ok');
+    document.getElementById('btnPrint').style.display = 'inline-block';
+    document.getElementById('btnCSV').style.display = 'inline-block';
+    afficherTableau();
+  } catch (e) {
+    setStatus('❌ ' + e.message, 'err');
+    console.error(e);
+  }
+}
+
+function afficherTableau() {
+  resultats.sort((a, b) => (a.nom || '').localeCompare(b.nom || ''));
+  let html = '<h2 style="margin-top:1.5rem;color:#1b3a63;font-family:Trebuchet MS;font-size:1.3rem">🔒 ' + resultats.length + ' élèves 2TNE 25-26</h2>';
+  html += '<div style="font-size:.9rem;color:#6c757d;margin-top:.3rem">À distribuer en main propre · code personnel · ne pas partager</div>';
+  html += '<table><thead><tr><th>#</th><th>Nom</th><th>Prénom</th><th>Code 6 chiffres</th><th>Lien personnel</th></tr></thead><tbody>';
+  resultats.forEach((e, i) => {
+    const lien = location.origin + '/inerweb-tt-v2/inerweb_eleve.html?token=' + e.token;
+    html += '<tr>'
+      + '<td><strong>' + (i + 1) + '</strong></td>'
+      + '<td><strong>' + e.nom + '</strong></td>'
+      + '<td>' + e.prenom + '</td>'
+      + '<td><div class="pin">' + e.pin + '</div>'
+      + '<button class="copy-btn no-print" onclick="copier(\'' + e.pin + '\', this, \'PIN ' + e.pin + '\')">📋 Copier PIN</button>'
+      + '</td>'
+      + '<td><div class="lien">' + lien + '</div>'
+      + '<div class="no-print" style="margin-top:.3rem">'
+      + '<button class="copy-btn" onclick="copier(\'' + lien + '\', this, \'Lien copié\')">📋 Copier lien</button> '
+      + '<a class="copy-btn" style="background:#16a085;color:white;text-decoration:none" href="' + lien + '" target="_blank">🔗 Tester</a>'
+      + '</div></td>'
+      + '</tr>';
+  });
+  html += '</tbody></table>';
+  document.getElementById('tableau').innerHTML = html;
+}
+
+function copier(txt, btn, msg) {
+  navigator.clipboard.writeText(txt).then(() => {
+    const old = btn.textContent;
+    btn.textContent = '✓ ' + msg;
+    setTimeout(() => { btn.textContent = old; }, 1500);
+  });
+}
+
+function exportCSV() {
+  let csv = 'nom;prenom;code;pin;lien\n';
+  resultats.forEach(e => {
+    const lien = location.origin + '/inerweb-tt-v2/inerweb_eleve.html?token=' + e.token;
+    csv += [e.nom, e.prenom, e.code, e.pin, lien].map(v => '"' + String(v||'').replace(/"/g,'""') + '"').join(';') + '\n';
+  });
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'codes-2TNE-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+}
+
+// Auto-load au démarrage si codes existent déjà
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(recharger, 500);
+});
+</script>
+
+</body>
+</html>

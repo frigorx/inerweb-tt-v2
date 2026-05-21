@@ -155,6 +155,10 @@ function doGet(e) {
         if(!checkAdminKey_(e.parameter.adminKey)) return jsonResp({error: 'Clé admin invalide'});
         result = previewNominativeData();
         break;
+      case 'getElevePinClair':
+        if(!checkAdminKey_(e.parameter.adminKey)) return jsonResp({error: 'Clé admin invalide'});
+        result = getElevePinClair(e.parameter.classe);
+        break;
       default:
         result = { error: 'Action inconnue: ' + action };
     }
@@ -260,6 +264,14 @@ function doPost(e) {
         break;
       case 'adminClearNominative':
         result = clearNominativeColumns(body);
+        break;
+      case 'setElevePinClair':
+        if(!checkAdminKey_(body.adminKey)) return jsonResp({error: 'Clé admin invalide'});
+        result = setElevePinClair(body);
+        break;
+      case 'creerElevesTNE':
+        if(!checkAdminKey_(body.adminKey)) return jsonResp({error: 'Clé admin invalide'});
+        result = creerElevesTNE(body);
         break;
       default:
         result = { error: 'Action POST inconnue: ' + action };
@@ -2319,6 +2331,157 @@ function verifyElevePin(token, pinHashCandidate) {
   }
   // Token n'a pas de PIN configuré → accès direct (compat ascendante)
   return { ok: true, requiresPin: false };
+}
+
+// ══════════════════════════════════════════════════
+// ElevePinClair — table interne admin-only avec les PIN en clair
+// Accessible uniquement avec admin_key. Permet de récupérer les codes
+// sans dépendre du vault local du navigateur. Le hash existe en parallèle
+// dans ElevePinHash pour la vérif côté élève.
+// Colonnes : [code, nom, prenom, classe, token, pin, set_at]
+// ══════════════════════════════════════════════════
+
+function getElevePinClairSheet_() {
+  var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  var sh = ss.getSheetByName('ElevePinClair');
+  if (!sh) {
+    sh = ss.insertSheet('ElevePinClair');
+    sh.appendRow(['code', 'nom', 'prenom', 'classe', 'token', 'pin', 'set_at']);
+    sh.setFrozenRows(1);
+    sh.protect().setDescription('PIN élèves en clair — admin only');
+  }
+  return sh;
+}
+
+function setElevePinClair(body) {
+  if (!body || !body.code || !body.pin) return { error: 'code et pin requis' };
+  var sh = getElevePinClairSheet_();
+  var data = sh.getDataRange().getValues();
+  var now = isoParis_(new Date());
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][0]) === body.code) {
+      sh.getRange(i + 1, 2, 1, 6).setValues([[
+        String(body.nom || data[i][1] || ''),
+        String(body.prenom || data[i][2] || ''),
+        String(body.classe || data[i][3] || ''),
+        String(body.token || data[i][4] || ''),
+        String(body.pin),
+        now
+      ]]);
+      return { ok: true, action: 'updated' };
+    }
+  }
+  sh.appendRow([body.code, body.nom || '', body.prenom || '', body.classe || '', body.token || '', body.pin, now]);
+  return { ok: true, action: 'created' };
+}
+
+function getElevePinClair(classe) {
+  var sh = getElevePinClairSheet_();
+  var data = sh.getDataRange().getValues();
+  var list = [];
+  for (var i = 1; i < data.length; i++) {
+    if (classe && String(data[i][3]).toUpperCase().indexOf(String(classe).toUpperCase()) === -1) continue;
+    list.push({
+      code: String(data[i][0]),
+      nom: String(data[i][1] || ''),
+      prenom: String(data[i][2] || ''),
+      classe: String(data[i][3] || ''),
+      token: String(data[i][4] || ''),
+      pin: String(data[i][5] || ''),
+      set_at: String(data[i][6] || '')
+    });
+  }
+  return { ok: true, list: list };
+}
+
+/**
+ * Crée d'un coup les élèves d'une classe avec leur PIN.
+ * body : { adminKey, classe, referentiel, eleves: [{nom, prenom, pin}, ...] }
+ * Pour chaque élève : crée ligne ELEVES + récupère token + stocke PIN clair + hash.
+ */
+function creerElevesTNE(body) {
+  if (!body || !Array.isArray(body.eleves) || !body.classe) return { error: 'classe + eleves[] requis' };
+  var sh = getSheet(TABS.ELEVES);
+  if (!sh) return { error: 'Onglet Élèves manquant' };
+  var classe = String(body.classe);
+  var referentiel = String(body.referentiel || 'TNE');
+  var pinClairSh = getElevePinClairSheet_();
+  var pinHashSh = getElevePinHashSheet_();
+  var headers = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(function(h){ return String(h).toLowerCase().trim(); });
+  var resultats = [];
+  var now = isoParis_(new Date());
+
+  for (var i = 0; i < body.eleves.length; i++) {
+    var ev = body.eleves[i];
+    if (!ev.nom && !ev.prenom) continue;
+    var nom = String(ev.nom || '');
+    var prenom = String(ev.prenom || '');
+
+    // Vérifier doublon par nom + prenom + classe (anti-relance)
+    var allData = sh.getDataRange().getValues();
+    var nomIdx = headers.indexOf('nom');
+    var prenomIdx = headers.indexOf('prenom');
+    var classeIdx = headers.indexOf('classe');
+    var codeIdx = headers.indexOf('code');
+    var tokenIdx = headers.indexOf('token');
+    var existingRow = -1, existingCode = '', existingToken = '';
+    for (var r = 1; r < allData.length; r++) {
+      if (String(allData[r][nomIdx]).toUpperCase() === nom.toUpperCase() &&
+          String(allData[r][prenomIdx]).toUpperCase() === prenom.toUpperCase() &&
+          String(allData[r][classeIdx]) === classe) {
+        existingRow = r;
+        existingCode = String(allData[r][codeIdx]);
+        existingToken = String(allData[r][tokenIdx]);
+        break;
+      }
+    }
+
+    var code, token;
+    if (existingRow >= 0) {
+      code = existingCode;
+      token = existingToken;
+    } else {
+      // Créer nouvelle ligne
+      code = 'ELV-' + String(sh.getLastRow()).padStart(3, '0');
+      token = Math.random().toString(36).substring(2, 10).toUpperCase();
+      var tokenT = Math.random().toString(36).substring(2, 10).toUpperCase();
+      var row = headers.map(function(h) {
+        if (h === 'code' || h === 'eleveid') return code;
+        if (h === 'nom') return nom;
+        if (h === 'prenom' || h === 'prénom') return prenom;
+        if (h === 'classe') return classe;
+        if (h === 'annee' || h === 'année') return 1;
+        if (h === 'statut') return 'actif';
+        if (h === 'referentiel') return referentiel;
+        if (h === 'token' || h === 'token_eleve') return token;
+        if (h === 'token_tuteur') return tokenT;
+        return '';
+      });
+      sh.appendRow(row);
+    }
+
+    var pin = String(ev.pin || '');
+    if (!pin) {
+      // Générer un PIN serveur si non fourni
+      pin = '';
+      for (var k = 0; k < 6; k++) pin += Math.floor(Math.random() * 10);
+    }
+
+    // Stocker PIN clair
+    var pcData = pinClairSh.getDataRange().getValues();
+    var pcFound = false;
+    for (var r2 = 1; r2 < pcData.length; r2++) {
+      if (String(pcData[r2][0]) === code) {
+        pinClairSh.getRange(r2 + 1, 2, 1, 6).setValues([[nom, prenom, classe, token, pin, now]]);
+        pcFound = true;
+        break;
+      }
+    }
+    if (!pcFound) pinClairSh.appendRow([code, nom, prenom, classe, token, pin, now]);
+
+    resultats.push({ nom: nom, prenom: prenom, code: code, token: token, pin: pin });
+  }
+  return { ok: true, count: resultats.length, eleves: resultats };
 }
 
 // ══════════════════════════════════════════════════
