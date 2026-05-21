@@ -2386,8 +2386,10 @@ function getElevePinClair(classe) {
 
 /**
  * Crée d'un coup les élèves d'une classe avec leur PIN.
- * body : { adminKey, classe, referentiel, eleves: [{nom, prenom, pin}, ...] }
- * Pour chaque élève : crée ligne ELEVES + récupère token + stocke PIN clair + hash.
+ * v2 — Utilise des codes TNE-NNN au lieu de ELV-NNN pour ne PAS collisionner
+ *      avec les codes des anciens IFCA dans le vault prof.
+ *      Si purgeFirst=true, supprime d'abord toutes les anciennes lignes de la classe.
+ * body : { adminKey, classe, referentiel, eleves: [{nom, prenom, pin}], purgeFirst?, prefix? }
  */
 function creerElevesTNE(body) {
   if (!body || !Array.isArray(body.eleves) || !body.classe) return { error: 'classe + eleves[] requis' };
@@ -2395,9 +2397,50 @@ function creerElevesTNE(body) {
   if (!sh) return { error: 'Onglet Élèves manquant' };
   var classe = String(body.classe);
   var referentiel = String(body.referentiel || 'TNE');
+  var prefix = String(body.prefix || 'TNE');  // ex: TNE-001, TNE-002...
+  var purgeFirst = body.purgeFirst === true;
   var pinClairSh = getElevePinClairSheet_();
   var pinHashSh = getElevePinHashSheet_();
   var headers = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(function(h){ return String(h).toLowerCase().trim(); });
+  var nomIdx = headers.indexOf('nom');
+  var prenomIdx = headers.indexOf('prenom');
+  var classeIdx = headers.indexOf('classe');
+  var codeIdx = headers.indexOf('code');
+  var tokenIdx = headers.indexOf('token');
+
+  // Purge chirurgicale : UNIQUEMENT les lignes avec classe == body.classe
+  // Les autres classes (CAP IFCA, MFER, etc.) ne sont JAMAIS touchées.
+  var purged = 0;
+  var codesPurges = [];
+  if (purgeFirst) {
+    var allData = sh.getDataRange().getValues();
+    // Collecte des codes à purger pour pouvoir nettoyer ElevePinHash ensuite
+    for (var rcoll = 1; rcoll < allData.length; rcoll++) {
+      if (String(allData[rcoll][classeIdx]) === classe) {
+        codesPurges.push(String(allData[rcoll][codeIdx]));
+      }
+    }
+    // Suppression à l'envers pour ne pas décaler les indices
+    for (var r = allData.length - 1; r >= 1; r--) {
+      if (String(allData[r][classeIdx]) === classe) {
+        sh.deleteRow(r + 1);
+        purged++;
+      }
+    }
+    // Purger ElevePinClair sur cette classe précise
+    var pcData = pinClairSh.getDataRange().getValues();
+    for (var p = pcData.length - 1; p >= 1; p--) {
+      if (String(pcData[p][3]) === classe) pinClairSh.deleteRow(p + 1);
+    }
+    // Purger ElevePinHash sur les codes qu'on vient de supprimer
+    if (codesPurges.length) {
+      var phData = pinHashSh.getDataRange().getValues();
+      for (var q = phData.length - 1; q >= 1; q--) {
+        if (codesPurges.indexOf(String(phData[q][0] || '')) >= 0) pinHashSh.deleteRow(q + 1);
+      }
+    }
+  }
+
   var resultats = [];
   var now = isoParis_(new Date());
 
@@ -2407,21 +2450,16 @@ function creerElevesTNE(body) {
     var nom = String(ev.nom || '');
     var prenom = String(ev.prenom || '');
 
-    // Vérifier doublon par nom + prenom + classe (anti-relance)
-    var allData = sh.getDataRange().getValues();
-    var nomIdx = headers.indexOf('nom');
-    var prenomIdx = headers.indexOf('prenom');
-    var classeIdx = headers.indexOf('classe');
-    var codeIdx = headers.indexOf('code');
-    var tokenIdx = headers.indexOf('token');
+    // Vérif doublon par nom + prenom + classe APRÈS purge
+    var allData2 = sh.getDataRange().getValues();
     var existingRow = -1, existingCode = '', existingToken = '';
-    for (var r = 1; r < allData.length; r++) {
-      if (String(allData[r][nomIdx]).toUpperCase() === nom.toUpperCase() &&
-          String(allData[r][prenomIdx]).toUpperCase() === prenom.toUpperCase() &&
-          String(allData[r][classeIdx]) === classe) {
-        existingRow = r;
-        existingCode = String(allData[r][codeIdx]);
-        existingToken = String(allData[r][tokenIdx]);
+    for (var rr = 1; rr < allData2.length; rr++) {
+      if (String(allData2[rr][nomIdx]).toUpperCase() === nom.toUpperCase() &&
+          String(allData2[rr][prenomIdx]).toUpperCase() === prenom.toUpperCase() &&
+          String(allData2[rr][classeIdx]) === classe) {
+        existingRow = rr;
+        existingCode = String(allData2[rr][codeIdx]);
+        existingToken = String(allData2[rr][tokenIdx]);
         break;
       }
     }
@@ -2431,8 +2469,8 @@ function creerElevesTNE(body) {
       code = existingCode;
       token = existingToken;
     } else {
-      // Créer nouvelle ligne
-      code = 'ELV-' + String(sh.getLastRow()).padStart(3, '0');
+      // Nouveau code avec préfixe dédié → pas de collision
+      code = prefix + '-' + String(i + 1).padStart(3, '0');
       token = Math.random().toString(36).substring(2, 10).toUpperCase();
       var tokenT = Math.random().toString(36).substring(2, 10).toUpperCase();
       var row = headers.map(function(h) {
@@ -2452,26 +2490,16 @@ function creerElevesTNE(body) {
 
     var pin = String(ev.pin || '');
     if (!pin) {
-      // Générer un PIN serveur si non fourni
       pin = '';
       for (var k = 0; k < 6; k++) pin += Math.floor(Math.random() * 10);
     }
 
-    // Stocker PIN clair
-    var pcData = pinClairSh.getDataRange().getValues();
-    var pcFound = false;
-    for (var r2 = 1; r2 < pcData.length; r2++) {
-      if (String(pcData[r2][0]) === code) {
-        pinClairSh.getRange(r2 + 1, 2, 1, 6).setValues([[nom, prenom, classe, token, pin, now]]);
-        pcFound = true;
-        break;
-      }
-    }
-    if (!pcFound) pinClairSh.appendRow([code, nom, prenom, classe, token, pin, now]);
+    // Stocker PIN clair (créé après purge donc pas de doublon)
+    pinClairSh.appendRow([code, nom, prenom, classe, token, pin, now]);
 
     resultats.push({ nom: nom, prenom: prenom, code: code, token: token, pin: pin });
   }
-  return { ok: true, count: resultats.length, eleves: resultats };
+  return { ok: true, count: resultats.length, purged: purged, eleves: resultats };
 }
 
 // Sauvegarde du numéro de téléphone d'un élève (table ELEVES + ElevePinClair).

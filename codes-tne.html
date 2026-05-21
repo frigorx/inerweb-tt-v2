@@ -166,7 +166,9 @@ async function generer() {
     // 1. Préparer la liste avec PIN
     const eleves = LISTE_TNE.map(([nom, prenom]) => ({ nom, prenom, pin: genererPin() }));
 
-    // 2. Appel serveur : crée les élèves + stocke PIN clair
+    // 2. Appel serveur : PURGE les anciennes lignes TNE + recrée proprement avec codes TNE-001 à TNE-020
+    const confirm1 = confirm('NETTOYAGE COMPLET 2TNE2526 :\n\n✅ Les CAP IFCA et MFER ne sont PAS touchés.\n\n✅ Les lignes avec classe = 2TNE2526 vont être supprimées et recréées avec codes TNE-001 à TNE-020 (plus de collision avec les codes ELV-XXX des anciens IFCA).\n\n⚠ Les anciens PIN TNE distribués deviennent caducs (à redistribuer).\n\nContinuer ?');
+    if (!confirm1) { setStatus('Annulé.', 'err'); document.getElementById('btnGo').disabled = false; return; }
     const r = await fetch(API + '?action=adminCreerElevesTNE', {
       method: 'POST', redirect: 'follow',
       headers: { 'Content-Type': 'text/plain' },
@@ -175,7 +177,9 @@ async function generer() {
         adminKey: ADMIN_KEY,
         classe: CLASSE,
         referentiel: 'TNE',
-        eleves: eleves
+        eleves: eleves,
+        purgeFirst: true,
+        prefix: 'TNE'
       })
     });
     const d = await r.json();
