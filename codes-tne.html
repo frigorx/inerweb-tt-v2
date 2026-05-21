@@ -103,10 +103,17 @@ cette page pour récupérer les codes.
 
 </div>
 
+<script src="js/security/master-crypto.js"></script>
 <script>
 const API = 'https://script.google.com/macros/s/AKfycbz_yzn-iH41ExbZXBtCT_sF_mckfNFjg_0bEtlNNUJoLwngCbVGcWfgo_3GSZLlro-T2Q/exec';
 const ADMIN_KEY = 'devSetup2026fh';
 const API_KEY = 'inerWeb2026fh';
+
+// v2 — Crypto initialisée 1 fois au boot, clé dérivée pour chiffrement noms/tel
+let _cryptoReady = (async () => {
+  await window.iwMasterCrypto.init(ADMIN_KEY);
+  console.log('[crypto] AES-256-GCM prêt, clé dérivée depuis admin_key');
+})();
 
 const LISTE_TNE = [
   ['ATEST', 'TNE'],            // ← Compte de DÉMONSTRATION (1er de la liste, TNE2526-001)
@@ -164,8 +171,20 @@ async function generer() {
   document.getElementById('btnGo').disabled = true;
   setStatus('<span class="spinner"></span>Génération des codes TNE en cours…');
   try {
+    await _cryptoReady;  // ← clé AES-256 dérivée prête
+
     // 1. Préparer la liste avec PIN
-    const eleves = LISTE_TNE.map(([nom, prenom]) => ({ nom, prenom, pin: genererPin() }));
+    //    🔒 Les nom et prenom sont CHIFFRÉS AES-256-GCM avant POST.
+    //    Le serveur ne voit que des blobs "iw2:..." illisibles sans la clé.
+    const elevesClairs = LISTE_TNE.map(([nom, prenom]) => ({ nom, prenom, pin: genererPin() }));
+    const eleves = [];
+    for (const e of elevesClairs) {
+      eleves.push({
+        nom: await window.iwMasterCrypto.chiffrer(e.nom),
+        prenom: await window.iwMasterCrypto.chiffrer(e.prenom),
+        pin: e.pin  // PIN reste en clair (admin only, déjà acceptable)
+      });
+    }
 
     // 2. Appel serveur : PURGE les anciennes lignes TNE + recrée proprement avec codes TNE-001 à TNE-020
     const confirm1 = confirm('NETTOYAGE COMPLET 2TNE 25-26 :\n\n✅ Les CAP IFCA et MFER ne sont PAS touchés.\n\n✅ Les lignes 2TNE2526 vont être supprimées et recréées avec codes TNE2526-001 à TNE2526-020.\n   → Préfixe TNE2526 = aucune collision avec les anciens IFCA (codes ELV-XXX) ni avec les futures promos (TNE2627, TNE2728...).\n\n⚠ Les anciens PIN TNE distribués deviennent caducs (à redistribuer).\n\nContinuer ?');
@@ -190,6 +209,9 @@ async function generer() {
     setStatus('<span class="spinner"></span>Calcul des hash de sécurité pour authentification élèves…');
 
     // 3. Pour chaque élève, calculer hash et pousser dans ElevePinHash
+    //    NB : d.eleves contient encore les noms CHIFFRÉS (le serveur n'a fait que stocker/relayer).
+    //    On déchiffre maintenant pour l'affichage local.
+    const decheveux = [];
     for (const e of d.eleves) {
       const hash = await hashPin(e.pin, e.token);
       await fetch(API + '?action=setElevePin', {
@@ -200,9 +222,15 @@ async function generer() {
           code: e.code, token: e.token, pin_hash: hash
         })
       });
+      // Déchiffrer nom/prenom pour affichage
+      decheveux.push({
+        ...e,
+        nom: await window.iwMasterCrypto.dechiffrer(e.nom),
+        prenom: await window.iwMasterCrypto.dechiffrer(e.prenom)
+      });
     }
 
-    resultats = d.eleves;
+    resultats = decheveux;
     setStatus('✅ ' + d.count + ' élèves TNE prêts. PIN stocké en clair côté serveur (admin only) + hash pour authentification.', 'ok');
     document.getElementById('btnPrint').style.display = 'inline-block';
     document.getElementById('btnCSV').style.display = 'inline-block';
@@ -220,6 +248,7 @@ async function generer() {
 async function recharger() {
   setStatus('<span class="spinner"></span>Lecture des codes depuis la Sheet…');
   try {
+    await _cryptoReady;  // ← clé AES-256 prête pour déchiffrement
     const url = API + '?action=adminGetElevePinClair&adminKey=' + encodeURIComponent(ADMIN_KEY) + '&classe=' + encodeURIComponent(CLASSE);
     const r = await fetch(url);
     const d = await r.json();
@@ -228,8 +257,18 @@ async function recharger() {
       setStatus('Aucun code trouvé pour la classe ' + CLASSE + '. Clique « Générer » pour les créer.', 'err');
       return;
     }
-    resultats = d.list.sort((a, b) => (a.nom || '').localeCompare(b.nom || ''));
-    setStatus('✅ ' + resultats.length + ' codes existants chargés depuis la Sheet.', 'ok');
+    // 🔓 Déchiffrer les blobs iw2: dans nom/prenom/tel pour affichage local
+    const decheveux = [];
+    for (const e of d.list) {
+      decheveux.push({
+        ...e,
+        nom: await window.iwMasterCrypto.dechiffrer(e.nom),
+        prenom: await window.iwMasterCrypto.dechiffrer(e.prenom),
+        tel: e.tel ? await window.iwMasterCrypto.dechiffrer(e.tel) : ''
+      });
+    }
+    resultats = decheveux.sort((a, b) => (a.nom || '').localeCompare(b.nom || ''));
+    setStatus('✅ ' + resultats.length + ' codes existants chargés (chiffrés côté Sheet, déchiffrés ici).', 'ok');
     document.getElementById('btnPrint').style.display = 'inline-block';
     document.getElementById('btnCSV').style.display = 'inline-block';
     document.getElementById('btnDemo').style.display = 'inline-block';
@@ -287,20 +326,23 @@ async function enregistrerTel(idx, tel) {
   const e = resultats[idx];
   if (!e) return;
   const status = document.getElementById('telStatus_' + idx);
-  status.textContent = '⏳ enregistrement...';
+  status.textContent = '⏳ enregistrement chiffré...';
   try {
+    await _cryptoReady;
+    // 🔒 Chiffrer le tel avant envoi à la Sheet (AES-256-GCM)
+    const telChiffre = await window.iwMasterCrypto.chiffrer(tel);
     const r = await fetch(API + '?action=adminSetTelEleve', {
       method: 'POST', redirect: 'follow',
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({
         action: 'adminSetTelEleve', adminKey: ADMIN_KEY,
-        code: e.code, tel: tel
+        code: e.code, tel: telChiffre
       })
     });
     const d = await r.json();
     if (d.ok) {
-      resultats[idx].tel = tel;
-      status.innerHTML = '<span style="color:#2e7d32">✓ enregistré</span>';
+      resultats[idx].tel = tel;  // garder en clair côté UI
+      status.innerHTML = '<span style="color:#2e7d32">✓ enregistré chiffré</span>';
     } else {
       status.innerHTML = '<span style="color:#c62828">✗ ' + (d.error || 'erreur') + '</span>';
     }
