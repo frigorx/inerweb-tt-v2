@@ -2388,6 +2388,36 @@ function selectClasse(classe) {
     return;
   }
 
+  // v2 — Résolution fuzzy : si le nom exact n'existe pas dans les élèves,
+  // chercher une classe réelle correspondant au mot-clé (TNE/CAP/MFER).
+  // Exemple : clic sur carte "2nde TNE" → trouve "2TNE2526" automatiquement.
+  if (typeof students !== 'undefined' && Array.isArray(students) && students.length) {
+    var classesExistantes = [];
+    students.forEach(function(s) {
+      if (s.classe && classesExistantes.indexOf(s.classe) === -1) classesExistantes.push(s.classe);
+    });
+    if (classesExistantes.indexOf(classe) === -1) {
+      var up = classe.toUpperCase();
+      var keyword = up.indexOf('TNE') >= 0 ? 'TNE'
+                  : up.indexOf('MFER') >= 0 ? 'MFER'
+                  : up.indexOf('IFCA') >= 0 || up.indexOf('CAP') >= 0 ? 'IFCA'
+                  : null;
+      if (keyword) {
+        // Préférer une classe avec le mot-clé et dans l'année courante si possible
+        var matches = classesExistantes.filter(function(c) {
+          return c.toUpperCase().indexOf(keyword) >= 0;
+        });
+        if (matches.length === 1) classe = matches[0];
+        else if (matches.length > 1) {
+          // Préférer celle avec le plus d'élèves
+          var byCount = {};
+          students.forEach(function(s){ if (matches.indexOf(s.classe) >= 0) byCount[s.classe] = (byCount[s.classe]||0)+1; });
+          classe = matches.sort(function(a,b){ return (byCount[b]||0) - (byCount[a]||0); })[0];
+        }
+      }
+    }
+  }
+
   var formation = detectFormationFromClasse(classe);
 
   window.iwState.classeSelectionnee = classe;
@@ -2403,6 +2433,16 @@ function selectClasse(classe) {
     for (var i = 0; i < sel.options.length; i++) {
       if (sel.options[i].value === classe) { sel.selectedIndex = i; break; }
     }
+    // v2 — déclencher l'event change pour rafraîchir le rendu
+    sel.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+  // Synchroniser aussi le filtre de l'onglet Élèves
+  var selEleves = document.getElementById('filtreClasse');
+  if (selEleves) {
+    for (var j = 0; j < selEleves.options.length; j++) {
+      if (selEleves.options[j].value === classe) { selEleves.selectedIndex = j; break; }
+    }
+    selEleves.dispatchEvent(new Event('change', { bubbles: true }));
   }
 
   document.dispatchEvent(new CustomEvent('iw:classeChanged', {
