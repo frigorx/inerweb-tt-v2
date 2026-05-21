@@ -273,6 +273,10 @@ function doPost(e) {
         if(body.adminKey !== DEV_ADMIN_KEY) return jsonResp({error: 'Clé admin invalide'});
         result = creerElevesTNE(body);
         break;
+      case 'adminSetTelEleve':
+        if(body.adminKey !== DEV_ADMIN_KEY) return jsonResp({error: 'Clé admin invalide'});
+        result = setTelEleve(body);
+        break;
       default:
         result = { error: 'Action POST inconnue: ' + action };
     }
@@ -2376,22 +2380,8 @@ function setElevePinClair(body) {
 }
 
 function getElevePinClair(classe) {
-  var sh = getElevePinClairSheet_();
-  var data = sh.getDataRange().getValues();
-  var list = [];
-  for (var i = 1; i < data.length; i++) {
-    if (classe && String(data[i][3]).toUpperCase().indexOf(String(classe).toUpperCase()) === -1) continue;
-    list.push({
-      code: String(data[i][0]),
-      nom: String(data[i][1] || ''),
-      prenom: String(data[i][2] || ''),
-      classe: String(data[i][3] || ''),
-      token: String(data[i][4] || ''),
-      pin: String(data[i][5] || ''),
-      set_at: String(data[i][6] || '')
-    });
-  }
-  return { ok: true, list: list };
+  // v2 : inclut le tel si la colonne existe
+  return patchedGetElevePinClairWithTel_(classe);
 }
 
 /**
@@ -2482,6 +2472,69 @@ function creerElevesTNE(body) {
     resultats.push({ nom: nom, prenom: prenom, code: code, token: token, pin: pin });
   }
   return { ok: true, count: resultats.length, eleves: resultats };
+}
+
+// Sauvegarde du numéro de téléphone d'un élève (table ELEVES + ElevePinClair).
+// Utilisé par codes-tne.html quand le prof saisit le tel en classe.
+function setTelEleve(body) {
+  if (!body || !body.code || !body.tel) return { error: 'code et tel requis' };
+  var tel = String(body.tel).replace(/\s+/g, '');
+  // Maj ELEVES
+  var sh = getSheet(TABS.ELEVES);
+  if (sh) {
+    var data = sh.getDataRange().getValues();
+    var headers = data[0].map(function(h){ return String(h).toLowerCase().trim(); });
+    var codeIdx = headers.indexOf('code');
+    var telIdx = headers.indexOf('tel_eleve');
+    if (telIdx === -1) telIdx = headers.indexOf('telephone');
+    if (codeIdx !== -1 && telIdx !== -1) {
+      for (var i = 1; i < data.length; i++) {
+        if (String(data[i][codeIdx]) === body.code) {
+          sh.getRange(i + 1, telIdx + 1).setValue(tel);
+          break;
+        }
+      }
+    }
+  }
+  // Maj ElevePinClair (col tel ajoutée si besoin)
+  var pcSh = getElevePinClairSheet_();
+  var pcData = pcSh.getDataRange().getValues();
+  var pcHeaders = pcData[0].map(function(h){ return String(h).toLowerCase().trim(); });
+  var pcTelIdx = pcHeaders.indexOf('tel');
+  if (pcTelIdx === -1) {
+    pcSh.getRange(1, pcHeaders.length + 1).setValue('tel');
+    pcTelIdx = pcHeaders.length;
+  }
+  for (var j = 1; j < pcData.length; j++) {
+    if (String(pcData[j][0]) === body.code) {
+      pcSh.getRange(j + 1, pcTelIdx + 1).setValue(tel);
+      return { ok: true, code: body.code, tel: tel };
+    }
+  }
+  return { ok: true, code: body.code, tel: tel, note: 'pas trouvé dans ElevePinClair' };
+}
+
+// Inclure tel dans le retour de getElevePinClair
+function patchedGetElevePinClairWithTel_(classe) {
+  var sh = getElevePinClairSheet_();
+  var data = sh.getDataRange().getValues();
+  var headers = data[0].map(function(h){ return String(h).toLowerCase().trim(); });
+  var telIdx = headers.indexOf('tel');
+  var list = [];
+  for (var i = 1; i < data.length; i++) {
+    if (classe && String(data[i][3]).toUpperCase().indexOf(String(classe).toUpperCase()) === -1) continue;
+    list.push({
+      code: String(data[i][0]),
+      nom: String(data[i][1] || ''),
+      prenom: String(data[i][2] || ''),
+      classe: String(data[i][3] || ''),
+      token: String(data[i][4] || ''),
+      pin: String(data[i][5] || ''),
+      set_at: String(data[i][6] || ''),
+      tel: telIdx !== -1 ? String(data[i][telIdx] || '') : ''
+    });
+  }
+  return { ok: true, list: list };
 }
 
 // ══════════════════════════════════════════════════

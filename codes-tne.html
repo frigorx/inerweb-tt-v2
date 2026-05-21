@@ -237,29 +237,97 @@ async function recharger() {
 function afficherTableau() {
   resultats.sort((a, b) => (a.nom || '').localeCompare(b.nom || ''));
   let html = '<h2 style="margin-top:1.5rem;color:#1b3a63;font-family:Trebuchet MS;font-size:1.3rem">🔒 ' + resultats.length + ' élèves 2TNE 25-26</h2>';
-  html += '<div style="font-size:.9rem;color:#6c757d;margin-top:.3rem">À distribuer en main propre · code personnel · ne pas partager</div>';
-  html += '<table><thead><tr><th>#</th><th>Nom</th><th>Prénom</th><th>Code 6 chiffres</th><th>Lien personnel</th></tr></thead><tbody>';
+  html += '<div style="font-size:.9rem;color:#6c757d;margin-top:.3rem">Saisis le numéro de tél de chaque élève (Tab pour valider), puis clique 📱 WhatsApp ou 💬 SMS pour leur envoyer leur lien + code.</div>';
+  let html2 = '<table><thead><tr><th>#</th><th>Nom Prénom</th><th>Téléphone</th><th>Code 6 chiffres</th><th>Envoi & lien</th></tr></thead><tbody>';
   resultats.forEach((e, i) => {
     const lien = location.origin + '/inerweb-tt-v2/inerweb_eleve.html?token=' + e.token;
-    html += '<tr>'
+    const tel = e.tel || '';
+    html2 += '<tr>'
       + '<td><strong>' + (i + 1) + '</strong></td>'
-      + '<td><strong>' + e.nom + '</strong></td>'
-      + '<td>' + e.prenom + '</td>'
+      + '<td><strong>' + e.nom + '</strong> ' + e.prenom + '</td>'
+      + '<td><input type="tel" id="tel_'+i+'" value="'+tel+'" placeholder="06..." style="padding:.4rem;border:2px solid #1b3a63;border-radius:6px;font-size:1rem;width:140px;font-family:Consolas,monospace" onchange="enregistrerTel('+i+', this.value)">'
+      + '<div class="no-print" style="margin-top:.3rem;font-size:.75rem;color:#6c757d" id="telStatus_'+i+'">' + (tel ? '✓ enregistré' : 'pas encore saisi') + '</div></td>'
       + '<td><div class="pin">' + e.pin + '</div>'
       + '<div class="no-print" style="margin-top:.3rem">'
-      + '<button class="copy-btn" onclick="copier(\'' + e.pin + '\', this, \'PIN ' + e.pin + '\')">📋 Copier PIN</button> '
-      + '<button class="copy-btn" style="background:#c62828" onclick="regenererPin(' + i + ')">🔄 Régénérer</button>'
+      + '<button class="copy-btn" onclick="copier(\'' + e.pin + '\', this, \'PIN copié\')">📋</button> '
+      + '<button class="copy-btn" style="background:#c62828" onclick="regenererPin(' + i + ')">🔄 Reset</button>'
       + '</div></td>'
-      + '<td><div class="lien">' + lien + '</div>'
-      + '<div class="no-print" style="margin-top:.3rem">'
-      + '<button class="copy-btn" onclick="copier(\'' + lien + '\', this, \'Lien copié\')">📋 Copier lien</button> '
-      + '<a class="copy-btn" style="background:#16a085;color:white;text-decoration:none" href="' + lien + '" target="_blank">🔗 Tester</a> '
-      + '<button class="copy-btn" style="background:#8e44ad" onclick="demoMode(' + i + ')">📺 Démo</button>'
-      + '</div></td>'
+      + '<td>'
+      + '<div class="no-print" style="display:flex;gap:.3rem;flex-wrap:wrap;margin-bottom:.4rem">'
+      + '<button class="copy-btn" style="background:#25D366;color:white;font-size:.95rem;padding:.5rem .8rem" onclick="envoyerWA('+i+')">📱 WhatsApp</button> '
+      + '<button class="copy-btn" style="background:#0088cc;color:white;font-size:.95rem;padding:.5rem .8rem" onclick="envoyerSMS('+i+')">💬 SMS</button> '
+      + '<button class="copy-btn" onclick="copier(\'' + lien + '\', this, \'Lien copié\')">📋 Lien</button> '
+      + '<a class="copy-btn" style="background:#16a085;color:white;text-decoration:none" href="' + lien + '" target="_blank">🔗 Test</a>'
+      + '</div>'
+      + '<div class="lien">' + lien + '</div>'
+      + '</td>'
       + '</tr>';
   });
+  html += html2;
   html += '</tbody></table>';
   document.getElementById('tableau').innerHTML = html;
+}
+
+// ── Téléphone élève : enregistrement + SMS / WhatsApp ──
+function normalizeTel(tel) {
+  let t = String(tel || '').replace(/\s+/g, '').replace(/\./g, '').replace(/-/g, '');
+  if (t.startsWith('0')) t = '33' + t.substring(1);
+  if (t.startsWith('+')) t = t.substring(1);
+  return t;
+}
+
+async function enregistrerTel(idx, tel) {
+  const e = resultats[idx];
+  if (!e) return;
+  const status = document.getElementById('telStatus_' + idx);
+  status.textContent = '⏳ enregistrement...';
+  try {
+    const r = await fetch(API + '?action=adminSetTelEleve', {
+      method: 'POST', redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        action: 'adminSetTelEleve', adminKey: ADMIN_KEY,
+        code: e.code, tel: tel
+      })
+    });
+    const d = await r.json();
+    if (d.ok) {
+      resultats[idx].tel = tel;
+      status.innerHTML = '<span style="color:#2e7d32">✓ enregistré</span>';
+    } else {
+      status.innerHTML = '<span style="color:#c62828">✗ ' + (d.error || 'erreur') + '</span>';
+    }
+  } catch (err) {
+    status.innerHTML = '<span style="color:#c62828">✗ ' + err.message + '</span>';
+  }
+}
+
+function buildMessage(e) {
+  const lien = location.origin + '/inerweb-tt-v2/inerweb_eleve.html?token=' + e.token;
+  return 'Bonjour ' + (e.prenom || '') + ',\n\n' +
+         'Voici ton accès personnel à inerWeb (suivi de stage) :\n\n' +
+         '🔗 Ton lien : ' + lien + '\n' +
+         '🔢 Ton code : ' + e.pin + '\n\n' +
+         'Garde-le précieusement. À garder pour toi.\n' +
+         '— M. Henninot';
+}
+
+function envoyerWA(idx) {
+  const e = resultats[idx];
+  const tel = document.getElementById('tel_'+idx).value;
+  if (!tel) { alert('Saisis d\'abord le numéro de téléphone'); return; }
+  const num = normalizeTel(tel);
+  const msg = buildMessage(e);
+  window.open('https://wa.me/' + num + '?text=' + encodeURIComponent(msg), '_blank');
+}
+
+function envoyerSMS(idx) {
+  const e = resultats[idx];
+  const tel = document.getElementById('tel_'+idx).value;
+  if (!tel) { alert('Saisis d\'abord le numéro de téléphone'); return; }
+  const num = '+' + normalizeTel(tel);
+  const msg = buildMessage(e);
+  window.location.href = 'sms:' + num + '?body=' + encodeURIComponent(msg);
 }
 
 function copier(txt, btn, msg) {
