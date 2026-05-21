@@ -76,7 +76,7 @@ function savePhotoToDrive(code, base64Data, index) {
     const file = folder.createFile(blob);
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
     // URL directe pour affichage
-    return 'https://drive.google.com/uc?export=view&id=' + file.getId();
+    return 'https://lh3.googleusercontent.com/d/' + file.getId();
   } catch (e) {
     Logger.log('Erreur sauvegarde photo Drive: ' + e.message);
     return null;

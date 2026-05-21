@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Purge classe 2TNE — inerWeb TT-IA PROD</title>
+<link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%23c62828'/><text x='32' y='46' font-size='36' text-anchor='middle' fill='white'>%E2%9A%A0</text></svg>">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Calibri', sans-serif; font-size: 14pt; background: #fde8e6;
+       padding: 1.5rem; color: #1a2332; line-height: 1.5; }
+.box { max-width: 920px; margin: 0 auto; background: white; border-radius: 16px;
+       padding: 2rem; box-shadow: 0 4px 20px rgba(198,40,40,.2);
+       border-top: 8px solid #c62828; }
+h1 { font-family: 'Trebuchet MS', sans-serif; color: #c62828; font-weight: 900;
+     font-size: 1.7rem; margin-bottom: 1rem; }
+h2 { font-family: 'Trebuchet MS', sans-serif; color: #1b3a63; font-size: 1.2rem;
+     margin: 1.5rem 0 .6rem; }
+.warn-big { background: #fde8e6; padding: 1.2rem; border-radius: 10px;
+            border-left: 5px solid #c62828; margin-bottom: 1.2rem; font-weight: 700;
+            color: #b71c1c; }
+.warn-protect { background: #e8f5e9; padding: 1rem; border-radius: 10px;
+                border-left: 5px solid #2e7d32; margin-bottom: 1rem;
+                color: #1b5e20; font-weight: 700; }
+.checklist { background: #fff8e1; padding: 1rem 1.2rem; border-radius: 10px;
+             border-left: 5px solid #f39c12; margin-bottom: 1rem; }
+.checklist h3 { color: #a07e00; margin-bottom: .5rem; font-family: 'Trebuchet MS', sans-serif; }
+.checklist ul { margin-left: 1.5rem; line-height: 1.8; list-style: none; }
+.checklist li::before { content: '☐ '; color: #f39c12; font-weight: 900; }
+.checklist li.done::before { content: '✅ '; color: #2e7d32; }
+label { display: block; font-weight: 700; color: #1b3a63; margin: 1rem 0 .5rem; }
+input { width: 100%; padding: .8rem 1rem; font-size: 1.1rem;
+        border: 2px solid #1b3a63; border-radius: 8px;
+        font-family: 'Consolas', monospace; }
+input.danger { border-color: #c62828; background: #fff5f5; }
+button { padding: .9rem 1.4rem; font-size: 1rem; font-weight: 800;
+         border: none; border-radius: 10px; cursor: pointer; margin: .3rem .3rem .3rem 0;
+         font-family: 'Trebuchet MS', sans-serif; }
+button.safe   { background: #2e7d32; color: white; }
+button.preview { background: #1b3a63; color: white; }
+button.preview:hover { background: #0d1f3c; }
+button.danger { background: #c62828; color: white; }
+button.danger:hover { background: #a51919; }
+button:disabled { background: #ccc; cursor: not-allowed; }
+.preview-result { background: #fff8e1; padding: 1rem 1.2rem; border-radius: 8px;
+                  margin-top: 1rem; font-family: 'Consolas', monospace; }
+.preview-result table { width: 100%; margin-top: .5rem; border-collapse: collapse; }
+.preview-result td { padding: .3rem .6rem; border-bottom: 1px dashed #ccc; }
+.codes-list { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .6rem; }
+.codes-list span { background: #1b3a63; color: white; padding: .25rem .6rem;
+                   border-radius: 4px; font-family: 'Consolas', monospace; font-size: .9rem; }
+.log { font-family: 'Consolas', monospace; font-size: .85rem;
+       background: #1a2332; color: #d4f4e2; padding: 1rem; border-radius: 8px;
+       max-height: 240px; overflow-y: auto; white-space: pre-wrap;
+       margin-top: 1rem; }
+.success { background: linear-gradient(135deg, #2e7d32, #4caf50);
+           color: white; padding: 1.2rem; border-radius: 10px;
+           text-align: center; font-weight: 800; margin-top: 1rem; font-size: 1.1rem; }
+.step { background: #f5f5f5; padding: 1rem; border-radius: 8px;
+        margin-top: 1rem; border-left: 4px solid #1b3a63; }
+.step.active { border-left-color: #ff6b35; background: #fff5f0; }
+.step.done   { border-left-color: #2e7d32; background: #e8f5e9; }
+.step h2 { margin-top: 0; }
+</style>
+</head>
+<body>
+
+<div class="box">
+
+<h1>⚠ Purge classe 2TNE — Sheet PROD</h1>
+
+<div class="warn-big">
+ATTENTION — Cette page supprime <strong>physiquement</strong> dans la Sheet PROD :<br>
+• Toutes les lignes <code>Élèves</code> où <code>classe = '2TNE'</code><br>
+• Les évaluations liées (Évaluations_Unifiées, Évaluations, PFMP_Log, CCF_Log, EvalTuteur)<br>
+• Les PIN liés (ElevePinHash, ElevePinClair)<br>
+<br>
+L'opération est <strong>irréversible</strong>. Faire le backup d'abord.
+</div>
+
+<div class="warn-protect">
+✅ Les <strong>24 élèves CAP IFCA</strong> (classe ≠ '2TNE') ne sont JAMAIS touchés — filtrage strict côté serveur.
+</div>
+
+<div class="checklist">
+  <h3>Checklist avant de lancer</h3>
+  <ul>
+    <li id="chk-key">Clé admin saisie</li>
+    <li id="chk-backup">Backup PROD horodaté lancé</li>
+    <li id="chk-preview">Aperçu (dry-run) : codes affectés affichés et confirmés</li>
+    <li id="chk-confirm">Phrase de confirmation saisie</li>
+  </ul>
+</div>
+
+<label for="adminKey">Clé admin (<code>devSetup2026fh</code>) :</label>
+<input type="password" id="adminKey" placeholder="Clé admin" value="devSetup2026fh">
+
+<div class="step" id="step1">
+  <h2>Étape 1 — Backup PROD (filet de sécurité)</h2>
+  <p>Snapshot horodaté de toute la Sheet dans le dossier Drive « Backups inerWeb ».</p>
+  <button class="safe" onclick="doBackup()">💾 Lancer le backup PROD maintenant</button>
+</div>
+
+<div class="step" id="step2">
+  <h2>Étape 2 — Aperçu (dry-run, n'écrit rien)</h2>
+  <p>Liste les codes des élèves qui seront supprimés. Vérifie qu'il s'agit bien des 20 TNE et de personne d'autre.</p>
+  <button class="preview" onclick="doDryRun()">🔍 Lancer l'aperçu</button>
+  <div id="previewResult"></div>
+</div>
+
+<div class="step" id="step3">
+  <h2>Étape 3 — Suppression définitive</h2>
+  <label for="confirm">Saisis exactement <code>OUI_EFFACER_2TNE_DEFINITIF</code> :</label>
+  <input type="text" id="confirm" class="danger" placeholder="OUI_EFFACER_2TNE_DEFINITIF">
+  <button class="danger" id="btnExec" onclick="doPurge()" disabled>💥 Supprimer les 20 TNE pour de bon</button>
+</div>
+
+<div class="step" id="step4">
+  <h2>Étape 4 — Réimporter les 20 TNE proprement</h2>
+  <p>Après suppression, recrée les 20 TNE avec codes <code>TNE2526-001..020</code> via la page d'import.</p>
+  <button class="preview" onclick="window.open('import-tne.html', '_blank')">📥 Ouvrir import-tne.html</button>
+</div>
+
+<div class="log" id="log" style="display:none"></div>
+
+</div>
+
+<script>
+// ⚠ API PROD — purge sur la Sheet réelle 1NBthYBANG6FQGshbMrkSYInKRx4GC4Hy3MU9RMAoMrQ
+const PROD_API = 'https://script.google.com/macros/s/AKfycbzVvXZRi4975OM4P8AJeoDWvnTbFSfTpVUDErzrNk2R2knfxBxCw-A-kLmKaNzmW35V1A/exec';
+
+function log(msg) {
+  const el = document.getElementById('log');
+  el.style.display = 'block';
+  const ts = new Date().toLocaleTimeString();
+  el.textContent += '\n[' + ts + '] ' + msg;
+  el.scrollTop = el.scrollHeight;
+}
+
+function setStep(n, state) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active', 'done'));
+  const cur = document.getElementById('step' + n);
+  if (cur) cur.classList.add(state || 'active');
+}
+
+function markChk(id) { const e = document.getElementById(id); if (e) e.classList.add('done'); }
+
+async function apiPost(action, payload) {
+  const body = Object.assign({ action }, payload);
+  const r = await fetch(PROD_API, {
+    method: 'POST',
+    redirect: 'follow',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(body)
+  });
+  return r.json();
+}
+
+async function doBackup() {
+  const adminKey = document.getElementById('adminKey').value.trim();
+  if (!adminKey) { alert('Clé admin requise'); return; }
+  markChk('chk-key');
+  log('💾 Backup PROD en cours…');
+  try {
+    const d = await apiPost('adminBackupSheet', { admin_key: adminKey });
+    if (d.error) { log('❌ ' + d.error); return; }
+    log('✅ Backup OK — ' + (d.fileName || d.file_name || 'snapshot créé'));
+    markChk('chk-backup');
+    setStep(2, 'active');
+    document.getElementById('step1').classList.add('done');
+  } catch (e) { log('❌ Exception : ' + e.message); }
+}
+
+async function doDryRun() {
+  const adminKey = document.getElementById('adminKey').value.trim();
+  if (!adminKey) { alert('Clé admin requise'); return; }
+  log('🔍 Dry-run adminPurgeTNE…');
+  try {
+    const d = await apiPost('adminPurgeTNE', { admin_key: adminKey, classe: '2TNE', dry_run: true });
+    if (d.error) { log('❌ ' + d.error); return; }
+    log('Dry-run OK — ' + d.codes_supprimes.length + ' élèves seraient supprimés');
+    log('Détails : ' + JSON.stringify(d.counts));
+    let html = '<div class="preview-result"><strong>📊 Aperçu (rien n\'a été supprimé)</strong>';
+    html += '<table>';
+    html += '<tr><td>Élèves <code>2TNE</code> à supprimer</td><td><strong style="color:#c62828">' + d.codes_supprimes.length + '</strong></td></tr>';
+    html += '<tr><td>Évaluations_Unifiées liées</td><td>' + d.counts.evaluations_unifiees + '</td></tr>';
+    html += '<tr><td>Évaluations (legacy)</td><td>' + d.counts.evaluations + '</td></tr>';
+    html += '<tr><td>PFMP_Log</td><td>' + d.counts.pfmp_log + '</td></tr>';
+    html += '<tr><td>CCF_Log</td><td>' + d.counts.ccf_log + '</td></tr>';
+    html += '<tr><td>EvalTuteur</td><td>' + d.counts.eval_tuteur + '</td></tr>';
+    html += '<tr><td>ElevePinHash</td><td>' + d.counts.pin_hash + '</td></tr>';
+    html += '<tr><td>ElevePinClair</td><td>' + d.counts.pin_clair + '</td></tr>';
+    html += '</table>';
+    html += '<strong style="display:block;margin-top:.8rem">Codes affectés :</strong>';
+    html += '<div class="codes-list">';
+    d.codes_supprimes.forEach(c => { html += '<span>' + c + '</span>'; });
+    html += '</div></div>';
+    document.getElementById('previewResult').innerHTML = html;
+    markChk('chk-preview');
+    setStep(3, 'active');
+    document.getElementById('step2').classList.add('done');
+  } catch (e) { log('❌ Exception : ' + e.message); }
+}
+
+document.getElementById('confirm').addEventListener('input', e => {
+  const ok = e.target.value === 'OUI_EFFACER_2TNE_DEFINITIF';
+  document.getElementById('btnExec').disabled = !ok;
+  if (ok) markChk('chk-confirm');
+});
+
+async function doPurge() {
+  const adminKey = document.getElementById('adminKey').value.trim();
+  if (!adminKey) { alert('Clé admin requise'); return; }
+  if (document.getElementById('confirm').value !== 'OUI_EFFACER_2TNE_DEFINITIF') return;
+  if (!confirm('Dernière vérification : tu vas supprimer 20 élèves 2TNE et toutes leurs évaluations.\n\nLes 24 CAP IFCA seront préservés.\n\nContinuer ?')) return;
+  log('💥 Suppression réelle en cours…');
+  try {
+    const d = await apiPost('adminPurgeTNE', { admin_key: adminKey, classe: '2TNE', dry_run: false });
+    if (d.error) { log('❌ ' + d.error); return; }
+    log('✅ ' + d.message);
+    log('Compteurs : ' + JSON.stringify(d.counts));
+    document.getElementById('previewResult').innerHTML +=
+      '<div class="success">✅ Purge terminée — ' + d.codes_supprimes.length +
+      ' élèves 2TNE supprimés. Étape suivante : réimporter via import-tne.html</div>';
+    setStep(4, 'active');
+    document.getElementById('step3').classList.add('done');
+  } catch (e) { log('❌ Exception : ' + e.message); }
+}
+
+setStep(1, 'active');
+</script>
+
+</body>
+</html>

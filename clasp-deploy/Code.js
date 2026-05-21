@@ -206,6 +206,12 @@ function doPost(e) {
       case 'adminInstallTriggers':
         result = adminInstallTriggers(body);
         break;
+      case 'adminSetDevSheetId':
+        result = adminSetDevSheetId(body);
+        break;
+      case 'adminPurgeTNE':
+        result = adminPurgeTNE(body);
+        break;
       case 'addEleve':
         result = addEleveAction(body.data || body);
         break;
@@ -743,6 +749,8 @@ function getEleves(classe) {
 }
 
 function getDashboard() {
+  // Auto-trigger silencieux (backup + sync DEV) — non bloquant
+  try { _autoTriggerSilencieux(); } catch (e) { /* silent */ }
   var sheet = getSheet(TABS.ELEVES);
   if (!sheet) return [];
   var data = sheet.getDataRange().getValues();
@@ -2154,6 +2162,49 @@ function triggerSyncQuotidien() {
   adminSyncProdToDev({ admin_key: DEV_ADMIN_KEY, dev_sheet_id: devId });
 }
 
+/**
+ * Auto-trigger silencieux — appelé à chaque ouverture de l'app via getDashboard.
+ * Ne nécessite AUCUN scope supplémentaire (utilise les scopes déjà autorisés).
+ * - Backup PROD si > 24h depuis le dernier
+ * - Sync PROD→DEV si > 6h depuis la dernière (et SHEET_DEV_ID configuré)
+ * Use LockService pour éviter les courses si plusieurs users en simultané.
+ */
+function _autoTriggerSilencieux() {
+  try {
+    var lock = LockService.getScriptLock();
+    if (!lock.tryLock(2000)) return; // Si déjà en cours, on passe
+    try {
+      var props = PropertiesService.getScriptProperties();
+      var now = Date.now();
+      var DAY = 24 * 3600 * 1000;
+      var SIX_HOURS = 6 * 3600 * 1000;
+      // Backup quotidien
+      var lastBackup = parseInt(props.getProperty('last_auto_backup_at') || '0', 10);
+      if (now - lastBackup > DAY) {
+        try { adminBackupSheet({ admin_key: DEV_ADMIN_KEY }); props.setProperty('last_auto_backup_at', String(now)); }
+        catch (e) { Logger.log('[autoBackup] ' + e.message); }
+      }
+      // Sync DEV si configuré
+      var devId = props.getProperty('SHEET_DEV_ID');
+      if (devId) {
+        var lastSync = parseInt(props.getProperty('last_auto_sync_at') || '0', 10);
+        if (now - lastSync > SIX_HOURS) {
+          try { adminSyncProdToDev({ admin_key: DEV_ADMIN_KEY, dev_sheet_id: devId }); props.setProperty('last_auto_sync_at', String(now)); }
+          catch (e) { Logger.log('[autoSync] ' + e.message); }
+        }
+      }
+    } finally { lock.releaseLock(); }
+  } catch (e) { Logger.log('[autoTrigger] ' + e.message); }
+}
+
+/** Configure le SHEET_DEV_ID pour activer la sync auto */
+function adminSetDevSheetId(body) {
+  if (!body || body.admin_key !== DEV_ADMIN_KEY) return { error: 'admin_key required' };
+  if (!body.dev_sheet_id) return { error: 'dev_sheet_id required' };
+  PropertiesService.getScriptProperties().setProperty('SHEET_DEV_ID', body.dev_sheet_id);
+  return { ok: true, success: true, dev_sheet_id: body.dev_sheet_id };
+}
+
 /** Installe les 2 triggers (à exécuter une seule fois manuellement) */
 function adminInstallTriggers(body) {
   if (!body || body.admin_key !== DEV_ADMIN_KEY) return { error: 'admin_key required' };
@@ -2165,4 +2216,111 @@ function adminInstallTriggers(body) {
   ScriptApp.newTrigger('triggerBackupQuotidien').timeBased().atHour(23).everyDays(1).create();
   ScriptApp.newTrigger('triggerSyncQuotidien').timeBased().atHour(6).everyDays(1).create();
   return { ok: true, success: true, installed: ['triggerBackupQuotidien@23h', 'triggerSyncQuotidien@6h'] };
+}
+
+// ══════════════════════════════════════════════════
+// PURGE CIBLÉE 2TNE — admin only, mode dry-run par défaut
+// ══════════════════════════════════════════════════
+/**
+ * Supprime toutes les lignes appartenant à la classe '2TNE' dans Élèves +
+ * onglets liés (Évaluations_Unifiées, Évaluations, PFMP_Log, CCF_Log,
+ * EvalTuteur, ElevePinHash, ElevePinClair). Les CAP IFCA ne sont JAMAIS
+ * touchés (filtrage strict sur classe='2TNE').
+ *
+ * body = {
+ *   admin_key: 'devSetup2026fh',
+ *   classe: '2TNE',          // par sécurité, doit être passé explicitement
+ *   dry_run: true|false      // true = preview seule, false = suppression réelle
+ * }
+ *
+ * Retourne { ok, dry_run, codes_supprimes:[...], counts:{...} }
+ */
+function adminPurgeTNE(body) {
+  if (!body || body.admin_key !== DEV_ADMIN_KEY) return { error: 'admin_key required' };
+  var classeCible = String(body.classe || '').trim();
+  if (classeCible !== '2TNE') return { error: 'classe doit être exactement "2TNE" (sécurité)' };
+  var dryRun = body.dry_run !== false; // par défaut true
+
+  var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(10000)) return { error: 'verrou occupé, réessayer' };
+
+  try {
+    // 1) Identifier les codes TNE dans Élèves
+    var elevesSheet = ss.getSheetByName(TABS.ELEVES);
+    if (!elevesSheet) return { error: 'onglet Élèves introuvable' };
+    var data = elevesSheet.getDataRange().getValues();
+    if (data.length < 2) return { ok: true, dry_run: dryRun, codes_supprimes: [], counts: { eleves: 0 }, message: 'Aucun élève dans la sheet' };
+    var headers = data[0];
+    var idxCode = headers.indexOf('code');
+    var idxClasse = headers.indexOf('classe');
+    if (idxCode === -1 || idxClasse === -1) return { error: 'colonnes code/classe introuvables' };
+
+    var codesAffectes = [];
+    var lignesAffectees = []; // numéros de ligne (1-based)
+    for (var i = 1; i < data.length; i++) {
+      if (String(data[i][idxClasse]).trim() === classeCible) {
+        codesAffectes.push(String(data[i][idxCode]));
+        lignesAffectees.push(i + 1);
+      }
+    }
+
+    // Compteurs autres tables (à supprimer)
+    var counts = { eleves: codesAffectes.length, evaluations_unifiees: 0, evaluations: 0, pfmp_log: 0, ccf_log: 0, eval_tuteur: 0, pin_hash: 0, pin_clair: 0 };
+
+    if (codesAffectes.length === 0) {
+      lock.releaseLock();
+      return { ok: true, dry_run: dryRun, codes_supprimes: [], counts: counts, message: 'Aucun élève en classe ' + classeCible };
+    }
+
+    var codeSet = {};
+    codesAffectes.forEach(function (c) { codeSet[c] = true; });
+
+    // Helper : compte/supprime les lignes d'une feuille où la colonne `colKey` correspond à un code TNE
+    function processTable(sheetName, headerCol) {
+      var s = ss.getSheetByName(sheetName);
+      if (!s || s.getLastRow() < 2) return 0;
+      var d = s.getDataRange().getValues();
+      var h = d[0];
+      var col = (typeof headerCol === 'string') ? h.indexOf(headerCol) : headerCol;
+      if (col === -1 || col == null) return 0;
+      var count = 0;
+      for (var k = d.length - 1; k >= 1; k--) {
+        if (codeSet[String(d[k][col])]) {
+          count++;
+          if (!dryRun) s.deleteRow(k + 1);
+        }
+      }
+      return count;
+    }
+
+    counts.evaluations_unifiees = processTable(TABS.EVALUATIONS_UNIFIEES, 0); // 1ère col = eleveId
+    counts.evaluations = processTable(TABS.EVALUATIONS, 0);
+    counts.pfmp_log = processTable(TABS.PFMP_LOG, 'eleveCode');
+    counts.ccf_log = processTable(TABS.CCF_LOG, 'eleveCode');
+    counts.eval_tuteur = processTable('EvalTuteur', 'eleveCode');
+    counts.pin_hash = processTable('ElevePinHash', 'code');
+    counts.pin_clair = processTable('ElevePinClair', 'code');
+
+    // 2) Suppression des lignes Élèves (en dernier — ordre décroissant pour éviter décalage)
+    if (!dryRun) {
+      lignesAffectees.sort(function (a, b) { return b - a; });
+      lignesAffectees.forEach(function (rowNum) { elevesSheet.deleteRow(rowNum); });
+    }
+
+    lock.releaseLock();
+    return {
+      ok: true,
+      dry_run: dryRun,
+      classe: classeCible,
+      codes_supprimes: codesAffectes,
+      counts: counts,
+      message: dryRun
+        ? '🔍 DRY-RUN : aucune ligne touchée. ' + codesAffectes.length + ' élèves de ' + classeCible + ' seraient supprimés.'
+        : '✅ ' + codesAffectes.length + ' élèves de ' + classeCible + ' supprimés (+ tables liées).'
+    };
+  } catch (e) {
+    try { lock.releaseLock(); } catch (_) {}
+    return { error: 'exception : ' + e.message };
+  }
 }
